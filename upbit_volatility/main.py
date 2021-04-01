@@ -22,10 +22,7 @@ def profit_high(ticker, profit):
     df = pyupbit.get_ohlcv(ticker, "day")
     today = df.iloc[-1]
     if profit < today['high']:
-        result = False
-    else:
-        result = True
-    return result
+        tickers.remove(ticker)
 
 
 # 5일치 이동평균선 구하기
@@ -94,6 +91,7 @@ while True:
 
             profit = round((target * 1.05), 0) # 익절 가격
             limit = round((target * 0.98), 0)  # 손절 가격
+            profit_high(ticker, profit)
 
             # 전날 거래 전량 매도
             if now.hour == 8 and 29 <= now.minute <= 59:
@@ -106,7 +104,7 @@ while True:
                 time.sleep(30)
 
             # 조건을 확인한 후 매수
-            elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and profit_high(ticker, profit) == True and target <= price <= (target * 1.002) and ma < price:
+            elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.002) and ma < price:
 #                upbit.buy_market_order(ticker, 50000)
                 unit = 50000 / target
                 upbit.buy_limit_order(ticker, target, unit)
