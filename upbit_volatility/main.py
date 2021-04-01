@@ -18,6 +18,16 @@ def cal_target(ticker):
     target = today['open'] + (yesterday_range * noise)
     return target
 
+def profit_high(ticker, profit):
+    df = pyupbit.get_ohlcv(ticker, "day")
+    today = df.iloc[-1]
+    if profit < today['high']:
+        result = False
+    else:
+        result = True
+    return result
+
+
 # 5일치 이동평균선 구하기
 def get_yesterday_ma5(ticker):
     df = pyupbit.get_ohlcv(ticker)
@@ -82,7 +92,7 @@ while True:
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = round((target * 1.03), 0) # 익절 가격
+            profit = round((target * 1.05), 0) # 익절 가격
             limit = round((target * 0.98), 0)  # 손절 가격
 
             # 전날 거래 전량 매도
@@ -96,7 +106,7 @@ while True:
                 time.sleep(30)
 
             # 조건을 확인한 후 매수
-            elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.002) and ma < price:
+            elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and profit_high(ticker, profit) == True and target <= price <= (target * 1.002) and ma < price:
 #                upbit.buy_market_order(ticker, 50000)
                 unit = 50000 / target
                 upbit.buy_limit_order(ticker, target, unit)
