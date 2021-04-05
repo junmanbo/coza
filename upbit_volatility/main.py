@@ -106,15 +106,15 @@ while True:
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = round((target * 1.03), 0) # 익절 가격
-            limit = round((target * 0.92), 0)  # 손절 가격
+            profit = round((target * 1.1), 0) # 익절 가격
+            limit = round((target * 0.9), 0)  # 손절 가격
             profit_high(ticker, profit)
 
             # 전날 거래 전량 매도
-            if now.hour == 8 and 29 <= now.minute <= 59:
+            if now.hour == 8 and 45 <= now.minute <= 59:
                 if order_state(ticker) == True:
                     cancel_order(ticker)
-                    time.sleep(5)
+                    time.sleep(3)
                     coin_balance = upbit.get_balance(ticker)
                     upbit.sell_market_order(ticker, coin_balance)
                     print(f"현재시간 {now} 하루가 끝났습니다.\n{ticker} 를 매도 하겠습니다. 오늘은 좋은 결과가 있기를!\n")
@@ -135,7 +135,7 @@ while True:
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 print(f"{ticker}를 매수가격: {target} -> 목표가격: {profit} 으로 예약 매도 주문했습니다.\n")
 
-            # 목표가에서 2% 이상 하락하면 손절
+            # 목표가에서 10% 이상 하락하면 손절
             elif hold(coin_balance) == False and order_state(ticker) == True and limit > price:
                 cancel_order(ticker)
                 time.sleep(5)
