@@ -100,6 +100,7 @@ while True:
 
             elif (now.minute == 15 or now.minute == 30 or now.minute == 45 or now.minute == 0) and order == True and hold_state == False:
                 cancel_order(ticker)
+                time.sleep(1)
                 coin_balance = upbit.get_balance(ticker)
                 upbit.sell_market_order(ticker, coin_balance)
                 print(f"15분이 지나서 {ticker}를 매도했습니다.")
