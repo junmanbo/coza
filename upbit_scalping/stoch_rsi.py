@@ -34,4 +34,12 @@ def cal_stoch_rsi(ticker):
     stochrsi  = (rsi - rsi.rolling(period).min()) / (rsi.rolling(period).max() - rsi.rolling(period).min())
     stochrsi_K = stochrsi.rolling(smoothK).mean()
     stochrsi_D = stochrsi_K.rolling(smoothD).mean()
-    return stochrsi_D
+    d = stochrsi_D.iloc[-1] * 100
+    k = stochrsi_K.iloc[-1] * 100
+    result = ''
+    if d == k:
+        if d > 70:
+            result = "sell"
+        if d < 30:
+            result = "buy"
+    return result

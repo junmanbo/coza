@@ -28,8 +28,9 @@ def cal_rsi(ticker):
     rsi = get_rsi(df, 14).iloc[-1]
     last_rsi = get_rsi(df, 14).iloc[-2]
 
-    if rsi - last_rsi > 10:
-        result = True
+    if rsi - last_rsi > 3:
+        result = 'buy'
     else:
-        result = False
+        result = 'sell'
     return result
+print(cal_rsi("KRW-TRX"))

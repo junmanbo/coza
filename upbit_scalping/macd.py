@@ -1,8 +1,5 @@
 import requests
 import pandas as pd
-import pyupbit
-import numpy as np
-#import time
 
 def cal_macd(ticker):
     url = "https://api.upbit.com/v1/candles/minutes/5"
