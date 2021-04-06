@@ -121,6 +121,7 @@ while True:
 
             elif now.hour == 9 and now.minute == 0 and 0 <= now.second <= 30:
                 tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
+                print("코인 목록을 초기화 합니다.")
                 time.sleep(30)
 
             # 조건을 확인한 후 매수
