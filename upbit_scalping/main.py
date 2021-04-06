@@ -82,7 +82,7 @@ while True:
             macd_value = cal_macd(ticker)
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
             coin_balance = upbit.get_balance(ticker)  # 코인 잔고
-            profit = price * 1.007 # 익절 가격
+            profit = price * 1.005 # 익절 가격
             op = op_mode(my_balance)
             hold_state = hold(coin_balance)
             order = order_state(ticker)
