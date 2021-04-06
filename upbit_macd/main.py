@@ -80,13 +80,13 @@ while True:
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
             coin_balance = upbit.get_balance(ticker)  # 코인 잔고
 
-            if macd_value == 'buy' and op_mode(my_balance) == True and hold(coin_balance) == False:
+            if cal_macd(ticker) == 'buy' and op_mode(my_balance) == True and hold(coin_balance) == False:
                 price = price_unit(price) # 호가 단위 맞추기
                 unit = 100000 / price # 매수할 코인 갯수 계산
                 upbit.buy_limit_order(ticker, price, unit) # 지정가 매수
                 print(f"코인 {ticker}를 {price} 가격에 10만원 어치 예약매수 했습니다.")
 
-            elif hold(coin_balance) == True and macd_value == 'sell':
+            elif hold(coin_balance) == True and cal_macd(ticker) == 'sell':
                 price = price_unit(price) # 호가 단위 맞추기
                 upbit.sell_limit_order(ticker, price, coin_balance) # 예약 매도
                 print(f"{ticker}를 매수가격: {price} -> 목표가격: {profit} 으로 예약 매도 주문했습니다.\n")
