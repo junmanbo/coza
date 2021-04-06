@@ -37,7 +37,7 @@ def cal_stoch_rsi(ticker):
     d = stochrsi_D.iloc[-1] * 100
     k = stochrsi_K.iloc[-1] * 100
     result = ''
-    if d == k:
+    if k * 0.999 <= d <= k * 1.001:
         if d > 70:
             result = "sell"
         if d < 30:

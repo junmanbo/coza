@@ -1,5 +1,3 @@
-from upbit_scalping.macd import cal_macd
-from upbit_scalping.stoch_rsi import cal_stoch_rsi
 from macd import *
 from stoch_rsi import *
 import pyupbit
