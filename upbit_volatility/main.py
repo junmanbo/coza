@@ -99,15 +99,14 @@ while True:
     try:
         now = datetime.datetime.now()
         for ticker in tickers:
-            target = round(cal_target(ticker), 0)  # 목표가격
+            target = cal_target(ticker)  # 목표가격
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
             coin_balance = upbit.get_balance(ticker)  # 코인 잔고
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = round((target * 1.04), 0) # 익절 가격
-            limit = round((target * 0.98), 0)  # 손절 가격
-            profit_high(ticker, profit)
+            profit = target * 1.04 # 익절 가격
+            limit = target * 0.98  # 손절 가격
 
             # 전날 거래 전량 매도
 #            if now.hour == 8 and 45 <= now.minute <= 59:
