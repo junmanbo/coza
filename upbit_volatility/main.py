@@ -3,7 +3,6 @@
 import pyupbit
 import time
 import datetime
-from macd import *
 
 #tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
 # 시가총액 높은 순서로 35코인
@@ -61,7 +60,7 @@ upbit = pyupbit.Upbit(access, secret)
 
 # 5만원 이상있으면 작동
 def op_mode(my_balance):
-    if my_balance < 100000:
+    if my_balance < 50000:
         return False
     else:
         return True
@@ -106,8 +105,8 @@ while True:
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = round((target * 1.004), 0) # 익절 가격
-            limit = round((target * 0.998), 0)  # 손절 가격
+            profit = round((target * 1.04), 0) # 익절 가격
+            limit = round((target * 0.98), 0)  # 손절 가격
             profit_high(ticker, profit)
 
             # 전날 거래 전량 매도
@@ -125,18 +124,18 @@ while True:
 #                time.sleep(10)
 
             # 조건을 확인한 후 매수
-            if op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price and cal_macd(ticker) == 'buy':
+            if op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
                 target = price_unit(target)
-                unit = 100000 / target
+                unit = 50000 / target
                 upbit.buy_limit_order(ticker, target, unit)
-                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 100000원 어치 예약 매수했습니다.")
+                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 50000원 어치 예약 매수했습니다.")
 
             elif hold(coin_balance) == True and limit <= price <= profit:
                 profit = price_unit(profit)
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 print(f"{ticker}를 매수가격: {target} -> 목표가격: {profit} 으로 예약 매도 주문했습니다.\n")
 
-            # 목표가에서 0.2% 이상 하락하면 손절
+            # 목표가에서 2% 이상 하락하면 손절
             elif hold(coin_balance) == False and order_state(ticker) == True and limit > price:
                 cancel_order(ticker)
                 time.sleep(2)
