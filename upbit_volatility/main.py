@@ -130,7 +130,7 @@ while True:
                 upbit.buy_limit_order(ticker, target, unit)
                 print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 50000원 어치 예약 매수했습니다.")
 
-            elif hold(coin_balance) == True and limit <= price <= profit:
+            elif hold(coin_balance) == True:
                 profit = price_unit(profit)
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 print(f"{ticker}를 매수가격: {target} -> 목표가격: {profit} 으로 예약 매도 주문했습니다.\n")
