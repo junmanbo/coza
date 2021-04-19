@@ -60,7 +60,7 @@ upbit = pyupbit.Upbit(access, secret)
 
 # 5만원 이상있으면 작동
 def op_mode(my_balance):
-    if my_balance < 50000:
+    if my_balance < 150000:
         return False
     else:
         return True
@@ -99,9 +99,9 @@ while True:
     try:
         now = datetime.datetime.now()
         for ticker in tickers:
+            time.sleep(0.3)
             target = cal_target(ticker)  # 목표가격
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
-            time.sleep(1)
             coin_balance = upbit.get_balance(ticker)  # 코인 잔고
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
@@ -126,9 +126,9 @@ while True:
             # 조건을 확인한 후 매수
             if op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
                 target = price_unit(target)
-                unit = 50000 / target
+                unit = 150000 / target
                 upbit.buy_limit_order(ticker, target, unit)
-                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 50000원 어치 예약 매수했습니다.")
+                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 150000원 어치 예약 매수했습니다.")
 
             elif hold(coin_balance) == True:
                 profit = price_unit(profit)
@@ -138,7 +138,7 @@ while True:
             # 목표가에서 2% 이상 하락하면 손절
             elif hold(coin_balance) == False and order_state(ticker) == True and limit > price:
                 cancel_order(ticker)
-                time.sleep(2)
+                time.sleep(1)
                 coin_balance = upbit.get_balance(ticker)
                 upbit.sell_market_order(ticker, coin_balance)
                 print(f"현재시간 {now} 너무 많이 떨어졌네요. {ticker}를 매도 하겠습니다.\n")
