@@ -10,7 +10,7 @@ import telegram
 tickers = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-LTC", "KRW-LINK", "KRW-BCH", "KRW-XLM", "KRW-VET", "KRW-DOGE", "KRW-TRX", "KRW-ATOM", "KRW-THETA", "KRW-DOT", "KRW-CRO", "KRW-EOS", "KRW-BSV", "KRW-BTT", "KRW-XTZ", "KRW-XEM", "KRW-NEO", "KRW-CHZ", "KRW-HBAR", "KRW-TFUEL", "KRW-ENJ", "KRW-ZIL", "KRW-BAT", "KRW-MANA", "KRW-ETC", "KRW-WAVES", "KRW-ICX", "KRW-ONT", "KRW-ANKR", "KRW-QTUM"]
 
 # telegram setting
-my_token = '1623206706:AAHii0cbgXD287hBsNTjSjeTjnOW9R7-zvQ'
+my_token = '1725701346:AAFoCMr7xeQwjaqvBsOPoIS99PyRFwVFK_E'
 bot = telegram.Bot(token = my_token)
 chat_id = '1459236537'
 
