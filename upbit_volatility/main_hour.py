@@ -57,9 +57,9 @@ secret = lines[1].strip()
 f.close()
 upbit = pyupbit.Upbit(access, secret)
 
-# 15만원 이상있으면 작동
+# 10만원 이상있으면 작동
 def op_mode(my_balance):
-    if my_balance < 150000:
+    if my_balance < 100000:
         return False
     else:
         return True
@@ -114,27 +114,26 @@ while True:
             profit = target * 1.02 # 익절 가격
             limit = target * 0.98  # 손절 가격
 
-            if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
-                bot.sendMessage(chat_id = chat_id, text=f"하루를 마무리하는 0시 입니다.\n현재 잔액은{my_balance}원 입니다.\n오늘은 총 {count_trading}번 거래했고 {count_loose}번 실패했습니다.\n")
+            if now.hour == 23 and now.minute == 59:
+                my_balance = int(my_balance)
+                bot.sendMessage(chat_id = chat_id, text=f"현재 잔액은{my_balance}원 입니다.\n오늘은 총 {count_trading}번 거래했고 {count_loose}번 실패했습니다.")
                 count_trading = 0
                 count_loose = 0
-                time.sleep(10)
+                time.sleep(60)
 
             # 변동성 돌파전략 조건을 만족하면 지정가 매수
             elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
                 target = price_unit(target)
-                unit = 150000 / target
+                unit = 100000 / target
                 upbit.buy_limit_order(ticker, target, unit)
                 count_trading += 1
-                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 150000원 어치 예약 매수했습니다.\n현재 거래횟수 {count_trading}번")
-                bot.sendMessage(chat_id = chat_id, text=f"코인 {ticker} {price}원에 150000원 어치 예약매수했습니다.\n현재 거래횟수: {count_trading}번")
+                print(f"현재시간 {now} 코인 {ticker} 을 {price} 가격에 100000원 어치 예약 매수했습니다.\n현재 거래횟수 {count_trading}번")
 
             # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
             elif hold(coin_balance) == True:
                 profit = price_unit(profit)
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 print(f"{ticker}를 매수가격: {target} -> 목표가격: {profit} 으로 예약 매도 주문했습니다.\n")
-                bot.sendMessage(chat_id = chat_id, text=f"{ticker} 매수가격: {target} -> 목표가격: {profit} 으로 예약매도 주문했습니다.\n")
 
             # 목표가에서 2% 이상 하락하면 손절
             elif hold(coin_balance) == False and order_state(ticker) == True and limit >= price:
@@ -144,6 +143,5 @@ while True:
                 upbit.sell_market_order(ticker, coin_balance)
                 count_loose += 1
                 print(f"현재시간 {now} 너무 많이 떨어졌네요. {ticker}를 매도 하겠습니다.\n현재 실패횟수 {count_loose}번")
-                bot.sendMessage(chat_id = chat_id, text=f"너무 많이 떨어졌네요. {ticker} 매도하겠습니다.\n현재 실패횟수 {count_loose}번")
     except:
         pass
