@@ -12,9 +12,10 @@ binance = ccxt.binance(config={
     'enableRateLimit': True,
 })
 
-symbol = "USDT/USDT"
+symbol = "BTC/USDT"
 #  a = symbol.find('/')
 #  symbol = symbol[:a]
-#  print(symbol)
-coin_balance = binance.fetch_balance(params={"type": "future"})[symbol[:symbol.find('/')]]['free']
+print(symbol)
+coin_balance = binance.fetch_balance(params={"type": "future"})
+#  [symbol[:symbol.find('/')]]['used']
 print(coin_balance)
