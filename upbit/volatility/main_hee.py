@@ -102,8 +102,8 @@ count_loose = 0
 
 while True:
     try:
-        now = datetime.datetime.now()
         for ticker in tickers:
+            now = datetime.datetime.now()
             time.sleep(0.2)
             target = cal_target(ticker)  # 목표가격
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
@@ -114,7 +114,7 @@ while True:
             profit = target * 1.03 # 익절 가격
             limit = target * 0.98  # 손절 가격
 
-            if now.hour == 23 and now.minute == 59:
+            if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
                 my_balance = int(my_balance)
                 bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
                 count_trading = 0

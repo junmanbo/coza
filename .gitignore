@@ -148,8 +148,6 @@ Thumbs.db #thumbnail cache on Windows
 .prof
 
 # api key data
-upbit.txt
-bithumb.txt
-binance.txt
+*.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/python
