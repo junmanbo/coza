@@ -80,6 +80,7 @@ while True:
             target = cal_target(symbol) # 목표가
             price = binance.fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             balance = binance.fetch_balance(params={"type": "future"})['USDT']['free']
+            amount = binance.fetch_balance(params={"type": "future"})['USDT']['used']
 
             profit = target * 0.98 # 익절가
             limit = target * 1.02 # 손절가
@@ -102,8 +103,7 @@ while True:
                 symbols = [symbol]
 
             # 익절가에 도달하면 지정가 매수
-            elif profit >= price:
-                amount = binance.fetch_balance(params={"type": "future"})['USDT']['used']
+            elif amount > 0 and profit >= price:
                 profit = price_unit(profit) # 익절가
                 binance.create_limit_buy_order(symbol, amount, profit, params={'type': 'future'}) # 지정가 매수
                 count_success += 1
@@ -111,8 +111,7 @@ while True:
                 symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
 
             # 손절가에 도달하면 지정가 매도
-            elif limit <= price:
-                amount = binance.fetch_balance(params={"type": "future"})['USDT']['used']
+            elif amount > 0 and limit <= price:
                 limit = price_unit(limit) # 손절가
                 binance.create_limit_buy_order(symbol, amount, limit, params={'type': 'future'}) # 지정가 매수
                 count_loose += 1
