@@ -104,9 +104,9 @@ while True:
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
                 stop_loss_params = {'stopPrice': target * 1.02}
-                binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
+                binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': target * 0.98}
-                binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
+                binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                 symbols = symbols.clear()
                 symbols = [symbol]
                 hold = True
