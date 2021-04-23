@@ -55,17 +55,17 @@ def cal_target(symbol):
 
 def price_unit(price):
     if price < 0.01:
-        price = round(price, 5)
+        price = round(price, 6)
     elif 0.01 <= price < 0.1:
-        price = round(price, 4)
+        price = round(price, 5)
     elif 0.1 <= price < 1:
-        price = round(price, 3)
+        price = round(price, 4)
     elif 10 <= price < 100:
-        price = round(price, 2)
+        price = round(price, 3)
     elif 100 <= price < 1000:
-        price = round(price, 1)
+        price = round(price, 2)
     elif price >= 10000:
-        price = round(price)
+        price = round(price, 1)
     return price
 
 count_trading = 0
