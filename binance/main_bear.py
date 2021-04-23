@@ -19,10 +19,13 @@ with open("binance.txt") as f:
     api_key = lines[0].strip()
     secret = lines[1].strip()
 
-binance = ccxt.binance(config={
+binance = ccxt.binance({
     'apiKey': api_key,
     'secret': secret,
     'enableRateLimit': True,
+    'options': {
+        'defaultType': 'future',
+    }
 })
 
 # 메이저 코인 목록
@@ -100,6 +103,7 @@ while True:
                 binance.create_limit_sell_order(symbol, amount, price=target, params={'type': 'future'}) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
+                symbols = symbols.clear()
                 symbols = [symbol]
 
             # 익절가에 도달하면 지정가 매수
@@ -108,6 +112,7 @@ while True:
                 binance.create_limit_buy_order(symbol, amount, profit, params={'type': 'future'}) # 지정가 매수
                 count_success += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {profit} 성공횟수: {count_success}번")
+                symbols = symbols.clear()
                 symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
 
             # 손절가에 도달하면 지정가 매도
@@ -116,6 +121,7 @@ while True:
                 binance.create_limit_buy_order(symbol, amount, limit, params={'type': 'future'}) # 지정가 매수
                 count_loose += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {limit} 실패횟수: {count_loose}번")
+                symbols = symbols.clear()
                 symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
         except:
             pass
