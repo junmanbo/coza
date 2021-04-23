@@ -82,7 +82,7 @@ while True:
             now = datetime.datetime.now()
             time.sleep(0.1)
             target = cal_target(symbol) # 목표가
-            price = binance.fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
+            price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             balance = binance.fetch_balance(params={"type": "future"})['USDT']['free']
 
             profit = target * 0.98 # 익절가

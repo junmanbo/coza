@@ -29,29 +29,30 @@ df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'v
 df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
 df.set_index('datetime', inplace=True)
 balance = binance.fetch_balance()['USDT']['free']
+price = ccxt.binance().fetch_ticker("TRX/USDT")['ask'] # 매도 1호가(현재가)
 amount = binance.fetch_balance()['USDT']['used']
-print(balance, amount)
-print('----------------------------------------------------------------------')
-
-print('Fetching your balance:')
-response = binance.fetch_balance()
-pprint(response['total'])  # make sure you have enough futures margin...
-# pprint(response['info'])  # more details
-
-print('----------------------------------------------------------------------')
-
-print('Getting your positions:')
-response = binance.fapiPrivateV2_get_positionrisk()
-print(table(response))
-
-print('----------------------------------------------------------------------')
-
-print('Getting your current position mode (One-way or Hedge Mode):')
-response = binance.fapiPrivate_get_positionside_dual()
-if response['dualSidePosition']:
-    print('You are in Hedge Mode')
-else:
-    print('You are in One-way Mode')
-
-print('----------------------------------------------------------------------')
-
+print(balance, amount, price)
+#  print('----------------------------------------------------------------------')
+#
+#  print('Fetching your balance:')
+#  response = binance.fetch_balance()
+#  pprint(response['total'])  # make sure you have enough futures margin...
+#  # pprint(response['info'])  # more details
+#
+#  print('----------------------------------------------------------------------')
+#
+#  print('Getting your positions:')
+#  response = binance.fapiPrivateV2_get_positionrisk()
+#  print(table(response))
+#
+#  print('----------------------------------------------------------------------')
+#
+#  print('Getting your current position mode (One-way or Hedge Mode):')
+#  response = binance.fapiPrivate_get_positionside_dual()
+#  if response['dualSidePosition']:
+#      print('You are in Hedge Mode')
+#  else:
+#      print('You are in One-way Mode')
+#
+#  print('----------------------------------------------------------------------')
+#
