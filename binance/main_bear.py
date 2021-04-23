@@ -114,7 +114,7 @@ while True:
             # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
             elif hold == True and profit > price:
                 count_success += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {profit} 성공횟수: {count_success}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번")
                 hold = False
                 symbols = symbols.clear()
                 symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
@@ -122,7 +122,7 @@ while True:
             # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
             elif hold == True and limit < price:
                 count_loose += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {limit} 실패횟수: {count_loose}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 손절매...\n실패횟수: {count_loose}번")
                 hold = False
                 symbols = symbols.clear()
                 symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
