@@ -101,10 +101,10 @@ count_trading = 0
 count_loose = 0
 
 while True:
-    try:
-        now = datetime.datetime.now()
-        for ticker in tickers:
-            time.sleep(0.2)
+    for ticker in tickers:
+        try:
+            now = datetime.datetime.now()
+            time.sleep(0.1)
             target = cal_target(ticker)  # 목표가격
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
             coin_balance = upbit.get_balance(ticker)  # 코인 잔고
@@ -114,12 +114,12 @@ while True:
             profit = target * 1.03 # 익절 가격
             limit = target * 0.98  # 손절 가격
 
-            if now.hour == 23 and now.minute == 59:
+            if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
                 my_balance = int(my_balance)
                 bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
                 count_trading = 0
                 count_loose = 0
-                time.sleep(60)
+                time.sleep(10)
 
             # 변동성 돌파전략 조건을 만족하면 지정가 매수
             elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
@@ -146,5 +146,5 @@ while True:
                 count_loose += 1
                 print(f"현재시간: {now} 코인: {ticker} 손절매\n현재 실패횟수 {count_loose}번")
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번")
-    except:
-        pass
+        except:
+            pass
