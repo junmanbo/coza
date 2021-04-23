@@ -6,16 +6,6 @@ import pandas as pd
 #  exchange = ccxt.binance()
 #  binance1 = ccxt.binance ({'id': 'binance1'})
 
-#  # from variable id
-#  exchange_id = 'binance'
-#  exchange_class = getattr(ccxt, exchange_id)
-#  exchange = exchange_class({
-#      'apiKey': '3BQpC1d4AR5tCd8BGwx4xvUO6SQRRNi1LCMspax8ckymMTsawjVwlOBl2dG6TCmp',
-#      'secret': 'AgK4PuliXxaxkxgwdZRJMjerqwWNXdkMowsvmwXj1V2UkSVDaElTKOYzPFOkGjxV',
-#      'timeout': 30000,
-#      'enableRateLimit': True,
-#  })
-
 # binance initialize
 #  binance = ccxt.binance()
 #  markets = binance.load_markets()
