@@ -5,9 +5,8 @@ import time
 import datetime
 import telegram
 
-#tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
-# 시가총액 높은 순서로 35코인
-tickers = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-LTC", "KRW-LINK", "KRW-BCH", "KRW-XLM", "KRW-VET", "KRW-DOGE", "KRW-ATOM", "KRW-THETA", "KRW-DOT", "KRW-CRO", "KRW-EOS", "KRW-BSV", "KRW-BTT", "KRW-XTZ", "KRW-XEM", "KRW-NEO", "KRW-CHZ", "KRW-HBAR", "KRW-TFUEL", "KRW-ENJ", "KRW-ZIL", "KRW-BAT", "KRW-MANA", "KRW-ETC", "KRW-WAVES", "KRW-ICX", "KRW-ONT", "KRW-ANKR", "KRW-QTUM"]
+tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
+#  tickers = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-LTC", "KRW-LINK", "KRW-BCH", "KRW-XLM", "KRW-VET", "KRW-DOGE", "KRW-ATOM", "KRW-THETA", "KRW-DOT", "KRW-CRO", "KRW-EOS", "KRW-BSV", "KRW-BTT", "KRW-XTZ", "KRW-XEM", "KRW-NEO", "KRW-CHZ", "KRW-HBAR", "KRW-TFUEL", "KRW-ENJ", "KRW-ZIL", "KRW-BAT", "KRW-MANA", "KRW-ETC", "KRW-WAVES", "KRW-ICX", "KRW-ONT", "KRW-ANKR", "KRW-QTUM"]
 
 # telegram setting
 my_token = '1725701346:AAFoCMr7xeQwjaqvBsOPoIS99PyRFwVFK_E'
@@ -81,9 +80,8 @@ bot.sendMessage(chat_id = chat_id, text="추격매수 전략을 실행합니다.
 
 # 거래 횟수
 count_trading = 0
-
-# 실패 횟수 count
 count_loose = 0
+count_success = 0
 
 while True:
     for ticker in tickers:
@@ -95,31 +93,39 @@ while True:
         price = pyupbit.get_current_price(ticker)  # 코인 현재가
         ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-        profit = target * 1.03 # 익절 가격
-        limit = target * 0.98  # 손절 가격
+        profit = target * 1.015 # 익절 가격
+        limit = target * 0.99  # 손절 가격
+        print(f"현재시간: {now} 현재잔고: {my_balance} 코인: {ticker}\n현재가: {price} -> 목표가: {target}\n")
 
         if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
             my_balance = int(my_balance)
             bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
             count_trading = 0
             count_loose = 0
+            count_success = 0
             time.sleep(10)
 
         # 변동성 돌파전략 조건을 만족하면 지정가 매수
-        elif my_balance > 350000 and coin_balance <= 0 and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
+        elif my_balance > 300000 and coin_balance <= 0 and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
             target = price_unit(target)
-            unit = 350000 / target
+            unit = 300000 / target
             upbit.buy_limit_order(ticker, target, unit)
             count_trading += 1
-            print(f"현재시간: {now} 코인: {ticker} 가격: {price} 예약매수\n현재 거래횟수: {count_trading}번")
             bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매수\n현재가: {price} 거래횟수: {count_trading}번")
+            tickers.clear()
+            tickers = [ticker]
 
         # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
         elif coin_balance > 0:
             profit = price_unit(profit)
             upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
-            print(f"코인: {ticker} 매수가격: {target} -> 목표가격: {profit} 예약매도")
             bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
+
+        elif coin_balance <= 0 and order_state(ticker) == True and profit < price:
+            count_success += 1
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 목표달성\n성공횟수: {count_success}번")
+            tickers.clear()
+            tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
 
         # 목표가에서 2% 이상 하락하면 손절
         elif coin_balance <= 0 and order_state(ticker) == True and limit >= price:
@@ -128,5 +134,6 @@ while True:
             coin_balance = upbit.get_balance(ticker)
             upbit.sell_market_order(ticker, coin_balance)
             count_loose += 1
-            print(f"현재시간: {now} 코인: {ticker} 손절매\n현재 실패횟수 {count_loose}번")
             bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번")
+            tickers.clear()
+            tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
