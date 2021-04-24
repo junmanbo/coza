@@ -28,8 +28,10 @@ binance = ccxt.binance({
     }
 })
 
-# 메이저 코인 목록
-symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
+# 코인 목록
+tickers = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'SXP/USDT', 'KAVA/USDT', 'BAND/USDT', 'RLC/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'DEFI/USDT', 'YFI/USDT', 'BAL/USDT', 'CRV/USDT', 'TRB/USDT', 'YFII/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'SRM/USDT', 'BZRX/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'STORJ/USDT', 'BLZ/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'FLM/USDT', 'TOMO/USDT', 'REN/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'LRC/USDT', 'MATIC/USDT', 'OCEAN/USDT', 'CVC/USDT', 'BEL/USDT', 'CTK/USDT', 'AXS/USDT', 'ALPHA/USDT', 'ZEN/USDT', 'SKL/USDT', 'GRT/USDT', '1INCH/USDT', 'BTC/BUSD', 'AKRO/USDT', 'CHZ/USDT', 'SAND/USDT', 'ANKR/USDT', 'LUNA/USDT', 'BTS/USDT', 'LIT/USDT', 'UNFI/USDT', 'DODO/USDT', 'REEF/USDT', 'RVN/USDT', 'SFP/USDT', 'XEM/USDT', 'BTCSTUSDT', 'COTI/USDT', 'CHR/USDT', 'MANA/USDT', 'ALICE/USDT', 'HBAR/USDT', 'ONE/USDT', 'LINA/USDT', 'STMX/USDT', 'DENT/USDT', 'CELR/USDT', 'HOT/USDT', 'MTL/USDT', 'OGN/USDT', 'BTT/USDT', 'NKN/USDT', 'SC/USDT', 'DGB/USDT']
+
+symbols = tickers
 
 def cal_target(symbol):
     # 목표가 구하기
@@ -89,7 +91,7 @@ while True:
 
         profit = price_unit(target * 0.98) # 익절가
         limit = price_unit(target * 1.02) # 손절가
-        #  print(f"현재시간: {now} 현재잔고: {balance} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
+        print(f"현재시간: {now} 현재잔고: {balance} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
 
         if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
             total_balance = binance.fetch_balance()['USDT']['total']
@@ -122,7 +124,7 @@ while True:
             hold = False # 코인 미보유
             resp = binance.cancel_order(order1['id'], symbol) # Stop Loss 주문 취소
             symbols.clear()
-            symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
+            symbols = tickers
 
         # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
         elif hold == True and limit < price:
@@ -132,4 +134,4 @@ while True:
             hold = False # 코인 미보유
             resp = binance.cancel_order(order2['id'], symbol) # Stop Profit 주문 취소
             symbols.clear()
-            symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
+            symbols = tickers
