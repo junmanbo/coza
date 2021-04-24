@@ -97,7 +97,7 @@ while True:
         limit = target * 0.99  # 손절 가격
         print(f"현재시간: {now} 현재잔고: {my_balance} 코인: {ticker}\n현재가: {price} -> 목표가: {target}\n")
 
-        if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
+        if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
             my_balance = int(my_balance)
             bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
             count_trading = 0
