@@ -31,9 +31,8 @@ for symbol in symbols:
         'leverage': leverage,
     })
     print(response)
-
-    response = binance.fapiPrivate_post_margintype({
-        'symbol': market['id'],
-        'marginType': 'ISOLATED',
-    })
-    print(response)
+    #  response = binance.fapiPrivate_post_margintype({
+    #      'symbol': market['id'],
+    #      'marginType': 'ISOLATED',
+    #  })
+    #  print(response)
