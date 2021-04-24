@@ -22,18 +22,18 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 binance.verbose = True
-#  for symbol in symbols:
-#      market = binance.market(symbol)
-#      leverage = 1
-#
-#      response = binance.fapiPrivate_post_leverage({
-#          'symbol': market['id'],
-#          'leverage': leverage,
-#      })
-#      print(response)
-#
-#      response = binance.fapiPrivate_post_margintype({
-#          'symbol': market['id'],
-#          'marginType': 'ISOLATED',
-#      })
-#      print(response)
+for symbol in symbols:
+    market = binance.market(symbol)
+    leverage = 1
+
+    response = binance.fapiPrivate_post_leverage({
+        'symbol': market['id'],
+        'leverage': leverage,
+    })
+    print(response)
+
+    response = binance.fapiPrivate_post_margintype({
+        'symbol': market['id'],
+        'marginType': 'ISOLATED',
+    })
+    print(response)
