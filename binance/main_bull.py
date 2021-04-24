@@ -19,10 +19,13 @@ with open("binance.txt") as f:
     api_key = lines[0].strip()
     secret = lines[1].strip()
 
-binance = ccxt.binance(config={
+binance = ccxt.binance({
     'apiKey': api_key,
     'secret': secret,
     'enableRateLimit': True,
+    'options': {
+        'defaultType': 'future',
+    }
 })
 
 # 메이저 코인 목록
@@ -52,70 +55,80 @@ def cal_target(symbol):
 
 def price_unit(price):
     if price < 0.01:
-        price = round(price, 5)
+        price = round(price, 6)
     elif 0.01 <= price < 0.1:
-        price = round(price, 4)
+        price = round(price, 5)
     elif 0.1 <= price < 1:
-        price = round(price, 3)
+        price = round(price, 4)
     elif 10 <= price < 100:
-        price = round(price, 2)
+        price = round(price, 3)
     elif 100 <= price < 1000:
-        price = round(price, 1)
+        price = round(price, 2)
     elif price >= 10000:
-        price = round(price)
+        price = round(price, 1)
     return price
 
 count_trading = 0
 count_success = 0
 count_loose = 0
+order = {}
+order1 = {}
+order2 = {}
+hold = False
 
-bot.sendMessage(chat_id = chat_id, text="추격매수 전략 자동매매 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text="추격 매수 전략 자동매매 시작합니다. 화이팅!")
+print("추격 매수 전략 시작!")
 
 while True:
-    try:
-        for symbol in symbols:
-            now = datetime.datetime.now()
-            time.sleep(0.1)
-            target = cal_target(symbol) # 목표가
-            price = binance.fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
-            balance = binance.fetch_balance(params={"type": "future"})['USDT']['free']
-            coin_balance = binance.fetch_balance(params={"type": "future"})[symbol[:symbol.find('/')]]['free']
+    for symbol in symbols:
+        now = datetime.datetime.now()
+        time.sleep(0.1)
+        target = cal_target(symbol) # 목표가
+        price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
+        balance = binance.fetch_balance()['USDT']['free']
 
-            profit = target * 1.02 # 익절가
-            limit = target * 0.98 # 손절가
+        profit = price_unit(target * 1.02) # 익절가
+        limit = price_unit(target * 0.98) # 손절가
+        #  print(f"\n현재시간: {now} 현재잔고: {balance} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
 
-            if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
-                total_balance = binance.fetch_balance(params={"type": "future"})['USDT']['total']
-                bot.sendMessage(chat_id = chat_id, text=f"잔고: {total_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
-                count_trading = 0
-                count_loose = 0
-                time.sleep(10)
+        if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
+            total_balance = binance.fetch_balance()['USDT']['total']
+            bot.sendMessage(chat_id = chat_id, text=f"잔고: {total_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
+            count_trading = 0
+            count_loose = 0
+            time.sleep(10)
 
-            # 조건을 만족하면 지정가 매수
-            elif balance >= 300 and target <= price <= (target * 1.001):
-                target = price_unit(target) # 목표가 (호가 단위)
-                amount = 300 / target # 매수할 코인 개수
-                binance.create_limit_buy_order(symbol, amount, price=target, params={'type': 'future'}) # 지정가 매수
-                count_trading += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {target} 거래횟수: {count_trading}번")
-                symbols = [symbol]
+        # 조건을 만족하면 지정가 매도
+        elif hold == False and balance >= 250 and target <= price <= (target * 1.001):
+            target = price_unit(target) # 목표가 (호가 단위)
+            amount = 250 / target # 매도할 코인 개수
+            order = binance.create_limit_buy_order(symbol, amount, target) # 지정가 매도
+            count_trading += 1
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {target} 거래횟수: {count_trading}번")
+            stop_loss_params = {'stopPrice': target * 0.98}
+            order1 = binance.create_order(symbol, 'stop_market', 'sell', amount, limit, stop_loss_params)
+            take_profit_params = {'stopPrice': target * 1.02}
+            order2 = binance.create_order(symbol, 'take_profit_market', 'sell', amount, profit, take_profit_params)
+            symbols = symbols.clear() # 코인 목록 제한
+            symbols = [symbol]
+            hold = True # 코인 보유
 
-            # 익절가에 도달하면 지정가 매도
-            elif coin_balance > 0 and profit <= price:
-                profit = price_unit(profit) # 익절가
-                amount = coin_balance # 매도할 코인 개수
-                binance.create_limit_sell_order(symbol, amount, price=profit, params={'type': 'future'}) # 지정가 매도
-                count_success += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매도가: {profit} 성공횟수: {count_success}번")
-                symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
+        # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
+        elif hold == True and profit < price:
+            time.sleep(5)
+            count_success += 1
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번")
+            hold = False # 코인 미보유
+            resp = binance.cancel_order(order1['id'], symbol) # Stop Loss 주문 취소
+            symbols = symbols.clear() # 코인 목록 초기화
+            symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
 
-            # 손절가에 도달하면 지정가 매도
-            elif coin_balance > 0 and limit >= price:
-                limit = price_unit(limit) # 손절가
-                amount = coin_balance # 매도할 코인 개수
-                binance.create_limit_sell_order(symbol, amount, price=limit, params={'type': 'future'}) # 지정가 매도
-                count_loose += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {limit} 실패횟수: {count_loose}번")
-                symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
-    except:
-        pass
+        # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
+        elif hold == True and limit > price:
+            time.sleep(5)
+            count_loose += 1
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 손절매...\n실패횟수: {count_loose}번")
+            hold = False # 코인 미보유
+            resp = binance.cancel_order(order2['id'], symbol) # Stop Profit 주문 취소
+            symbols = symbols.clear()
+            symbols = ["BTC/USDT", "ETH/USDT", "BCH/USDT", "XRP/USDT", "EOS/USDT", "LTC/USDT", "TRX/USDT", "ETC/USDT", "LINK/USDT", "XLM/USDT", "ADA/USDT", "XMR/USDT", "DASH/USDT", "ZEC/USDT", "XTZ/USDT", "BNB/USDT", "ATOM/USDT", "ONT/USDT", "IOTA/USDT", "BAT/USDT", "VET/USDT", "NEO/USDT", "QTUM/USDT", "IOST/USDT", "THETA/USDT"]
