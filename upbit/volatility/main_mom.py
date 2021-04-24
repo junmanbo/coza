@@ -7,7 +7,7 @@ import telegram
 
 #tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
 # 시가총액 높은 순서로 35코인
-tickers = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-LTC", "KRW-LINK", "KRW-BCH", "KRW-XLM", "KRW-VET", "KRW-DOGE", "KRW-TRX", "KRW-ATOM", "KRW-THETA", "KRW-DOT", "KRW-CRO", "KRW-EOS", "KRW-BSV", "KRW-BTT", "KRW-XTZ", "KRW-XEM", "KRW-NEO", "KRW-CHZ", "KRW-HBAR", "KRW-TFUEL", "KRW-ENJ", "KRW-ZIL", "KRW-BAT", "KRW-MANA", "KRW-ETC", "KRW-WAVES", "KRW-ICX", "KRW-ONT", "KRW-ANKR", "KRW-QTUM"]
+tickers = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-LTC", "KRW-LINK", "KRW-BCH", "KRW-XLM", "KRW-VET", "KRW-DOGE", "KRW-ATOM", "KRW-THETA", "KRW-DOT", "KRW-CRO", "KRW-EOS", "KRW-BSV", "KRW-BTT", "KRW-XTZ", "KRW-XEM", "KRW-NEO", "KRW-CHZ", "KRW-HBAR", "KRW-TFUEL", "KRW-ENJ", "KRW-ZIL", "KRW-BAT", "KRW-MANA", "KRW-ETC", "KRW-WAVES", "KRW-ICX", "KRW-ONT", "KRW-ANKR", "KRW-QTUM"]
 
 # telegram setting
 my_token = '1725701346:AAFoCMr7xeQwjaqvBsOPoIS99PyRFwVFK_E'
@@ -57,21 +57,6 @@ secret = lines[1].strip()
 f.close()
 upbit = pyupbit.Upbit(access, secret)
 
-# 15만원 이상있으면 작동
-def op_mode(my_balance):
-    if my_balance < 150000:
-        return False
-    else:
-        return True
-
-# 코인잔고 조회
-def hold(coin_balance):
-    if coin_balance > 0:
-        hold = True
-    else:
-        hold = False
-    return hold
-
 # 지정가 예약 주문 취소
 def cancel_order(ticker):
     try:
@@ -92,7 +77,7 @@ def order_state(ticker):
         state = False
     return state
 
-print("자동매매를 시작합니다. 꼭 성투하세요!\n적절한 코인을 찾는중입니다....")
+bot.sendMessage(chat_id = chat_id, text="추격매수 전략을 실행합니다. 오늘 목표 수익률 단1%!!")
 
 # 거래 횟수
 count_trading = 0
@@ -102,49 +87,46 @@ count_loose = 0
 
 while True:
     for ticker in tickers:
-        try:
-            now = datetime.datetime.now()
-            time.sleep(0.1)
-            target = cal_target(ticker)  # 목표가격
-            my_balance = upbit.get_balance("KRW")  # 원화 잔고
-            coin_balance = upbit.get_balance(ticker)  # 코인 잔고
-            price = pyupbit.get_current_price(ticker)  # 코인 현재가
-            ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
+        now = datetime.datetime.now()
+        time.sleep(0.1)
+        target = cal_target(ticker)  # 목표가격
+        my_balance = upbit.get_balance("KRW")  # 원화 잔고
+        coin_balance = upbit.get_balance(ticker)  # 코인 잔고
+        price = pyupbit.get_current_price(ticker)  # 코인 현재가
+        ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = target * 1.03 # 익절 가격
-            limit = target * 0.98  # 손절 가격
+        profit = target * 1.03 # 익절 가격
+        limit = target * 0.98  # 손절 가격
 
-            if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
-                my_balance = int(my_balance)
-                bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
-                count_trading = 0
-                count_loose = 0
-                time.sleep(10)
+        if now.hour == 23 and now.minute == 59 and 50 <= now.second <= 59:
+            my_balance = int(my_balance)
+            bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
+            count_trading = 0
+            count_loose = 0
+            time.sleep(10)
 
-            # 변동성 돌파전략 조건을 만족하면 지정가 매수
-            elif op_mode(my_balance) == True and hold(coin_balance) == False and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
-                target = price_unit(target)
-                unit = 150000 / target
-                upbit.buy_limit_order(ticker, target, unit)
-                count_trading += 1
-                print(f"현재시간: {now} 코인: {ticker} 가격: {price} 예약매수\n현재 거래횟수: {count_trading}번")
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매수\n현재가: {price} 거래횟수: {count_trading}번")
+        # 변동성 돌파전략 조건을 만족하면 지정가 매수
+        elif my_balance > 350000 and coin_balance <= 0 and order_state(ticker) == False and target <= price <= (target * 1.001) and ma < price:
+            target = price_unit(target)
+            unit = 350000 / target
+            upbit.buy_limit_order(ticker, target, unit)
+            count_trading += 1
+            print(f"현재시간: {now} 코인: {ticker} 가격: {price} 예약매수\n현재 거래횟수: {count_trading}번")
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매수\n현재가: {price} 거래횟수: {count_trading}번")
 
-            # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
-            elif hold(coin_balance) == True:
-                profit = price_unit(profit)
-                upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
-                print(f"코인: {ticker} 매수가격: {target} -> 목표가격: {profit} 예약매도")
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
+        # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
+        elif coin_balance > 0:
+            profit = price_unit(profit)
+            upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
+            print(f"코인: {ticker} 매수가격: {target} -> 목표가격: {profit} 예약매도")
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
 
-            # 목표가에서 2% 이상 하락하면 손절
-            elif hold(coin_balance) == False and order_state(ticker) == True and limit >= price:
-                cancel_order(ticker)
-                time.sleep(1)
-                coin_balance = upbit.get_balance(ticker)
-                upbit.sell_market_order(ticker, coin_balance)
-                count_loose += 1
-                print(f"현재시간: {now} 코인: {ticker} 손절매\n현재 실패횟수 {count_loose}번")
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번")
-        except:
-            pass
+        # 목표가에서 2% 이상 하락하면 손절
+        elif coin_balance <= 0 and order_state(ticker) == True and limit >= price:
+            cancel_order(ticker)
+            time.sleep(1)
+            coin_balance = upbit.get_balance(ticker)
+            upbit.sell_market_order(ticker, coin_balance)
+            count_loose += 1
+            print(f"현재시간: {now} 코인: {ticker} 손절매\n현재 실패횟수 {count_loose}번")
+            bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번")
