@@ -82,8 +82,8 @@ order1 = {}
 order2 = {}
 hold = False
 
-bot.sendMessage(chat_id = chat_id, text="추격 공매도 전략 자동매매 시작합니다. 화이팅!")
-print("추격 공매도 전략 시작!")
+bot.sendMessage(chat_id = chat_id, text="추격매수 전략 자동매매 시작합니다. 화이팅!")
+print("추격매수 전략 시작!")
 
 while True:
     try:
