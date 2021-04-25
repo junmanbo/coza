@@ -112,7 +112,7 @@ while True:
                 amount = 250 / target # 매도할 코인 개수
                 order = binance.create_limit_buy_order(symbol, amount, target) # 지정가 매도
                 count_trading += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {target} 거래횟수: {count_trading}번")
                 stop_loss_params = {'stopPrice': target * 0.98}
                 order1 = binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': target * 1.02}
