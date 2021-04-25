@@ -95,8 +95,8 @@ while True:
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
-            profit = target * 1.015 # 익절 가격
-            limit = target * 0.99  # 손절 가격
+            profit = target * 1.025 # 익절 가격
+            limit = target * 0.98  # 손절 가격
             print(f"현재시간: {now} 현재잔고: {my_balance} 코인: {ticker}\n현재가: {price} -> 목표가: {target}\n")
 
             if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
