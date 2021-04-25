@@ -100,7 +100,7 @@ while True:
 
             if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
                 my_balance = int(my_balance)
-                bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n실패횟수: {count_loose}번")
+                bot.sendMessage(chat_id = chat_id, text=f"잔고: {my_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}\n실패횟수: {count_loose}번")
                 count_trading = 0
                 count_loose = 0
                 count_success = 0
@@ -122,9 +122,9 @@ while True:
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
 
-            elif coin_balance <= 0 and order_state(ticker) == True and profit < price:
+            elif coin_balance <= 0 and order_state(ticker) == False and my_balance > 300000 and profit < price:
                 count_success += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 목표달성\n성공횟수: {count_success}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 목표달성\n성공횟수: {count_success}번\n잔고: {my_balance}")
                 tickers.clear()
                 tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
 
@@ -134,8 +134,10 @@ while True:
                 time.sleep(1)
                 coin_balance = upbit.get_balance(ticker)
                 upbit.sell_market_order(ticker, coin_balance)
+                time.sleep(1)
+                my_balance = upbit.get_balance("KRW")  # 원화 잔고
                 count_loose += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 손절매\n실패횟수: {count_loose}번\n잔고: {my_balance}")
                 tickers.clear()
                 tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
     except Exception as e:
