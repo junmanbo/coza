@@ -93,6 +93,7 @@ while True:
             time.sleep(0.2)
             target = cal_target(ticker)  # 목표가격
             my_balance = upbit.get_balance("KRW")  # 원화 잔고
+            coin_balance = upbit.get_balance(ticker)  # 코인 잔고
             price = pyupbit.get_current_price(ticker)  # 코인 현재가
             ma = get_yesterday_ma5(ticker)  # 코인 5일 이동평균선
 
@@ -109,9 +110,9 @@ while True:
                 time.sleep(10)
 
             # 변동성 돌파전략 조건을 만족하면 지정가 매수
-            elif my_balance > 300000 and hold == False and target <= price <= (target * 1.0001) and ma < price:
+            elif my_balance > 250000 and hold == False and target <= price <= (target * 1.0001) and ma < price:
                 target = price_unit(target)
-                unit = 300000 / target
+                unit = 250000 / target
                 upbit.buy_limit_order(ticker, target, unit)
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매수\n현재가: {price} 거래횟수: {count_trading}번")
@@ -120,9 +121,8 @@ while True:
                 hold = True
 
             # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
-            elif hold == True and order_state == False:
+            elif hold == True and order_state == False and coin_balance > 0:
                 profit = price_unit(profit)
-                coin_balance = upbit.get_balance(ticker)  # 코인 잔고
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
                 order_state = True
