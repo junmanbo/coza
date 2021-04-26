@@ -140,7 +140,6 @@ while True:
             elif hold == True and order_state == True and limit >= price:
                 cancel_order(ticker)
                 time.sleep(1)
-                coin_balance = upbit.get_balance(ticker)
                 upbit.sell_market_order(ticker, coin_balance)
                 time.sleep(1)
                 my_balance = upbit.get_balance("KRW")  # 원화 잔고
