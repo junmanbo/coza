@@ -100,7 +100,7 @@ while True:
 
             if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
                 total_balance = binance.fetch_balance()['USDT']['total']
-                bot.sendMessage(chat_id = chat_id, text=f"잔고: {total_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}\n실패횟수: {count_loose}번")
+                bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 잔고: {total_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}\n실패횟수: {count_loose}번")
                 count_trading = 0
                 count_loose = 0
                 count_success = 0
@@ -112,7 +112,7 @@ while True:
                 amount = 250 / target # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol, amount, target) # 지정가 매도
                 count_trading += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
+                bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
                 stop_loss_params = {'stopPrice': target * 1.02}
                 order1 = binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': target * 0.98}
@@ -126,7 +126,7 @@ while True:
                 time.sleep(5)
                 count_success += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번\n잔고: {total_balance}")
+                bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번\n잔고: {total_balance}")
                 hold = False # 코인 미보유
                 resp = binance.cancel_order(order1['id'], symbol) # Stop Loss 주문 취소
                 symbols.clear()
@@ -137,7 +137,7 @@ while True:
                 time.sleep(5)
                 count_loose += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 손절매...\n실패횟수: {count_loose}번\n잔고: {total_balance}")
+                bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 손절매...\n실패횟수: {count_loose}번\n잔고: {total_balance}")
                 hold = False # 코인 미보유
                 resp = binance.cancel_order(order2['id'], symbol) # Stop Profit 주문 취소
                 symbols.clear()
