@@ -12,8 +12,8 @@ upbit = pyupbit.Upbit(access, secret)
 my_balance = upbit.get_balance("KRW")  # 원화 잔고
 print(my_balance)
 
-#  coin_balance = upbit.get_balance(ticker)  # 코인 잔고
-#  print(coin_balance)
+coin_balance = upbit.get_balance(ticker)  # 코인 잔고
+print(coin_balance)
 #
 #  sell_order = upbit.sell_market_order(ticker, coin_balance)
 #  print(sell_order)
