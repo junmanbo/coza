@@ -65,16 +65,16 @@ def cancel_order(ticker):
     except:
         pass
 
-def order_state(ticker):
-    try:
-        state = upbit.get_order(ticker)[0].get('state')
-        if state == 'wait':
-            state = True
-        else:
-            state = False
-    except:
-        state = False
-    return state
+#  def order_state(ticker):
+#      try:
+#          state = upbit.get_order(ticker)[0].get('state')
+#          if state == 'wait':
+#              state = True
+#          else:
+#              state = False
+#      except:
+#          state = False
+#      return state
 
 bot.sendMessage(chat_id = chat_id, text="추격매수 전략을 실행합니다. 오늘 목표 수익률 단1%!!")
 
@@ -84,6 +84,7 @@ count_loose = 0
 count_success = 0
 
 hold = False
+order_state = False
 
 while True:
     try:
@@ -108,7 +109,7 @@ while True:
                 time.sleep(10)
 
             # 변동성 돌파전략 조건을 만족하면 지정가 매수
-            elif my_balance > 300000 and hold == False and target <= price <= (target * 1.001) and ma < price:
+            elif my_balance > 300000 and hold == False and target <= price <= (target * 1.0001) and ma < price:
                 target = price_unit(target)
                 unit = 300000 / target
                 upbit.buy_limit_order(ticker, target, unit)
@@ -119,22 +120,24 @@ while True:
                 hold = True
 
             # 코인 보유하고 있고 예약매도 없을 경우 지정가 예약매도
-            elif hold == True and order_state(ticker) == False and limit < price < profit:
+            elif hold == True and order_state == False:
                 profit = price_unit(profit)
                 coin_balance = upbit.get_balance(ticker)  # 코인 잔고
                 upbit.sell_limit_order(ticker, profit, coin_balance) # 목표가로 지정가 예약 매도
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 예약매도\n매수가: {target} -> 매도가: {profit}")
+                order_state = True
 
-            elif hold == True and order_state(ticker) == False and profit < price:
+            elif hold == True and order_state == True and profit < price:
                 count_success += 1
                 my_balance = upbit.get_balance("KRW")  # 원화 잔고
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {ticker} 목표달성\n성공횟수: {count_success}번\n잔고: {my_balance}")
                 tickers.clear()
                 tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
                 hold = False
+                order_state = False
 
             # 목표가에서 2% 이상 하락하면 손절
-            elif hold == True and order_state(ticker) == True and limit >= price:
+            elif hold == True and order_state == True and limit >= price:
                 cancel_order(ticker)
                 time.sleep(1)
                 coin_balance = upbit.get_balance(ticker)
@@ -146,5 +149,6 @@ while True:
                 tickers.clear()
                 tickers = pyupbit.get_tickers("KRW") # 코인 전체 불러오기
                 hold = False
+                order_state = False
     except Exception as e:
         print("예외발생", e)
