@@ -122,25 +122,25 @@ while True:
                 hold = True # 코인 보유
 
             # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
-            elif hold == True and profit < price:
+            elif hold == True and balance >= 250 and profit < price:
                 time.sleep(5)
                 count_success += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"추격매수 전략 코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번\n잔고: {total_balance}")
                 hold = False # 코인 미보유
-                resp = binance.cancel_order(order1['id'], symbol) # Stop Loss 주문 취소
+                binance.cancel_order(order1['id'], symbol) # Stop Loss 주문 취소
                 symbols.clear()
                 symbols = list(tickers)
 
             # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
-            elif hold == True and limit > price:
+            elif hold == True and balance >= 250 and limit > price:
                 time.sleep(5)
                 count_loose += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"추격매수 전략 코인: {symbol} 손절매...\n실패횟수: {count_loose}번\n잔고: {total_balance}")
                 hold = False # 코인 미보유
-                resp = binance.cancel_order(order2['id'], symbol) # Stop Profit 주문 취소
+                binance.cancel_order(order2['id'], symbol) # Stop Profit 주문 취소
                 symbols.clear()
                 symbols = list(tickers)
     except Exception as e:
-        print("에러발생", e)
+        bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
