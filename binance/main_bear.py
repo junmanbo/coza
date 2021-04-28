@@ -49,15 +49,15 @@ def cal_target(symbol):
     yesterday_range = yesterday['high'] - yesterday['low']
     noise = 1 - abs(yesterday['open'] - yesterday['close']) / (yesterday['high'] - yesterday['low'])
     target = today['open'] - (yesterday_range * noise)
-
-    # 5일 이동평균선 구하기
     close = df['close']
-    ma = close.rolling(window=5).mean()
-
-    if target < ma[-2]:
+    total = 0
+    for i in range(-1, -6, -1):
+        total += close[i]
+    avg = total / 5
+    if target > avg:
         return target
     else:
-        return ma[-2]
+        return avg
 
 def ma60m(symbol):
     ohlcv = binance.fetch_ohlcv(symbol, '1m')
@@ -65,8 +65,11 @@ def ma60m(symbol):
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
     df.set_index('datetime', inplace=True)
     close = df['close']
-    ma = close.rolling(window=60).mean()
-    return ma
+    total = 0
+    for i in range(-1, -61, -1):
+        total += close[i]
+    avg = total / 60
+    return avg
 
 def price_unit(price):
     if price < 0.01:
