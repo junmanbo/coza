@@ -107,7 +107,7 @@ while True:
                 time.sleep(10)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and balance >= 300 and target <= price <= (target * 1.001):
+            elif hold == False and balance >= 300 and target <= price <= (target * 1.0001):
                 target = price_unit(target) # 목표가 (호가 단위)
                 amount = 300 / target # 매도할 코인 개수
                 order = binance.create_limit_buy_order(symbol, amount, target) # 지정가 매도
