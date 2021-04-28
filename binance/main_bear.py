@@ -59,6 +59,15 @@ def cal_target(symbol):
     else:
         return ma[-2]
 
+def ma60m(symbol):
+    ohlcv = binance.fetch_ohlcv(symbol, '1m')
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    close = df['close']
+    ma = close.rolling(window=60).mean()
+    return ma
+
 def price_unit(price):
     if price < 0.01:
         price = round(price, 6)
@@ -107,7 +116,7 @@ while True:
                 time.sleep(10)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and balance >= 250 and target >= price >= (target * 0.9999):
+            elif hold == False and balance >= 250 and target >= price >= (target * 0.9999) and price < ma60m(symbol):
                 target = price_unit(target) # 목표가 (호가 단위)
                 amount = 250 / target # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol, amount, target) # 지정가 매도
