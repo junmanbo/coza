@@ -119,9 +119,9 @@ while True:
                 time.sleep(10)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and balance >= 250 and target >= price >= (target * 0.9999) and price < ma60m(symbol):
+            elif hold == False and balance >= 650 and target >= price >= (target * 0.9999) and price < ma60m(symbol):
                 target = price_unit(target) # 목표가 (호가 단위)
-                amount = 250 / target # 매도할 코인 개수
+                amount = 650 / target # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol, amount, target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
@@ -134,7 +134,7 @@ while True:
                 hold = True # 코인 보유
 
             # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
-            elif hold == True and balance >= 250 and profit > price:
+            elif hold == True and balance >= 650 and profit > price:
                 time.sleep(5)
                 count_success += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -145,7 +145,7 @@ while True:
                 symbols = list(tickers)
 
             # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
-            elif hold == True and balance >= 250 and limit < price:
+            elif hold == True and balance >= 650 and limit < price:
                 time.sleep(5)
                 count_loose += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
