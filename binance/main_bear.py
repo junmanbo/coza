@@ -54,7 +54,7 @@ def cal_target(symbol):
     for i in range(-1, -6, -1):
         total += close[i]
     avg = total / 5
-    if target > avg:
+    if target < avg:
         return target
     else:
         return avg
