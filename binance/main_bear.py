@@ -104,11 +104,11 @@ while True:
             time.sleep(1)
             target = cal_target(symbol) # 목표가
             price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
-            balance = binance.fetch_balance()['USDT']['free']
+            #  balance = binance.fetch_balance()['USDT']['free']
 
             profit = price_unit(target * 0.98) # 익절가
             limit = price_unit(target * 1.02) # 손절가
-            print(f"현재시간: {now} 현재잔고: {balance} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
 
             if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -119,12 +119,13 @@ while True:
                 time.sleep(10)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and balance >= 650 and target >= price >= (target * 0.999) and price < ma60m(symbol):
+            elif hold == False and target >= price >= (target * 0.999) and price < ma60m(symbol):
                 target = price_unit(target) # 목표가 (호가 단위)
                 amount = 650 / target # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol, amount, target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
+                time.sleep(10)
                 stop_loss_params = {'stopPrice': target * 1.02}
                 order1 = binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': target * 0.98}
@@ -134,7 +135,7 @@ while True:
                 hold = True # 코인 보유
 
             # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
-            elif hold == True and balance >= 650 and profit > price:
+            elif hold == True and profit > price:
                 time.sleep(120)
                 count_success += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -145,7 +146,7 @@ while True:
                 symbols = list(tickers)
 
             # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
-            elif hold == True and balance >= 650 and limit < price:
+            elif hold == True and limit < price:
                 time.sleep(120)
                 count_loose += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
