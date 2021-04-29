@@ -71,6 +71,18 @@ def ma60m(symbol):
     avg = total / 60
     return avg
 
+def cal_MACD(symbol, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
+    ohlcv = binance.fetch_ohlcv(symbol, '1h')
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
+    df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
+    df['MACD'] = df['EMAFast'] - df['EMASlow']
+    df['MACD_Signal'] = df['MACD'].ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
+    df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
+    return df['MACD_OSC'][-1]
+
 def price_unit(price):
     if price < 0.01:
         price = round(price, 6)
@@ -119,10 +131,10 @@ while True:
                 time.sleep(600)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and target >= price >= (target * 0.999) and price < ma60m(symbol):
+            elif hold == False and target >= price >= (target * 0.999) and price < ma60m(symbol) and cal_MACD(symbol) < 0:
                 target = price_unit(target) # 목표가 (호가 단위)
                 amount = 650 / target # 매도할 코인 개수
-                order = binance.create_limit_sell_order(symbol, amount, target) # 지정가 매도
+                order = binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 예약매도\n매도가: {target} 거래횟수: {count_trading}번")
                 time.sleep(10)
