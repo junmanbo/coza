@@ -110,13 +110,13 @@ while True:
             limit = price_unit(target * 0.98) # 손절가
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
 
-            if now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
+            if now.hour == 8 and 50 <= now.minute <= 59:
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"추격매수 전략 잔고: {total_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}\n실패횟수: {count_loose}번")
                 count_trading = 0
                 count_loose = 0
                 count_success = 0
-                time.sleep(10)
+                time.sleep(600)
 
             # 조건을 만족하면 지정가 매도
             elif hold == False and target <= price <= (target * 1.001) and price > ma60m(symbol):
