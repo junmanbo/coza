@@ -113,7 +113,7 @@ while True:
     try:
         for symbol in symbols:
             now = datetime.datetime.now()
-            time.sleep(1)
+            time.sleep(0.5)
             target = cal_target(symbol) # 목표가
             price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             #  balance = binance.fetch_balance()['USDT']['free']
@@ -148,7 +148,7 @@ while True:
 
             # 코인 보유 상태인 경우 익절가 체크후 리스트 복구
             elif hold == True and profit > price:
-                time.sleep(120)
+                time.sleep(60)
                 count_success += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 목표가 도달!\n성공횟수: {count_success}번\n잔고: {total_balance}")
@@ -159,7 +159,7 @@ while True:
 
             # 코인 보유 상태인 경우 손절가 체크후 리스트 복구
             elif hold == True and limit < price:
-                time.sleep(120)
+                time.sleep(60)
                 count_loose += 1
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"공매도 전략 코인: {symbol} 손절매...\n실패횟수: {count_loose}번\n잔고: {total_balance}")
