@@ -121,7 +121,10 @@ while True:
 
             profit = price_unit(target * 0.95) # 익절가
             limit = price_unit(target * 1.02) # 손절가
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
+
+            ma60 = ma60m(symbol)
+            macd = cal_MACD(symbol)
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n1시간 이평선: {ma60} MACD신호: {macd}")
 
             if now.hour == 8 and 50 <= now.minute <= 59:
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -132,7 +135,7 @@ while True:
                 time.sleep(600)
 
             # 조건을 만족하면 지정가 매도
-            elif hold == False and target >= price >= (target * 0.999) and price < ma60m(symbol) and cal_MACD(symbol) < 0:
+            elif hold == False and target >= price >= (target * 0.9999) and price < ma60 and macd < 0:
                 target = price_unit(target) # 목표가 (호가 단위)
                 amount = 650 / target # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
