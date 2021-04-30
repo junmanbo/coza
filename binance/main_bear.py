@@ -124,7 +124,7 @@ while True:
 
             ma60 = ma60m(symbol)
             macd = cal_MACD(symbol)
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n1시간 이평선: {ma60} MACD신호: {macd}")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n1시간 이평선: {ma60} MACD신호: {macd}\n")
 
             if now.hour == 8 and 50 <= now.minute <= 59:
                 total_balance = binance.fetch_balance()['USDT']['total']
