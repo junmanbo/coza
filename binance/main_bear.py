@@ -72,7 +72,7 @@ def ma60m(symbol):
     return avg
 
 def cal_MACD(symbol, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
-    ohlcv = binance.fetch_ohlcv(symbol, '1h')
+    ohlcv = binance.fetch_ohlcv(symbol, '1d')
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
     df.set_index('datetime', inplace=True)
@@ -118,7 +118,7 @@ while True:
             price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             #  balance = binance.fetch_balance()['USDT']['free']
 
-            profit = price_unit(target * 0.98) # 익절가
+            profit = price_unit(target * 0.95) # 익절가
             limit = price_unit(target * 1.02) # 손절가
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price} -> 목표가: {target}\n")
 
@@ -140,7 +140,7 @@ while True:
                 time.sleep(10)
                 stop_loss_params = {'stopPrice': target * 1.02}
                 order1 = binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
-                take_profit_params = {'stopPrice': target * 0.98}
+                take_profit_params = {'stopPrice': target * 0.95}
                 order2 = binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                 symbols.clear()
                 symbols = [symbol]
