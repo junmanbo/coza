@@ -4,18 +4,18 @@ import pandas as pd
 
 #  # 거래소 설정
 #  # 파일로부터 apiKey, Secret 읽기
-#  with open("binance.txt") as f:
-#      lines = f.readlines()
-#      api_key = lines[0].strip()
-#      secret = lines[1].strip()
+with open("binance.txt") as f:
+    lines = f.readlines()
+    api_key = lines[0].strip()
+    secret = lines[1].strip()
 #
 binance = ccxt.binance({
-    #  'apiKey': api_key,
-    #  'secret': secret,
-    #  'enableRateLimit': True,
-    #  'options': {
-    #      'defaultType': 'future',
-    #  }
+    'apiKey': api_key,
+    'secret': secret,
+    'enableRateLimit': True,
+    'options': {
+        'defaultType': 'future',
+    }
 })
 #
 #  print('Loading markets from', binance.id)
@@ -27,19 +27,23 @@ tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT
 
 symbols = list(tickers)
 
-#  for symbol in symbols:
 symbol = 'ETH/USDT'
-ohlcv = binance.fetch_ohlcv(symbol, '1m')
-df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-df.set_index('datetime', inplace=True)
-close = df['close']
-print(close)
-total = 0
-for i in range(-1, -60, -1):
-    total += close[i]
-    print(total)
+coin_balance = binance.fetch_balance(symbol)
+print(coin_balance)
 
-avg = total / 59
-print("\n")
-print(avg)
+#  for symbol in symbols:
+#  symbol = 'ETH/USDT'
+#  ohlcv = binance.fetch_ohlcv(symbol, '1m')
+#  df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+#  df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+#  df.set_index('datetime', inplace=True)
+#  close = df['close']
+#  print(close)
+#  total = 0
+#  for i in range(-1, -60, -1):
+#      total += close[i]
+#      print(total)
+#
+#  avg = total / 59
+#  print("\n")
+#  print(avg)

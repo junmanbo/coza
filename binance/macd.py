@@ -4,7 +4,7 @@ import datetime
 import ccxt
 
 binance = ccxt.binance()
-symbol = "NEAR/USDT"
+symbol = "ETH/USDT"
 
 def cal_MACD(symbol, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
     ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -16,6 +16,6 @@ def cal_MACD(symbol, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
     df['MACD'] = df['EMAFast'] - df['EMASlow']
     df['MACD_Signal'] = df['MACD'].ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
     df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
-    bullish = df['MACD_OSC'][-7] - df['MACD_OSC'][-8]
+    bullish = df['MACD_OSC'][-1] - df['MACD_OSC'][-2]
     return bullish
 print(cal_MACD(symbol))
