@@ -135,7 +135,7 @@ while True:
                 hold2 = True # 코인 보유
 
             # 매도 타이밍 -> 매도 후 리스트 복구
-            elif hold1 == True and ((stochastic['slow_k'] > 80) or ((stochastic['slow_signal'][-1] < stochastic['slow_signal'][-2]) and (macd < 0))):
+            elif hold1 == True and stochastic['slow_signal'][-1] < stochastic['slow_signal'][-2] and macd < 0:
                 order = binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price2)
                 time.sleep(120)
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -151,7 +151,7 @@ while True:
                 symbols = list(tickers)
 
             # 매수 타이밍 -> 매수 후 리스트 복구
-            elif hold2 == True and ((stochastic['slow_k'] < 20) or ((stochastic['slow_signal'][-1] > stochastic['slow_signal'][-2]) and (macd > 0))):
+            elif hold2 == True and stochastic['slow_signal'][-1] > stochastic['slow_signal'][-2] and macd > 0:
                 order = binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price1)
                 time.sleep(120)
                 total_balance = binance.fetch_balance()['USDT']['total']
