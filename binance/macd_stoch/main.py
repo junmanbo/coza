@@ -83,14 +83,13 @@ hold1 = False
 hold2 = False
 start_balance = binance.fetch_balance()['USDT']['total']
 
-bot.sendMessage(chat_id = chat_id, text="추격매수 전략 자동매매 시작합니다. 화이팅!")
-print("추격매수 전략 시작!")
+bot.sendMessage(chat_id = chat_id, text="macd+stochastic 전략 자동매매 시작합니다. 화이팅!")
 
 while True:
     try:
         for symbol in symbols:
             now = datetime.datetime.now()
-            time.sleep(0.3)
+            time.sleep(1)
             price1 = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
             price2 = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
 
@@ -113,9 +112,9 @@ while True:
                 time.sleep(300)
 
             # 조건을 만족하면 지정가 매수
-            elif hold1 == False and hold2 == False and 30 < stochastic['slow_k'][-1] <= 70 and stochastic['slow_signal'][-1] > stochastic['slow_signal'][-2] and macd > 0:
+            elif hold1 == False and hold2 == False and 30 < stochastic['slow_k'][-1] <= 70 and stochastic['slow_signal'][-1] > stochastic['slow_signal'][-2] and macd > 0 and stochastic['slow_k'][-1] - 3 <= stochastic['slow_d'][-1] <= stochastic['slow_k'][-1] + 3:
                 price1 = price_unit(price1) # 목표가 (호가 단위)
-                amount = 1200 / price1 # 매수할 코인 개수
+                amount = 1500 / price1 # 매수할 코인 개수
                 order = binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price1) # 지정가 매수
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매수\n매수가: {price1} 거래횟수: {count_trading}번")
@@ -124,9 +123,9 @@ while True:
                 hold1 = True # 코인 보유
 
             # 조건을 만족하면 지정가 공매도
-            elif hold2 == False and hold2== False and 30 < stochastic['slow_k'][-1] <= 70 and stochastic['slow_signal'][-1] < stochastic['slow_signal'][-2] and macd < 0:
+            elif hold2 == False and hold2== False and 30 < stochastic['slow_k'][-1] <= 70 and stochastic['slow_signal'][-1] < stochastic['slow_signal'][-2] and macd < 0 and stochastic['slow_k'][-1] - 3 <= stochastic['slow_d'][-1] <= stochastic['slow_k'][-1] + 3:
                 price2 = price_unit(price2) # 목표가 (호가 단위)
-                amount = 1200 / price2 # 매도할 코인 개수
+                amount = 1500 / price2 # 매도할 코인 개수
                 order = binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price2) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 예약매도\n매도가: {price2} 거래횟수: {count_trading}번")
