@@ -114,12 +114,12 @@ while True:
     try:
         for symbol in symbols:
             now = datetime.datetime.now()
-            time.sleep(0.5)
+            time.sleep(0.3)
             target = cal_target(symbol) # 목표가
             price = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             #  balance = binance.fetch_balance()['USDT']['free']
 
-            profit = price_unit(target * 0.95) # 익절가
+            profit = price_unit(target * 0.97) # 익절가
             limit = price_unit(target * 1.02) # 손절가
 
             ma60 = ma60m(symbol)
