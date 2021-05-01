@@ -137,7 +137,7 @@ while True:
             # 조건을 만족하면 지정가 매도
             elif hold == False and (target * 0.999) <= price <= (target * 1.001) and price > ma60 and macd > 0:
                 target = price_unit(target) # 목표가 (호가 단위)
-                amount = 1900 / target # 매도할 코인 개수
+                amount = 1200 / target # 매도할 코인 개수
                 order = binance.create_limit_buy_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"추격매수 전략 코인: {symbol} 예약매수\n매수가: {target} 거래횟수: {count_trading}번")
