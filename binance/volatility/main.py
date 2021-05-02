@@ -96,6 +96,8 @@ for symbol in symbols:
     temp[symbol]['loss_bear'] = temp[symbol]['target_bear'] * 1.02
     temp[symbol]['order1'] = {}
     temp[symbol]['order2'] = {}
+    print(temp)
+    time.sleep(1)
 
 count_trading = 0
 count_success = 0
@@ -124,6 +126,7 @@ while True:
                     temp[symbol]['loss_bull'] = temp[symbol]['target_bull'] * 0.98
                     temp[symbol]['profit_bear'] = temp[symbol]['target_bear'] * 0.97
                     temp[symbol]['loss_bear'] = temp[symbol]['target_bear'] * 1.02
+                    time.sleep(1)
                 count_trading = 0
                 count_success = 0
                 start_balance = total_balance
