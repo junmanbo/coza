@@ -54,7 +54,7 @@ def calMACD(df, m_NumFast=5, m_NumSlow=20, m_NumSignal=5):
     df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
     return df
 
-def calStochastic(df, n=5, m=3, t=3):
+def calStochastic(df, n=12, m=5, t=5):
     df = pd.DataFrame(df)
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
@@ -84,7 +84,7 @@ count_trading = 0
 count_success = 0
 total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-bot.sendMessage(chat_id = chat_id, text="Stochastic 전략 자동매매 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text="MACD + Stochastic 전략 자동매매 시작합니다. 화이팅!")
 n = 2
 
 while True:
@@ -103,10 +103,10 @@ while True:
             df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
             df.set_index('datetime', inplace=True)
 
-            #macd = calMACD(df)
+            macd = calMACD(df)
             stochastic = calStochastic(df)
 
-            print(f"현재시간: {now} 코인: {symbol}\nStochastic Signal: {stochastic['slow_signal'][-1]}\n")
+            print(f"현재시간: {now} 코인: {symbol}\nStochastic Signal: {stochastic['slow_signal'][-1]} MACD OSC: {macd['MACD_OSC'][-1]}\n")
 
             if now.hour == 8 and 55 <= now.minute <= 59:
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
@@ -118,7 +118,7 @@ while True:
 
 
             # 조건을 만족하면 지정가 매수
-            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] < 30 and stochastic['slow_signal'][-2] < 0 and stochastic['slow_signal'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] < 50 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 price_ask = price_unit(price_ask)
                 amount = 500 / price_ask # 매수할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -131,7 +131,7 @@ while True:
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] > 70 and stochastic['slow_signal'][-2] > 0 and stochastic['slow_signal'][-1] < 0:
+            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] > 50 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
                 price_bid = price_unit(price_bid)
                 amount = 500 / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -144,7 +144,7 @@ while True:
                 temp[symbol]['position'] = 'short'
 
             # 매도 타이밍 조건 만족시 매도 (매수건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_signal'][-1] < 0:
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
                 binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})    
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((price_bid - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
@@ -157,7 +157,7 @@ while True:
                 total_hold -= 1
 
             # 매수 타이밍 조건 만족시 매수 (공매도건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_signal'][-1] > 0:
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})    
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((temp[symbol]['start_price'] - price_bid) / price_bid * 100, 2)

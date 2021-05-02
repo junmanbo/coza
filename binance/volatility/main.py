@@ -134,7 +134,7 @@ while True:
             # 조건을 만족하면 지정가 매수 (매수건)
             elif temp[symbol]['hold'] == False and total_hold < 2 and (temp[symbol]['target_bull'] * 0.999) <= price_ask <= (temp[symbol]['target_bull'] * 1.001):
                 target = price_unit(price_ask) # 목표가 (호가 단위)
-                amount = 200 / target # 매수할 코인 개수
+                amount = 150 / target # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=target) # 지정가 매수
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target} 거래횟수: {count_trading}번")
@@ -152,7 +152,7 @@ while True:
             # 조건을 만족하면 지정가 매도 (공매도건)
             elif temp[symbol]['hold'] == False and total_hold < 2 and (temp[symbol]['target_bear'] * 0.999) <= price_bid <= (temp[symbol]['target_bear'] * 1.001):
                 target = price_unit(price_bid) # 목표가 (호가 단위)
-                amount = 200 / target # 매도할 코인 개수
+                amount = 150 / target # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target} 거래횟수: {count_trading}번")
