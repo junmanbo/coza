@@ -33,9 +33,7 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'SXP/USDT', 'KAVA/USDT', 'BAND/USDT', 'RLC/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'BAL/USDT', 'CRV/USDT', 'TRB/USDT', 'YFII/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'SRM/USDT', 'BZRX/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'STORJ/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'CHZ/USDT', 'SAND/USDT', 'ANKR/USDT', 'LUNA/USDT', 'XEM/USDT', 'CHR/USDT', 'MANA/USDT', 'HBAR/USDT', 'BTT/USDT')
-
-symbols = list(tickers)
+symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'SXP/USDT', 'KAVA/USDT', 'BAND/USDT', 'RLC/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'BAL/USDT', 'CRV/USDT', 'TRB/USDT', 'YFII/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'SRM/USDT', 'BZRX/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'STORJ/USDT', 'BLZ/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'FLM/USDT', 'TOMO/USDT', 'REN/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'LRC/USDT', 'MATIC/USDT', 'OCEAN/USDT', 'CVC/USDT', 'BEL/USDT', 'CTK/USDT', 'AXS/USDT', 'ALPHA/USDT', 'ZEN/USDT', 'SKL/USDT', 'GRT/USDT', '1INCH/USDT', 'BTC/BUSD', 'AKRO/USDT', 'CHZ/USDT', 'SAND/USDT', 'ANKR/USDT', 'LUNA/USDT', 'BTS/USDT', 'LIT/USDT', 'UNFI/USDT', 'DODO/USDT', 'REEF/USDT', 'RVN/USDT', 'SFP/USDT', 'XEM/USDT', 'COTI/USDT', 'CHR/USDT', 'MANA/USDT', 'ALICE/USDT', 'HBAR/USDT', 'ONE/USDT', 'LINA/USDT', 'STMX/USDT', 'DENT/USDT', 'CELR/USDT', 'HOT/USDT', 'MTL/USDT', 'OGN/USDT', 'BTT/USDT', 'NKN/USDT', 'SC/USDT', 'DGB/USDT']
 
 # 매수 목표가 구하기
 def cal_target_bull(symbol):
@@ -96,7 +94,6 @@ for symbol in symbols:
     temp[symbol]['loss_bear'] = temp[symbol]['target_bear'] * 1.02
     temp[symbol]['order1'] = {}
     temp[symbol]['order2'] = {}
-    print(temp)
     time.sleep(1)
 
 count_trading = 0
@@ -109,7 +106,7 @@ while True:
     try:
         for symbol in symbols:
             now = datetime.datetime.now()
-            time.sleep(2)
+            time.sleep(1)
             price_ask = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
 
@@ -133,9 +130,9 @@ while True:
                 time.sleep(600)
 
             # 조건을 만족하면 지정가 매수 (매수건)
-            elif temp[symbol]['hold'] == False and total_hold < 4 and (temp[symbol]['target_bull'] * 0.999) <= price_ask <= (temp[symbol]['target_bull'] * 1.001):
+            elif temp[symbol]['hold'] == False and total_hold < 2 and (temp[symbol]['target_bull'] * 0.999) <= price_ask <= (temp[symbol]['target_bull'] * 1.001):
                 target = price_unit(price_ask) # 목표가 (호가 단위)
-                amount = 500 / target # 매수할 코인 개수
+                amount = 200 / target # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=target) # 지정가 매수
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target} 거래횟수: {count_trading}번")
@@ -151,9 +148,9 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 매도 (공매도건)
-            elif temp[symbol]['hold'] == False and total_hold < 4 and (temp[symbol]['target_bear'] * 0.999) <= price_bid <= (temp[symbol]['target_bear'] * 1.001):
+            elif temp[symbol]['hold'] == False and total_hold < 2 and (temp[symbol]['target_bear'] * 0.999) <= price_bid <= (temp[symbol]['target_bear'] * 1.001):
                 target = price_unit(price_bid) # 목표가 (호가 단위)
-                amount = 500 / target # 매도할 코인 개수
+                amount = 200 / target # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target} 거래횟수: {count_trading}번")
