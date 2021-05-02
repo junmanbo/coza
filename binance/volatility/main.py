@@ -213,7 +213,7 @@ while True:
                 symbols.clear()
                 for symbol in tickers:
                     if temp[symbol]['hold'] == True:
-                        symbols = symbols.append(symbol)
+                        symbols.append(symbol)
                 n = 15
 
             elif total_hold < 2 and n == 15:
