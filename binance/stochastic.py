@@ -19,7 +19,7 @@ import time
 #      m_Df.insert(len(m_Df.columns), strSd, slowD)
 #      return m_Df
 
-def Stochastic(df, n=14, m=5, t=5):
+def Stochastic(df, n=5, m=3, t=3):
     # 입력받은 값이 dataframe 이라는 것을 정의해줌
     df = pd.DataFrame(df)
 
@@ -48,9 +48,7 @@ def Stochastic(df, n=14, m=5, t=5):
 
 
 binance = ccxt.binance()
-#  symbol = "ETH/USDT"
-tickers = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT']
-
+tickers = ['BTC/USDT', 'BCH/USDT']
 symbols = list(tickers)
 
 for symbol in symbols:
@@ -61,13 +59,3 @@ for symbol in symbols:
 
     df = Stochastic(df)
     print(df)
-    print(df['slow_signal'][-1])
-
-    #  print(symbol)
-    #  if sig_today > sig_yes:
-    #      print("buy\n")
-    #  elif sig_today < sig_yes:
-    #      print("sell\n")
-    #  else:
-    #      print("waiting\n")
-    #  time.sleep(0.5)
