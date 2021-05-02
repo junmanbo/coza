@@ -113,7 +113,7 @@ while True:
             price_ask = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
 
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp['target_bull']}\n공매도 목표가: {temp['target_bear']}\n")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n")
 
             if now.hour == 9 and 10 <= now.minute <= 19:
                 total_balance = binance.fetch_balance()['USDT']['total']
