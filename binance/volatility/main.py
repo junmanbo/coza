@@ -124,8 +124,6 @@ for symbol in symbols:
     temp[symbol]['loss_bull'] = temp[symbol]['target_bull'] * 0.98
     temp[symbol]['profit_bear'] = temp[symbol]['target_bear'] * 0.97
     temp[symbol]['loss_bear'] = temp[symbol]['target_bear'] * 1.02
-    temp[symbol]['order1'] = {}
-    temp[symbol]['order2'] = {}
     time.sleep(1)
 
 count_trading = 0
@@ -166,9 +164,9 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target} 거래횟수: {count_trading}번")
                 time.sleep(10)
                 stop_loss_params = {'stopPrice': temp[symbol]['loss_bull'], 'closePosition': True}
-                temp[symbol]['order1'] = binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
+                binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': temp[symbol]['profit_bull'], 'closePosition': True}
-                temp[symbol]['order2'] = binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
+                binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
                 temp[symbol]['start_price'] = price_ask
                 temp[symbol]['hold'] = True
                 temp[symbol]['position'] = 'long'
@@ -183,9 +181,9 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target} 거래횟수: {count_trading}번")
                 time.sleep(10)
                 stop_loss_params = {'stopPrice': temp[symbol]['loss_bear'], 'closePosition': True}
-                temp[symbol]['order1'] = binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
+                binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': temp[symbol]['profit_bear'], 'closePosition': True}
-                temp[symbol]['order2'] = binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
+                binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                 temp[symbol]['start_price'] = price_bid
                 temp[symbol]['hold'] = True
                 temp[symbol]['position'] = 'short'
@@ -193,8 +191,6 @@ while True:
 
             # (매수건) 코인 보유 익절 목표 도달 notification
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and price_ask > temp[symbol]['profit_bull']:
-                time.sleep(60)
-                binance.cancel_order(temp[symbol]['order1']['id'], symbol) # Stop Loss 주문 취소
                 total_balance = binance.fetch_balance()['USDT']['total']
                 profit = round((price_ask - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
                 count_success += 1
@@ -204,8 +200,6 @@ while True:
 
             # (매수건) 코인 보유 손절가 도달 notification
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and price_ask < temp[symbol]['loss_bull']:
-                time.sleep(60)
-                binance.cancel_order(temp[symbol]['order2']['id'], symbol) # Stop Profit 주문 취소
                 total_balance = binance.fetch_balance()['USDT']['total']
                 profit = round((price_ask - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 손절매!\n수익률: {profit} 잔고: {total_balance}")
@@ -214,8 +208,6 @@ while True:
 
             # (매도건) 코인 보유 익절 목표 도달 notification
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and price_bid < temp[symbol]['profit_bear']:
-                time.sleep(60)
-                binance.cancel_order(temp[symbol]['order1']['id'], symbol) # Stop Loss 주문 취소
                 total_balance = binance.fetch_balance()['USDT']['total']
                 profit = round((temp[symbol]['start_price'] - price_bid) / price_bid * 100, 2)
                 count_success += 1
@@ -225,8 +217,6 @@ while True:
 
             # (매도건) 코인 보유 손절가 도달 notification
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and price_bid > temp[symbol]['loss_bear']:
-                time.sleep(60)
-                binance.cancel_order(temp[symbol]['order2']['id'], symbol) # Stop Profit 주문 취소
                 total_balance = binance.fetch_balance()['USDT']['total']
                 profit = round((temp[symbol]['start_price'] - price_bid) / price_bid * 100, 2)
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 손절매!\n수익률: {profit} 잔고: {total_balance}")
