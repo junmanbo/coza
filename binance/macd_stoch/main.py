@@ -80,12 +80,31 @@ def price_unit(price):
         price = round(price, 1)
     return price
 
+# 투자금액 조정
+def adjust_money(total_balance):
+    if total_balance <= 500:
+        money = 0
+    elif 500 < total_balance <= 600:
+        money = 450
+    elif 600 < total_balance <= 700:
+        money = 500
+    elif 700 < total_balance <= 800:
+        money = 550
+    elif 800 < total_balance <= 900:
+        money = 600
+    elif 900 < total_balance <= 1000:
+        money = 650
+    elif total_balance > 1000:
+        money = 700
+    return money
+
 count_trading = 0
 count_success = 0
 total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 bot.sendMessage(chat_id = chat_id, text="MACD + Stochastic 전략 자동매매 시작합니다. 화이팅!")
 n = 2
+money = adjust_money(start_balance)
 
 while True:
     try:
@@ -114,13 +133,14 @@ while True:
                 start_balance = total_balance
                 count_trading = 0
                 count_success = 0
+                money = adjust_money(total_balance)
                 time.sleep(300)
 
 
             # 조건을 만족하면 지정가 매수
-            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] < 50 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] < 50 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 price_ask = price_unit(price_ask)
-                amount = 500 / price_ask # 매수할 코인 개수
+                amount = money / price_ask # 매수할 코인 개수
                 temp[symbol]['amount'] = amount
                 temp[symbol]['start_price'] = price_ask
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price_ask) # 지정가 매수
@@ -131,9 +151,9 @@ while True:
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 2 and stochastic['slow_k'][-1] > 50 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 50 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
                 price_bid = price_unit(price_bid)
-                amount = 500 / price_bid # 매도할 코인 개수
+                amount = money / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
                 temp[symbol]['start_price'] = price_bid
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
@@ -169,14 +189,14 @@ while True:
                 temp[symbol]['hold'] = False
                 total_hold -= 1
 
-            elif total_hold == 2 and n == 2:
+            elif total_hold == 3 and n == 2:
                 symbols.clear()
                 for symbol in tickers:
                     if temp[symbol]['hold'] == True:
                         symbols.append(symbol)
-                n = 15
+                n = 20
 
-            elif total_hold < 2 and n == 15:
+            elif total_hold < 3 and n == 20:
                 symbols.clear()
                 symbols = list(tickers)
                 n = 2
