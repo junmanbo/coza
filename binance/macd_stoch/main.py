@@ -33,7 +33,6 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-#symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT']
 tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'SXP/USDT', 'KAVA/USDT', 'BAND/USDT', 'RLC/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'BAL/USDT', 'CRV/USDT', 'TRB/USDT', 'YFII/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'SRM/USDT', 'BZRX/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'STORJ/USDT', 'BLZ/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'FLM/USDT', 'TOMO/USDT', 'REN/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'LRC/USDT', 'MATIC/USDT', 'OCEAN/USDT', 'CVC/USDT', 'BEL/USDT', 'CTK/USDT', 'AXS/USDT', 'ALPHA/USDT', 'ZEN/USDT', 'SKL/USDT', 'GRT/USDT', '1INCH/USDT', 'BTC/BUSD', 'AKRO/USDT', 'CHZ/USDT', 'SAND/USDT', 'ANKR/USDT', 'LUNA/USDT', 'BTS/USDT', 'LIT/USDT', 'UNFI/USDT', 'DODO/USDT', 'REEF/USDT', 'RVN/USDT', 'SFP/USDT', 'XEM/USDT', 'COTI/USDT', 'CHR/USDT', 'MANA/USDT', 'ALICE/USDT', 'HBAR/USDT', 'ONE/USDT', 'LINA/USDT', 'STMX/USDT', 'DENT/USDT', 'CELR/USDT', 'HOT/USDT', 'MTL/USDT', 'OGN/USDT', 'BTT/USDT', 'NKN/USDT', 'SC/USDT', 'DGB/USDT')
 symbols = list(tickers)
 
@@ -46,7 +45,7 @@ for symbol in symbols:
     temp[symbol]['position'] = ''
     temp[symbol]['hold'] = False
 
-def calMACD(df, m_NumFast=5, m_NumSlow=20, m_NumSignal=5):
+def calMACD(df, m_NumFast=6, m_NumSlow=12, m_NumSignal=4):
     df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
     df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
     df['MACD'] = df['EMAFast'] - df['EMASlow']
@@ -54,7 +53,7 @@ def calMACD(df, m_NumFast=5, m_NumSlow=20, m_NumSignal=5):
     df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
     return df
 
-def calStochastic(df, n=12, m=5, t=5):
+def calStochastic(df, n=10, m=5, t=5):
     df = pd.DataFrame(df)
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
@@ -139,7 +138,7 @@ while True:
 
 
             # 조건을 만족하면 지정가 매수
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] < 50 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_d'][-1] < 40 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -147,12 +146,12 @@ while True:
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price_ask) # 지정가 매수
                 count_trading += 1
                 total_hold += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {price_ask} 거래횟수: {count_trading}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {price_ask * amount} 거래횟수: {count_trading}번")
                 temp[symbol]['hold'] = True
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 50 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 60 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -160,7 +159,7 @@ while True:
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
                 count_trading += 1
                 total_hold += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {price_bid} 거래횟수: {count_trading}번")
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {price_bid * amount} 거래횟수: {count_trading}번")
                 temp[symbol]['hold'] = True
                 temp[symbol]['position'] = 'short'
 
@@ -181,7 +180,7 @@ while True:
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-                profit = round((temp[symbol]['start_price'] - price_bid) / price_bid * 100, 2)
+                profit = round((temp[symbol]['start_price'] - price_ask) / price_ask * 100, 2)
                 if profit > 0:
                     count_success += 1
                     bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit} 잔고: {total_balance}")

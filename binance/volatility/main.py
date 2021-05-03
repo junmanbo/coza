@@ -85,15 +85,15 @@ def adjust_money(total_balance):
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
-        money = 50
+        money = 40
     elif 600 < total_balance <= 700:
-        money = 100
+        money = 90
     elif 700 < total_balance <= 800:
-        money = 150
+        money = 140
     elif 800 < total_balance <= 900:
-        money = 200
+        money = 190
     elif 900 < total_balance <= 1000:
-        money = 250
+        money = 240
     elif total_balance > 1000:
         money = 300
     return money
@@ -147,12 +147,15 @@ while True:
             if now.hour == 9 and 11 <= now.minute <= 15:
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"변동성 돌파전략\n시작잔고: {start_balance} -> 현재잔고: {total_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}")
+                bot.sendMessage(chat_id = chat_id, text=f"오늘 코인 목표가를 계산중입니다...")
                 cal_today_target(symbols)
+                bot.sendMessage(chat_id = chat_id, text=f"오늘 코인 목표가 계산이 끝났습니다.")
                 count_trading = 0
                 count_success = 0
                 start_balance = total_balance
                 n = 2
                 money = adjust_money(total_balance)
+                bot.sendMessage(chat_id = chat_id, text="오늘도 변동성 돌파 전략 화이팅!")
                 time.sleep(300)
 
             # 조건을 만족하면 지정가 매수 (매수건)
@@ -161,8 +164,7 @@ while True:
                 amount = money / target # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=target) # 지정가 매수
                 count_trading += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target} 거래횟수: {count_trading}번")
-                time.sleep(10)
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target * amount} 거래횟수: {count_trading}번")
                 stop_loss_params = {'stopPrice': temp[symbol]['loss_bull'], 'closePosition': True}
                 binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': temp[symbol]['profit_bull'], 'closePosition': True}
@@ -178,8 +180,7 @@ while True:
                 amount = money / target # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
                 count_trading += 1
-                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target} 거래횟수: {count_trading}번")
-                time.sleep(10)
+                bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target * amount} 거래횟수: {count_trading}번")
                 stop_loss_params = {'stopPrice': temp[symbol]['loss_bear'], 'closePosition': True}
                 binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                 take_profit_params = {'stopPrice': temp[symbol]['profit_bear'], 'closePosition': True}
