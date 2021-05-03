@@ -81,6 +81,7 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(total_balance):
+    money = 0
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:

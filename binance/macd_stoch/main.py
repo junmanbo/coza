@@ -82,6 +82,7 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(total_balance):
+    money = 0
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
@@ -165,7 +166,7 @@ while True:
 
             # 매도 타이밍 조건 만족시 매도 (매수건)
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
-                binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})    
+                binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((price_bid - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
                 if profit > 0:
@@ -178,7 +179,7 @@ while True:
 
             # 매수 타이밍 조건 만족시 매수 (공매도건)
             elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
-                binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})    
+                binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((temp[symbol]['start_price'] - price_bid) / price_bid * 100, 2)
                 if profit > 0:
