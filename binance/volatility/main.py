@@ -140,9 +140,9 @@ while True:
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수\n매수가: {target} 거래횟수: {count_trading}번")
                 time.sleep(10)
-                stop_loss_params = {'stopPrice': temp[symbol]['loss_bull'], 'closePosition': true}
+                stop_loss_params = {'stopPrice': temp[symbol]['loss_bull'], 'closePosition': True}
                 binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
-                take_profit_params = {'stopPrice': temp[symbol]['profit_bull'], 'closePosition': true}
+                take_profit_params = {'stopPrice': temp[symbol]['profit_bull'], 'closePosition': True}
                 binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
                 temp[symbol]['amount'] = amount
                 temp[symbol]['start_price'] = price_ask
@@ -158,9 +158,9 @@ while True:
                 count_trading += 1
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도\n매도가: {target} 거래횟수: {count_trading}번")
                 time.sleep(10)
-                stop_loss_params = {'stopPrice': temp[symbol]['loss_bear'], 'closePosition': true}
+                stop_loss_params = {'stopPrice': temp[symbol]['loss_bear'], 'closePosition': True}
                 binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
-                take_profit_params = {'stopPrice': temp[symbol]['profit_bear'], 'closePosition': true}
+                take_profit_params = {'stopPrice': temp[symbol]['profit_bear'], 'closePosition': True}
                 binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                 temp[symbol]['amount'] = amount
                 temp[symbol]['start_price'] = price_bid
