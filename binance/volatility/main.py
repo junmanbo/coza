@@ -144,7 +144,7 @@ while True:
 
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n")
 
-            if now.hour == 9 and 11 <= now.minute <= 15:
+            if now.hour == 9 and 1 <= now.minute <= 5:
                 total_balance = binance.fetch_balance()['USDT']['total']
                 bot.sendMessage(chat_id = chat_id, text=f"변동성 돌파전략\n시작잔고: {start_balance} -> 현재잔고: {total_balance}원\n거래횟수: {count_trading}번\n성공횟수: {count_success}")
                 bot.sendMessage(chat_id = chat_id, text=f"오늘 코인 목표가를 계산중입니다...")
