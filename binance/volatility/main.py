@@ -36,8 +36,8 @@ print('Loaded markets from', binance.id)
 tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'IOST/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'KNC/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'SXP/USDT', 'KAVA/USDT', 'BAND/USDT', 'RLC/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'BAL/USDT', 'CRV/USDT', 'TRB/USDT', 'YFII/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'SRM/USDT', 'BZRX/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'STORJ/USDT', 'BLZ/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'FLM/USDT', 'TOMO/USDT', 'REN/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'LRC/USDT', 'MATIC/USDT', 'OCEAN/USDT', 'CVC/USDT', 'BEL/USDT', 'CTK/USDT', 'AXS/USDT', 'ALPHA/USDT', 'ZEN/USDT', 'SKL/USDT', 'GRT/USDT', '1INCH/USDT', 'BTC/BUSD', 'AKRO/USDT', 'CHZ/USDT', 'SAND/USDT', 'ANKR/USDT', 'LUNA/USDT', 'BTS/USDT', 'LIT/USDT', 'UNFI/USDT', 'DODO/USDT', 'REEF/USDT', 'RVN/USDT', 'SFP/USDT', 'XEM/USDT', 'COTI/USDT', 'CHR/USDT', 'MANA/USDT', 'ALICE/USDT', 'HBAR/USDT', 'ONE/USDT', 'LINA/USDT', 'STMX/USDT', 'DENT/USDT', 'CELR/USDT', 'HOT/USDT', 'MTL/USDT', 'OGN/USDT', 'BTT/USDT', 'NKN/USDT', 'SC/USDT', 'DGB/USDT')
 symbols = list(tickers)
 
-# 매수 목표가 구하기
-def cal_target_bull(symbol):
+# 목표가 구하기
+def cal_target(symbol):
     ohlcv = binance.fetch_ohlcv(symbol, '1d')
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
@@ -47,22 +47,9 @@ def cal_target_bull(symbol):
     today = df.iloc[-1]
     yesterday_range = yesterday['high'] - yesterday['low']
     noise = 1 - abs(yesterday['open'] - yesterday['close']) / (yesterday['high'] - yesterday['low'])
-    target = today['open'] + (yesterday_range * noise)
-    return target
-
-# 공매도 목표가 구하기
-def cal_target_bear(symbol):
-    ohlcv = binance.fetch_ohlcv(symbol, '1d')
-    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-    df.set_index('datetime', inplace=True)
-
-    yesterday = df.iloc[-2]
-    today = df.iloc[-1]
-    yesterday_range = yesterday['high'] - yesterday['low']
-    noise = 1 - abs(yesterday['open'] - yesterday['close']) / (yesterday['high'] - yesterday['low'])
-    target = today['open'] - (yesterday_range * noise)
-    return target
+    target_bull = today['open'] + (yesterday_range * noise)
+    target_bear = today['open'] - (yesterday_range * noise)
+    return target_bull, target_bear
 
 def price_unit(price):
     if price < 0.01:
@@ -85,17 +72,17 @@ def adjust_money(total_balance):
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
-        money = 40
+        money = 10
     elif 600 < total_balance <= 700:
-        money = 90
+        money = 50
     elif 700 < total_balance <= 800:
-        money = 140
+        money = 100
     elif 800 < total_balance <= 900:
-        money = 190
+        money = 150
     elif 900 < total_balance <= 1000:
-        money = 240
+        money = 200
     elif total_balance > 1000:
-        money = 300
+        money = 250
     return money
 
 # 오늘 목표가 계산
@@ -103,8 +90,8 @@ def cal_today_target(symbols):
     symbols.clear()
     symbols = list(tickers)
     for symbol in symbols:
-        temp[symbol]['target_bull'] = cal_target_bull(symbol)
-        temp[symbol]['target_bear'] = cal_target_bear(symbol)
+        temp[symbol]['target_bull'] = cal_target(symbol)[0]
+        temp[symbol]['target_bear'] = cal_target(symbol)[1]
         temp[symbol]['profit_bull'] = temp[symbol]['target_bull'] * 1.03
         temp[symbol]['loss_bull'] = temp[symbol]['target_bull'] * 0.98
         temp[symbol]['profit_bear'] = temp[symbol]['target_bear'] * 0.97
@@ -118,8 +105,8 @@ for symbol in symbols:
     temp[symbol]['start_price'] = 0
     temp[symbol]['position'] = ''
     temp[symbol]['hold'] = False
-    temp[symbol]['target_bull'] = cal_target_bull(symbol)
-    temp[symbol]['target_bear'] = cal_target_bear(symbol)
+    temp[symbol]['target_bull'] = cal_target(symbol)[0]
+    temp[symbol]['target_bear'] = cal_target(symbol)[1]
     temp[symbol]['profit_bull'] = temp[symbol]['target_bull'] * 1.03
     temp[symbol]['loss_bull'] = temp[symbol]['target_bull'] * 0.98
     temp[symbol]['profit_bear'] = temp[symbol]['target_bear'] * 0.97
@@ -139,8 +126,12 @@ while True:
         for symbol in symbols:
             now = datetime.datetime.now()
             time.sleep(n)
+
             price_ask = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
+
+            high = binance.fetch_ticker(symbol)['high'] # 코인 오늘 고가
+            low = binance.fetch_ticker(symbol)['low'] # 코인 오늘 저가
 
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n")
 
@@ -159,7 +150,7 @@ while True:
                 time.sleep(300)
 
             # 조건을 만족하면 지정가 매수 (매수건)
-            elif temp[symbol]['hold'] == False and total_hold < 3 and (temp[symbol]['target_bull'] * 0.9999) <= price_ask <= (temp[symbol]['target_bull'] * 1.0001):
+            elif temp[symbol]['hold'] == False and total_hold < 3 and high < temp[symbol]['target_bull'] and (temp[symbol]['target_bull'] * 0.9999) <= price_ask <= (temp[symbol]['target_bull'] * 1.0001):
                 target = price_unit(price_ask) # 목표가 (호가 단위)
                 amount = money / target # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=target) # 지정가 매수
@@ -175,7 +166,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 매도 (공매도건)
-            elif temp[symbol]['hold'] == False and total_hold < 3 and (temp[symbol]['target_bear'] * 0.9999) <= price_bid <= (temp[symbol]['target_bear'] * 1.0001):
+            elif temp[symbol]['hold'] == False and total_hold < 3 and low > temp[symbol]['target_bear'] and (temp[symbol]['target_bear'] * 0.9999) <= price_bid <= (temp[symbol]['target_bear'] * 1.0001):
                 target = price_unit(price_bid) # 목표가 (호가 단위)
                 amount = money / target # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=target) # 지정가 매도
