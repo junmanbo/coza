@@ -151,7 +151,7 @@ while True:
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 75 and stochastic['slow_osc'][-1] <= 0 and macd['MACD_OSC'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 80 and stochastic['slow_osc'][-1] <= 0 and macd['MACD_OSC'][-1] > 0:
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -164,7 +164,7 @@ while True:
                 temp[symbol]['position'] = 'short'
 
             # 매도 타이밍 조건 만족시 매도 (매수건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_osc'][-1] < 0:
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_osc'][-1] < 0 and macd['MACD_OSC'][-1] > 0:
                 binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((price_bid - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
@@ -177,7 +177,7 @@ while True:
                 total_hold -= 1
 
             # 매수 타이밍 조건 만족시 매수 (공매도건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_osc'][-1] > 0:
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_osc'][-1] > 0 and macd['MACD_OSC'][-1] < 0:
                 binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 profit = round((temp[symbol]['start_price'] - price_ask) / price_ask * 100, 2)
