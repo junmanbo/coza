@@ -133,8 +133,9 @@ while True:
                             bot.sendMessage(chat_id = chat_id, text=f"Success! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit}")
                         else:
                             bot.sendMessage(chat_id = chat_id, text=f"Failure! 코인: {symbol}\n수익률: {profit}")
+                        temp[symbol]['hold'] = False
                 # 매도건 청산
-                if temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short':
+                elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short':
                     for symbol in symbols:
                         binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((temp[symbol]['target_bear']) - price_ask / price_ask * 100, 2)
@@ -143,8 +144,8 @@ while True:
                             bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit}")
                         else:
                             bot.sendMessage(chat_id = chat_id, text=f"Failure! 코인: {symbol}\n수익률: {profit}")
+                        temp[symbol]['hold'] = False
                 time.sleep(100)
-
 
             elif now.hour == 9 and 1 <= now.minute <= 5:
                 total_balance = binance.fetch_balance()['USDT']['total']
@@ -155,7 +156,6 @@ while True:
                 count_trading = 0
                 count_success = 0
                 start_balance = total_balance
-                n = 2
                 money = adjust_money(total_balance)
                 bot.sendMessage(chat_id = chat_id, text="오늘도 변동성 돌파 전략 화이팅!")
                 time.sleep(300)
