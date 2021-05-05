@@ -45,7 +45,7 @@ for symbol in symbols:
     temp[symbol]['position'] = ''
     temp[symbol]['hold'] = False
 
-def calMACD(df, m_NumFast=6, m_NumSlow=12, m_NumSignal=4):
+def calMACD(df, m_NumFast=7, m_NumSlow=14, m_NumSignal=10):
     df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
     df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
     df['MACD'] = df['EMAFast'] - df['EMASlow']
@@ -53,7 +53,7 @@ def calMACD(df, m_NumFast=6, m_NumSlow=12, m_NumSignal=4):
     df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
     return df
 
-def calStochastic(df, n=10, m=5, t=5):
+def calStochastic(df, n=14, m=7, t=7):
     df = pd.DataFrame(df)
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
