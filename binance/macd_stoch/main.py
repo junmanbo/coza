@@ -164,32 +164,30 @@ while True:
                 temp[symbol]['position'] = 'short'
 
             # 매도 타이밍 조건 만족시 매도 (매수건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long':
-                if stochastic['slow_signal'][-1] <= 0 or macd['MACD_OSC'][-1] <= 0:
-                    binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})
-                    total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-                    profit = round((price_bid - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
-                    if profit > 0:
-                        count_success += 1
-                        bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit} 잔고: {total_balance}")
-                    else:
-                        bot.sendMessage(chat_id = chat_id, text=f"실패! 코인: {symbol}\n수익률: {profit} 잔고: {total_balance}")
-                    temp[symbol]['hold'] = False
-                    total_hold -= 1
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'long' and stochastic['slow_signal'][-1] <= 0 and macd['MACD_OSC'][-1] <= 0:
+                binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=temp[symbol]['amount'], params={"reduceOnly": True})
+                total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
+                profit = round((price_bid - temp[symbol]['start_price']) / temp[symbol]['start_price'] * 100, 2)
+                if profit > 0:
+                    count_success += 1
+                    bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit} 잔고: {total_balance}")
+                else:
+                    bot.sendMessage(chat_id = chat_id, text=f"실패! 코인: {symbol}\n수익률: {profit} 잔고: {total_balance}")
+                temp[symbol]['hold'] = False
+                total_hold -= 1
 
             # 매수 타이밍 조건 만족시 매수 (공매도건)
-            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short':
-                if stochastic['slow_signal'][-1] >= 0 or macd['MACD_OSC'][-1] >= 0:
-                    binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
-                    total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-                    profit = round((temp[symbol]['start_price'] - price_ask) / price_ask * 100, 2)
-                    if profit > 0:
-                        count_success += 1
-                        bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit} 잔고: {total_balance}")
-                    else:
-                        bot.sendMessage(chat_id = chat_id, text=f"실패! 코인: {symbol}\n수익률: {profit} 잔고: {total_balance}")
-                    temp[symbol]['hold'] = False
-                    total_hold -= 1
+            elif temp[symbol]['hold'] == True and temp[symbol]['position'] == 'short' and stochastic['slow_signal'][-1] >= 0 and macd['MACD_OSC'][-1] >= 0:
+                binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=temp[symbol]['amount'], params={"reduceOnly": True})
+                total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
+                profit = round((temp[symbol]['start_price'] - price_ask) / price_ask * 100, 2)
+                if profit > 0:
+                    count_success += 1
+                    bot.sendMessage(chat_id = chat_id, text=f"성공! 코인: {symbol} 성공횟수: {count_success}번\n수익률: {profit} 잔고: {total_balance}")
+                else:
+                    bot.sendMessage(chat_id = chat_id, text=f"실패! 코인: {symbol}\n수익률: {profit} 잔고: {total_balance}")
+                temp[symbol]['hold'] = False
+                total_hold -= 1
 
             elif total_hold == 3 and n == 2:
                 symbols.clear()
