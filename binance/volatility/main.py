@@ -133,11 +133,11 @@ while True:
             high = binance.fetch_ticker(symbol)['high'] # 코인 오늘 고가
             low = binance.fetch_ticker(symbol)['low'] # 코인 오늘 저가
 
-            # 고점 저점 목표가 초과시 리스트에서 제거
-            if high < temp[symbol]['target_bull']:
-                symbols.remove(symbol)
-            if low > temp[symbol]['target_bear']:
-                symbols.remove(symbol)
+            #  # 고점 저점 목표가 초과시 리스트에서 제거
+            #  if high > temp[symbol]['target_bull']:
+            #      symbols.remove(symbol)
+            #  if low < temp[symbol]['target_bear']:
+            #      symbols.remove(symbol)
 
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n고가: {high} 저가: {low}\n")
 
