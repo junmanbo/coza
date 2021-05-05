@@ -98,13 +98,6 @@ def cal_today_target(symbols):
         temp[symbol]['loss_bear'] = temp[symbol]['target_bear'] * 1.02
         time.sleep(1)
 
-# 고가 및 저가 조건 미달시 리스트에서 삭제
-def delete_high_low(symbol, high, low):
-    if high < temp[symbol]['target_bull']:
-        symbols.remove(symbol)
-    if low > temp[symbol]['target_bear']:
-        symbols.remove(symbol)
-
 # 코인별 저장 정보값 초기화
 temp = {}
 for symbol in symbols:
@@ -139,7 +132,12 @@ while True:
 
             high = binance.fetch_ticker(symbol)['high'] # 코인 오늘 고가
             low = binance.fetch_ticker(symbol)['low'] # 코인 오늘 저가
-            delete_high_low(symbol, high, low)
+
+            # 고점 저점 목표가 초과시 리스트에서 제거
+            if high < temp[symbol]['target_bull']:
+                symbols.remove(symbol)
+            if low > temp[symbol]['target_bear']:
+                symbols.remove(symbol)
 
             print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n고가: {high} 저가: {low}\n")
 
