@@ -45,15 +45,15 @@ for symbol in symbols:
     temp[symbol]['position'] = ''
     temp[symbol]['hold'] = False
 
-def calMACD(df, m_NumFast=7, m_NumSlow=14, m_NumSignal=10):
-    df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
-    df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
-    df['MACD'] = df['EMAFast'] - df['EMASlow']
-    df['MACD_Signal'] = df['MACD'].ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
-    df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
-    return df
+#  def calMACD(df, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
+#      df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
+#      df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
+#      df['MACD'] = df['EMAFast'] - df['EMASlow']
+#      df['MACD_Signal'] = df['MACD'].ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
+#      df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
+#      return df
 
-def calStochastic(df, n=14, m=7, t=7):
+def calStochastic(df, n=9, m=3, t=3):
     df = pd.DataFrame(df)
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
@@ -85,24 +85,24 @@ def adjust_money(total_balance):
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
-        money = 450
+        money = 350
     elif 600 < total_balance <= 700:
-        money = 500
+        money = 400
     elif 700 < total_balance <= 800:
-        money = 550
+        money = 450
     elif 800 < total_balance <= 900:
-        money = 600
+        money = 500
     elif 900 < total_balance <= 1000:
-        money = 650
+        money = 550
     elif total_balance > 1000:
-        money = 700
+        money = 600
     return money
 
 count_trading = 0
 count_success = 0
 total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-bot.sendMessage(chat_id = chat_id, text="MACD + Stochastic 전략 자동매매 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text="Stochastic 전략 자동매매 시작합니다. 화이팅!")
 n = 2
 money = adjust_money(start_balance)
 
@@ -122,10 +122,10 @@ while True:
             df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
             df.set_index('datetime', inplace=True)
 
-            macd = calMACD(df)
+            #  macd = calMACD(df)
             stochastic = calStochastic(df)
 
-            print(f"현재시간: {now} 코인: {symbol}\nStochastic Signal: {stochastic['slow_signal'][-1]} MACD OSC: {macd['MACD_OSC'][-1]}\n")
+            print(f"현재시간: {now} 코인: {symbol}\nStochastic K: {stochastic['slow_k'][-1]} Stochastic Signal: {stochastic['slow_signal'][-1]}\n")
 
             if now.hour == 8 and 55 <= now.minute <= 59:
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
@@ -138,7 +138,7 @@ while True:
 
 
             # 조건을 만족하면 지정가 매수
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_d'][-1] < 35 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] < 35 and stochastic['slow_signal'][-1] >= 0:
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -151,7 +151,7 @@ while True:
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 75 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 65 and stochastic['slow_signal'][-1] <= 0:
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
