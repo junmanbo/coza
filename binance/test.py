@@ -10,15 +10,15 @@ binance = ccxt.binance({
    #  'apiKey': api_key,
    #  'secret': secret,
    #  'enableRateLimit': True,
-   'options': {
-       'defaultType': 'future',
-   }
+   #  'options': {
+   #      'defaultType': 'future',
+   #  }
 })
-symbols = ['TRX/USDT', 'QTUM/USDT']
+symbols = ['TRX/USDT', 'QTUM/USDT', 'BTC/USDT', 'ETH/USDT']
 
 for symbol in symbols:
     #  high = binance.fetch_ticker(symbol)['high']
     #  low = binance.fetch_ticker(symbol)['low']
     #  print(f"Coin: {symbol} High: {high} Low: {low}")
-    ohlcv = binance.fetch_ticker(symbol)
-    print(ohlcv)
+    symbols.remove(symbol)
+    print(symbols)
