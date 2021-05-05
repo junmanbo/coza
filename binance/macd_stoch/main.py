@@ -138,7 +138,7 @@ while True:
 
 
             # 조건을 만족하면 지정가 매수
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_d'][-1] < 40 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_d'][-1] < 35 and stochastic['slow_signal'][-1] > 0 and macd['MACD_OSC'][-1] > 0:
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 temp[symbol]['amount'] = amount
@@ -151,7 +151,7 @@ while True:
                 temp[symbol]['position'] = 'long'
 
             # 조건을 만족하면 지정가 공매도
-            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 60 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
+            elif temp[symbol]['hold'] == False and total_hold < 3 and stochastic['slow_k'][-1] > 75 and stochastic['slow_signal'][-1] < 0 and macd['MACD_OSC'][-1] < 0:
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 temp[symbol]['amount'] = amount
