@@ -85,17 +85,17 @@ def adjust_money(total_balance):
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
-        money = 350
+        money = 300
     elif 600 < total_balance <= 700:
-        money = 400
+        money = 350
     elif 700 < total_balance <= 800:
-        money = 450
+        money = 400
     elif 800 < total_balance <= 900:
-        money = 500
+        money = 450
     elif 900 < total_balance <= 1000:
-        money = 550
+        money = 500
     elif total_balance > 1000:
-        money = 600
+        money = 550
     return money
 
 count_trading = 0
