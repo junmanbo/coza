@@ -102,7 +102,7 @@ count_trading = 0
 count_success = 0
 total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
-bot.sendMessage(chat_id = chat_id, text="Stochastic 전략 자동매매 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text="MACD + Stochastic 전략 자동매매 시작합니다. 화이팅!")
 n = 2
 money = adjust_money(start_balance)
 
