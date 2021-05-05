@@ -133,7 +133,7 @@ while True:
             high = binance.fetch_ticker(symbol)['high'] # 코인 오늘 고가
             low = binance.fetch_ticker(symbol)['low'] # 코인 오늘 저가
 
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n매수 목표가: {temp[symbol]['target_bull']}\n공매도 목표가: {temp[symbol]['target_bear']}\n고가: {high} 저가: {low}\n")
 
             if now.hour == 9 and 1 <= now.minute <= 5:
                 total_balance = binance.fetch_balance()['USDT']['total']
