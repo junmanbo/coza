@@ -40,8 +40,7 @@ info = {}
 for symbol in symbols:
     info[symbol] = {}
     info[symbol]['amount'] = 0
-    info[symbol]['position'] = ''
-    info[symbol]['hold'] = False
+    info[symbol]['position'] = 'wait'
     info[symbol]['target_bull'] = 0
     info[symbol]['target_bear'] = 0
     info[symbol]['macd_osc'] = 0
@@ -136,7 +135,7 @@ def adjust_money(total_balance):
         money = 800
     return money
 
-total_hold = 0
+total_hold = 5
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 money = adjust_money(start_balance)
 bot.sendMessage(chat_id = chat_id, text=f"통합 Volatility 전략 자동매매 시작합니다. 화이팅!\n오늘 1코인당 투자 금액: {money}")
@@ -152,27 +151,27 @@ while True:
             price_ask = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
 
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n지정 매수가: {info[symbol]['target_bull']}\n지정 매도가: {info[symbol]['target_bear']}\nMACD OSC: {info[symbol]['macd_osc']}\nStochastic OSC: {info[symbol]['slow_osc']}\nStochastic Slow K: {info[symbol]['slow_k']}\n")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n지정 매수가: {info[symbol]['target_bull']}\n지정 매도가: {info[symbol]['target_bear']}\nMACD OSC: {info[symbol]['macd_osc']}\nStochastic OSC: {info[symbol]['slow_osc']}\nStochastic Slow K: {info[symbol]['slow_k']}\n포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개")
 
             if now.hour == 8 and 50 <= now.minute <= 59:
                 # 매수건 청산
-                if info[symbol]['hold'] == True and info[symbol]['position'] == 'long':
+                if info[symbol]['position'] == 'long':
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((price_bid - info[symbol]['target_bull']) / info[symbol]['target_bull'] * 100, 2)
                     if profit > 0:
                         bot.sendMessage(chat_id = chat_id, text=f"Success! 코인: {symbol}\n수익률: {profit}")
                     else:
                         bot.sendMessage(chat_id = chat_id, text=f"Failure! 코인: {symbol}\n수익률: {profit}")
-                    info[symbol]['hold'] = False
+                    info[symbol]['position'] = 'wait'
                 # 매도건 청산
-                elif info[symbol]['hold'] == True and info[symbol]['position'] == 'short':
+                elif info[symbol]['position'] == 'short':
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((info[symbol]['target_bear']) - price_ask / price_ask * 100, 2)
                     if profit > 0:
                         bot.sendMessage(chat_id = chat_id, text=f"Success! 코인: {symbol}\n수익률: {profit}")
                     else:
                         bot.sendMessage(chat_id = chat_id, text=f"Failure! 코인: {symbol}\n수익률: {profit}")
-                    info[symbol]['hold'] = False
+                    info[symbol]['position'] = 'wait'
 
             elif now.hour == 9 and 0 <= now.minute <= 1:
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
@@ -183,24 +182,22 @@ while True:
                 save_info()
 
             # 조건을 만족하면 지정가 매수
-            elif info[symbol]['hold'] == False and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 70 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 70 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price_ask) # 지정가 매수
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매수")
                 info[symbol]['amount'] = amount
-                info[symbol]['hold'] = True
                 info[symbol]['position'] = 'long'
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['hold'] == False and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
                 bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 매도")
                 info[symbol]['amount'] = amount
-                info[symbol]['hold'] = True
                 info[symbol]['position'] = 'short'
                 total_hold += 1
 
