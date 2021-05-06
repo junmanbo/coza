@@ -113,27 +113,27 @@ def adjust_money(total_balance):
     if total_balance <= 500:
         money = 0
     elif 500 < total_balance <= 600:
-        money = 200
-    elif 600 < total_balance <= 700:
         money = 300
+    elif 600 < total_balance <= 700:
+        money = 350
     elif 700 < total_balance <= 800:
         money = 400
     elif 800 < total_balance <= 900:
-        money = 500
+        money = 450
     elif 900 < total_balance <= 1000:
-        money = 600
+        money = 500
     elif 1000 < total_balance <= 1100:
-        money = 700
+        money = 550
     elif 1100 < total_balance <= 1200:
-        money = 800
+        money = 600
     elif 1200 < total_balance <= 1300:
-        money = 900
+        money = 650
     elif 1300 < total_balance <= 1400:
-        money = 1000
+        money = 700
     elif 1400 < total_balance <= 1500:
-        money = 1100
+        money = 750
     elif total_balance > 1500:
-        money = 1200
+        money = 800
     return money
 
 total_hold = 0
@@ -183,7 +183,7 @@ while True:
                 save_info()
 
             # 조건을 만족하면 지정가 매수
-            elif info[symbol]['hold'] == False and total_hold < 4 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 70 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
+            elif info[symbol]['hold'] == False and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 70 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price_ask) # 지정가 매수
@@ -194,7 +194,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['hold'] == False and total_hold < 4 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
+            elif info[symbol]['hold'] == False and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
@@ -205,7 +205,7 @@ while True:
                 total_hold += 1
 
             # Total 코인 도달시 장마감까지 기다리기
-            elif total_hold == 4:
+            elif total_hold == 5:
                 while True:
                     if now.hour == 8 and now.minute == 49:
                         time.sleep(60)
