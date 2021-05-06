@@ -139,7 +139,7 @@ def adjust_money(total_balance):
 total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 money = adjust_money(start_balance)
-bot.sendMessage(chat_id = chat_id, text="통합 Volatility 전략 자동매매 시작합니다. 화이팅!\n오늘 1코인당 투자 금액: {money}")
+bot.sendMessage(chat_id = chat_id, text=f"통합 Volatility 전략 자동매매 시작합니다. 화이팅!\n오늘 1코인당 투자 금액: {money}")
 save_info()
 
 while True:
