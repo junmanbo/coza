@@ -210,7 +210,7 @@ while True:
                     if now.hour == 8 and now.minute == 49:
                         time.sleep(60)
                         break
-                    time.sleep(1)
+                    time.sleep(60)
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
