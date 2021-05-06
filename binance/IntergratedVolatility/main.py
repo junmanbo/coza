@@ -87,8 +87,8 @@ def save_info():
         info[symbol]['macd_osc'] = calMACD(df)
         info[symbol]['slow_osc'] = calStochastic(df)[0]
         info[symbol]['slow_k'] = calStochastic(df)[1]
-        info[symbol]['target_bull'] = cal_target(symbol)[0]
-        info[symbol]['target_bear'] = cal_target(symbol)[1]
+        info[symbol]['target_bull'] = cal_target(df)[0]
+        info[symbol]['target_bear'] = cal_target(df)[1]
         time.sleep(1)
     bot.sendMessage(chat_id = chat_id, text=f"오늘 코인 목표가 계산이 끝났습니다.")
 
