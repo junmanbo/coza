@@ -47,7 +47,7 @@ for symbol in symbols:
     info[symbol]['slow_osc'] = 0
     info[symbol]['slow_k'] = 0
 
-def calMACD(df, m_NumFast=5, m_NumSlow=20, m_NumSignal=5):
+def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
     df['EMAFast'] = df['close'].ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
     df['EMASlow'] = df['close'].ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
     df['MACD'] = df['EMAFast'] - df['EMASlow']
@@ -55,7 +55,7 @@ def calMACD(df, m_NumFast=5, m_NumSlow=20, m_NumSignal=5):
     df['MACD_OSC'] = df['MACD'] - df['MACD_Signal']
     return df['MACD_OSC'][-1]
 
-def calStochastic(df, n=10, m=5, t=5):
+def calStochastic(df, n=14, m=7, t=7):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
@@ -182,7 +182,7 @@ while True:
                 save_info()
 
             # 조건을 만족하면 지정가 매수
-            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 70 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 75 and (info[symbol]['target_bull'] * 0.9999) <= price_ask <= (info[symbol]['target_bull'] * 1.0001):
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 binance.create_limit_buy_order(symbol=symbol, amount=amount, price=price_ask) # 지정가 매수
@@ -192,7 +192,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 40 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
