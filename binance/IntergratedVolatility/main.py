@@ -108,34 +108,10 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(total_balance):
-    money = 0
-    if total_balance <= 500:
-        money = 0
-    elif 500 < total_balance <= 600:
-        money = 300
-    elif 600 < total_balance <= 700:
-        money = 350
-    elif 700 < total_balance <= 800:
-        money = 400
-    elif 800 < total_balance <= 900:
-        money = 450
-    elif 900 < total_balance <= 1000:
-        money = 500
-    elif 1000 < total_balance <= 1100:
-        money = 550
-    elif 1100 < total_balance <= 1200:
-        money = 600
-    elif 1200 < total_balance <= 1300:
-        money = 650
-    elif 1300 < total_balance <= 1400:
-        money = 700
-    elif 1400 < total_balance <= 1500:
-        money = 750
-    elif total_balance > 1500:
-        money = 800
+    money = total_balance - 20
     return money
 
-total_hold = 0
+total_hold = 3
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 money = adjust_money(start_balance)
 bot.sendMessage(chat_id = chat_id, text=f"통합 Volatility 전략 자동매매 시작합니다. 화이팅!\n오늘 1코인당 투자 금액: {money}")
@@ -182,7 +158,7 @@ while True:
                 save_info()
 
             # 조건을 만족하면 지정가 매수
-            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 75 and (info[symbol]['target_bull'] * 0.999) <= price_ask <= (info[symbol]['target_bull'] * 1.001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 75 and (info[symbol]['target_bull'] * 0.995) <= price_ask <= (info[symbol]['target_bull'] * 1.005):
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=amount)
@@ -192,7 +168,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 35 and (info[symbol]['target_bear'] * 0.999) <= price_bid <= (info[symbol]['target_bear'] * 1.001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 35 and (info[symbol]['target_bear'] * 0.995) <= price_bid <= (info[symbol]['target_bear'] * 1.005):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=amount)
