@@ -17,7 +17,9 @@ def calStochastic(df, n=14, m=7, t=7):
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
     #  df = df.assign(fast_k=fast_k, fast_d=slow_k, slow_k=slow_k, slow_d=slow_d, slow_osc=slow_osc)
-    df = df.assign(slow_k=slow_k, slow_osc=slow_osc)
+    #  df = df.assign(slow_k=slow_k, slow_osc=slow_osc)
+    df['Slow_K'] = slow_k
+    df['Slow_OSC'] = slow_osc
 
 def cal_target(df):
     #  df['noise'] = 1 - abs(df['open'] - df['close']) / (df['high'] - df['low'])
