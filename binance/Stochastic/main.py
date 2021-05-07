@@ -124,7 +124,7 @@ for symbol in symbols:
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour % 4 == 0 and 0 <= now.minute <= 1:
+        if now.hour % 4 == 0 and now.minute == 0 and 0 <= now.second <= 10:
             save_info() # Stochastic OSC 값 갱신
             for symbol in symbols:
                 # Position Long to Short
@@ -139,7 +139,7 @@ while True:
                     price = price_unit(price_bid) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=amount) # 시장가 매도 (숏 포지션으로 변경)
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} Change Position Long to Short")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price}\nChange Position Long to Short")
 
                     info[symbol]['price'] = price # 매도가 저장
                     info[symbol]['position'] = 'short' # 포지션 숏으로 변경 저장
@@ -157,7 +157,7 @@ while True:
                     price = price_unit(price_ask) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=amount) # 시장가 매수 (롱 포지션으로 변경)
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} Change Position Short to Long")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price}\nChange Position Short to Long")
 
                     info[symbol]['price'] = price # 매수가 저장
                     info[symbol]['position'] = 'long' # 포지션 롱으로 변경 저장
