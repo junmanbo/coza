@@ -192,7 +192,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 30 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 40 and (info[symbol]['target_bear'] * 0.9999) <= price_bid <= (info[symbol]['target_bear'] * 1.0001):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_limit_sell_order(symbol=symbol, amount=amount, price=price_bid) # 지정가 매도
