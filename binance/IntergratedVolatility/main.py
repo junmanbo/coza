@@ -135,7 +135,7 @@ def adjust_money(total_balance):
         money = 800
     return money
 
-total_hold = 5
+total_hold = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 money = adjust_money(start_balance)
 bot.sendMessage(chat_id = chat_id, text=f"통합 Volatility 전략 자동매매 시작합니다. 화이팅!\n오늘 1코인당 투자 금액: {money}")
@@ -151,7 +151,7 @@ while True:
             price_ask = ccxt.binance().fetch_ticker(symbol)['ask'] # 매도 1호가(현재가)
             price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
 
-            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n지정 매수가: {info[symbol]['target_bull']}\n지정 매도가: {info[symbol]['target_bear']}\nMACD OSC: {info[symbol]['macd_osc']}\nStochastic OSC: {info[symbol]['slow_osc']}\nStochastic Slow K: {info[symbol]['slow_k']}\n포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개")
+            print(f"현재시간: {now} 코인: {symbol}\n현재가: {price_ask}\n지정 매수가: {info[symbol]['target_bull']}\n지정 매도가: {info[symbol]['target_bear']}\nMACD OSC: {info[symbol]['macd_osc']}\nStochastic OSC: {info[symbol]['slow_osc']}\nStochastic Slow K: {info[symbol]['slow_k']}\n포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개\n")
 
             if now.hour == 8 and 50 <= now.minute <= 59:
                 # 매수건 청산
@@ -203,11 +203,8 @@ while True:
 
             # Total 코인 도달시 장마감까지 기다리기
             elif total_hold == 5:
-                while True:
-                    if now.hour == 8 and now.minute == 49:
-                        time.sleep(60)
-                        break
-                    time.sleep(60)
+                while now.hour != 8 and now.minute != 50:
+                    time.sleep(1)
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
