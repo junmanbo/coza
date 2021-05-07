@@ -88,7 +88,7 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(total_balance):
-    money = total_balance * 3 / 20 - 5
+    money = round((total_balance * 3 / 20 - 5), 0)
     return money
 
 total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
