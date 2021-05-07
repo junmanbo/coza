@@ -39,22 +39,26 @@ for ticker in tickers:
     calStochastic(df)
     calMACD(df)
 # 기간 제한
-    df=df.loc['2017-12-1':'2021-05-01']
-    # Just Hold
+    df=df.loc['2017-11-1':'2020-01-01']
+    #  Just Hold
     #  print(ticker, df['close'][-1] / df['open'][0])
 
     fee = 0.01 / 100
-# Calculate Profit
-    #  df['ror_bull'] = np.where((df['Slow_OSC'] > 0) & (df['MACD_OSC'] > 0), df['close'] / df['open'] - fee, 1)
+# Calculate Profit 
+    #  df['ror_bull'] = np.where((df['high'] > df['t_bull']) & (df['open'] > df['ma']), df['close'] / df['t_bull'] - fee, 1)
+    #  df['ror_bear'] = np.where((df['low'] < df['t_bear']) & (df['open'] < df['ma']), df['t_bear'] / df['close'] - fee, 1)
+
+    #  df['ror_bull'] = np.where((df['Slow_OSC'] > 0), df['close'] / df['open'] - fee, 1)
     #  df['ror_bear'] = np.where((df['Slow_OSC'] < 0) & (df['MACD_OSC'] < 0), df['open'] / df['close'] - fee, 1)
     #
     #  df['ror_bull'] = np.where((df['Slow_OSC'] > 0) & (df['MACD_OSC'] > 0), df['close'] / df['open'] - fee, 1)
     #  df['ror_bear'] = np.where((df['Slow_OSC'] < 0) & (df['MACD_OSC'] < 0), df['open'] / df['close'] - fee, 1)
 
-    df['ror_bull'] = np.where((df['Slow_OSC'] > 0), df['close'] / df['open'] - fee, 1)
-    df['ror_bear'] = np.where((df['Slow_OSC'] < 0), df['open'] / df['close'] - fee, 1)
-
-    df['hpr'] = df['ror_bull'].cumprod() * df['ror_bear'].cumprod()
+    #  df['ror_bull'] = np.where((df['Slow_OSC'] > 0), df['close'] / df['open'] - fee, 1)
+    #  df['ror_bear'] = np.where((df['Slow_OSC'] < 0), df['open'] / df['close'] - fee, 1)
+    #
+    #  df['hpr'] = df['ror_bull'].cumprod() * df['ror_bear'].cumprod()
+    #  df['hpr'] = df['ror_bull'].cumprod()
     df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
     print(ticker, "HPR: ", df['hpr'][-2])
     print(ticker, "MDD: ", df['dd'].max())
