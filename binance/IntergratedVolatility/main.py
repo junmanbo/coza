@@ -182,7 +182,7 @@ while True:
                 save_info()
 
             # 조건을 만족하면 지정가 매수
-            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 75 and (info[symbol]['target_bull'] * 0.999) <= price_ask <= (info[symbol]['target_bull'] * 1.001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc'] > 0 and info[symbol]['slow_k'] < 75 and (info[symbol]['target_bull'] * 0.999) <= price_ask <= (info[symbol]['target_bull'] * 1.001):
                 price_ask = price_unit(price_ask)
                 amount = money / price_ask # 매수할 코인 개수
                 binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=amount)
@@ -192,7 +192,7 @@ while True:
                 total_hold += 1
 
             # 조건을 만족하면 지정가 공매도
-            elif info[symbol]['position'] == 'wait' and total_hold < 5 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 35 and (info[symbol]['target_bear'] * 0.999) <= price_bid <= (info[symbol]['target_bear'] * 1.001):
+            elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc'] < 0 and info[symbol]['slow_k'] > 35 and (info[symbol]['target_bear'] * 0.999) <= price_bid <= (info[symbol]['target_bear'] * 1.001):
                 price_bid = price_unit(price_bid)
                 amount = money / price_bid # 매도할 코인 개수
                 binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=amount)
@@ -202,7 +202,7 @@ while True:
                 total_hold += 1
 
             # Total 코인 도달시 장마감까지 기다리기
-            elif total_hold == 5:
+            elif total_hold == 3:
                 while now.hour != 8 and now.minute != 50:
                     time.sleep(1)
 
