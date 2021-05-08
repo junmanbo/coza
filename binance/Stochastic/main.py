@@ -57,7 +57,7 @@ def calStochastic(df, n=9, m=3, t=3):
 
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
-    bot.sendMessage(chat_id = chat_id, text="Collecting the Coin's Stochastic Oscilator value...")
+    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic OSC 값 수집중...")
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -68,7 +68,7 @@ def save_info():
         # Save Stochastic Oscilator information
         info[symbol]['slow_osc'] = calStochastic(df)
         time.sleep(0.5)
-    bot.sendMessage(chat_id = chat_id, text="Saving the Coin's Stochastic Oscilator value!\nLet's Start checking condition.")
+    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic OSC 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
 
 # 호가 단위 맞추기
 def price_unit(price):
@@ -92,7 +92,7 @@ def adjust_money(total_balance):
     return money
 
 total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
-money = adjust_money(total_balance) # 코인별 투자금액
+money = round(adjust_money(total_balance), 0) # 코인별 투자금액
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic 전략 시작합니다. 화이팅!\n1코인당 투자 금액: {money}")
 save_info() # 코인별 Stochastic OSC 값 저장
 
@@ -124,7 +124,7 @@ for symbol in symbols:
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour % 4 == 0 and now.minute == 0 and 0 <= now.second <= 10:
+        if now.hour % 8 == 0 and now.minute == 0 and 0 <= now.second <= 10:
             save_info() # Stochastic OSC 값 갱신
             for symbol in symbols:
                 # Position Long to Short
@@ -133,13 +133,13 @@ while True:
                     price_bid = ccxt.binance().fetch_ticker(symbol)['bid'] # 매수 1호가(현재가)
                     profit = round((price_bid - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                     total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 수익률: {profit}\nTotal Balance: {total_balance}")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 수익률: {profit}\n전체 잔고: {total_balance}")
 
-                    money = adjust_money(total_balance) # 코인별 투자금액 조정
+                    money = round(adjust_money(total_balance), 0) # 코인별 투자금액
                     price = price_unit(price_bid) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=amount) # 시장가 매도 (숏 포지션으로 변경)
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price}\nChange Position Long to Short")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price} 투자금액: {money}\n포지션 롱에서 숏으로 변경")
 
                     info[symbol]['price'] = price # 매도가 저장
                     info[symbol]['position'] = 'short' # 포지션 숏으로 변경 저장
@@ -153,11 +153,11 @@ while True:
                     total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 수익률: {profit}\nTotal Balance: {total_balance}")
 
-                    money = adjust_money(total_balance) # 코인별 투자금액 조정
+                    money = round(adjust_money(total_balance), 0) # 코인별 투자금액
                     price = price_unit(price_ask) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=amount) # 시장가 매수 (롱 포지션으로 변경)
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price}\nChange Position Short to Long")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 가격: {price} 투자금액: {money}\n포지션 숏에서 롱으로 변경")
 
                     info[symbol]['price'] = price # 매수가 저장
                     info[symbol]['position'] = 'long' # 포지션 롱으로 변경 저장
