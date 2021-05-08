@@ -92,7 +92,7 @@ def adjust_money(total_balance):
     return money
 
 total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
-money = round(adjust_money(total_balance), 0) # 코인별 투자금액
+money = adjust_money(total_balance) # 코인별 투자금액
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic 전략 시작합니다. 화이팅!\n1코인당 투자 금액: {money}")
 save_info() # 코인별 Stochastic OSC 값 저장
 
@@ -135,7 +135,7 @@ while True:
                     total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 수익률: {profit}\n전체 잔고: {total_balance}")
 
-                    money = round(adjust_money(total_balance), 0) # 코인별 투자금액
+                    money = adjust_money(total_balance) # 코인별 투자금액
                     price = price_unit(price_bid) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=amount) # 시장가 매도 (숏 포지션으로 변경)
@@ -153,7 +153,7 @@ while True:
                     total_balance = round(binance.fetch_balance()['USDT']['total'], 2) # 현재 전체 잔고 (used + free)
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} 수익률: {profit}\nTotal Balance: {total_balance}")
 
-                    money = round(adjust_money(total_balance), 0) # 코인별 투자금액
+                    money = adjust_money(total_balance) # 코인별 투자금액
                     price = price_unit(price_ask) # 호가 단위 맞추기
                     amount = money / price # 매도할 코인 갯수
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=amount) # 시장가 매수 (롱 포지션으로 변경)
