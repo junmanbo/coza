@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
-
-
 #      name = stock.get_market_ticker_name(ticker)
 #      print(ticker, name)
 
@@ -28,7 +26,7 @@ def calTarget(df):
     df['t_bear'] = df['시가'] - df['range'].shift(1)
 
 def calMA(df, fast=5):
-    df['ma'] = df['종가'].ewm( span = fast, min_periods = fast - 1 ).mean().shift(1)
+    df['ma'] = df['종가'].ewm(span = fast).mean().shift(1)
 
 def calStochastic(df, n=10, m=5, t=5):
     ndays_고가 = df.고가.rolling(window=n, min_periods=1).max()
@@ -77,69 +75,58 @@ def PrintMDD(pd_chart):
 
     print("현재 차트의 MDD는 {}이고, {}일({}원)부터 {}일({}원)동안 지속되었습니다.".format(mdd, start_date, max_close, end_date, min_close))
 
-start_date = '20140503' # 시작 날짜
-end_date = '20210503' # 마지막 날짜
-ticker = '005490' # 종목 코드
-
-df = stock.get_market_ohlcv_by_date(start_date, end_date, ticker)
-print(df)
-calTarget(df)
-calMA(df)
-calStochastic(df)
-calMACD(df)
+with open("Aalysis_Strategies.txt", 'w') as f:
+    tickers = stock.get_market_ticker_list("20210506", market="KOSPI")
+    for ticker in tickers:
+        df = stock.get_market_ohlcv_by_date('20190503', '20210503', ticker)
+        start_date = '20200503' # 시작 날짜
+        end_date = '20210503' # 마지막 날짜
+        df=df.loc[start_date:end_date]
+        calTarget(df)
+        calMA(df)
+        calStochastic(df)
+        calMACD(df)
 
 #  Just Hold
-name = stock.get_market_ticker_name(ticker)
-print(f"분석 기간: {start_date} ~ {end_date}\n종목: {name} >>>\n")
-print("단순히 보유하는 전략")
-#  df['ror'] = df['종가'] / df['시가']
-#  df['hpr'] = df['ror'].cumprod()
-#  df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-#  print(ticker, "HPR: ", df['hpr'][-2])
-#  print(ticker, "MDD: ", df['dd'].max())
-hpr = df['종가'][-1] / df['시가'][0]
-print(f"HPR: {hpr}")
-PrintMDD(df)
-print("-----------------------------------------------")
+        name = stock.get_market_ticker_name(ticker)
+        print(f"분석 기간: {start_date} ~ {end_date}\n종목: {name} >>>\n")
+        print("단순히 보유하는 전략")
+        hpr = df['종가'][-1] / df['시가'][0]
+        print(f"HPR: {hpr}")
+        PrintMDD(df)
+        print("-----------------------------------------------")
 
-fee = 0.02 / 100
+        f.write(f"분석 기간: {start_date} ~ {end_date}\n종목: {name} >>>\n\n단순히 보유하는 전략\nHPR: {hpr}\n--------------------------------------------\n")
+
+        fee = 0.02 / 100
 # Calculate Profit
-print("변동성 돌파 전략")
-df['ror_bull'] = np.where((df['고가'] > df['t_bull']) & (df['ma'] > 0), df['종가'] / df['t_bull'] - fee, 1)
-df['hpr'] = df['ror_bull'].cumprod()
-df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-print(ticker, "HPR: ", df['hpr'][-2])
-print(ticker, "MDD: ", df['dd'].max())
-print("-----------------------------------------------")
+        print("변동성 돌파 전략")
+        df['ror_bull'] = np.where((df['고가'] > df['t_bull']) & (df['ma'] > 0), df['종가'] / df['t_bull'] - fee, 1)
+        df['hpr'] = df['ror_bull'].cumprod()
+        df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
+        print(ticker, "HPR: ", df['hpr'][-2])
+        print(ticker, "MDD: ", df['dd'].max())
+        print("-----------------------------------------------")
 
-print("Stochastic + MACD + 변동성 돌파 전략")
-df['ror_bull'] = np.where((df['고가'] > df['t_bull']) & (df['Slow_OSC'] > 0) & (df['MACD_OSC'] > 0), df['종가'] / df['t_bull'] - fee, 1)
-df['hpr'] = df['ror_bull'].cumprod()
-df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-print(ticker, "HPR: ", df['hpr'][-2])
-print(ticker, "MDD: ", df['dd'].max())
-print("-----------------------------------------------")
+        f.write(f"변동성 돌파 전략\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n-----------------------------------------------\n")
 
-print("Stochastic 전략")
-df['ror_bull'] = np.where((df['Slow_OSC'] > 0), df['종가'] / df['시가'] - fee, 1)
-df['hpr'] = df['ror_bull'].cumprod()
-df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-print(ticker, "HPR: ", df['hpr'][-2])
-print(ticker, "MDD: ", df['dd'].max())
-print("-----------------------------------------------")
+        print("Stochastic + ema + 변동성 돌파 전략")
+        df['ror_bull'] = np.where((df['고가'] > df['t_bull']) & (df['Slow_OSC'] > 0) & (df['ma'] > 0), df['종가'] / df['t_bull'] - fee, 1)
+        df['hpr'] = df['ror_bull'].cumprod()
+        df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
+        print(ticker, "HPR: ", df['hpr'][-2])
+        print(ticker, "MDD: ", df['dd'].max())
+        print("-----------------------------------------------")
 
-print("MACD 전략")
-df['ror_bull'] = np.where((df['MACD_OSC'] > 0), df['종가'] / df['시가'] - fee, 1)
-df['hpr'] = df['ror_bull'].cumprod()
-df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-print(ticker, "HPR: ", df['hpr'][-2])
-print(ticker, "MDD: ", df['dd'].max())
-print("-----------------------------------------------")
+        f.write(f"Stochastic + ema + 변동성 돌파 전략\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n-----------------------------------------------\n")
 
-print("Stochastic + MACD 전략")
-df['ror_bull'] = np.where((df['Slow_OSC'] > 0) & (df['MACD_OSC'] > 0), df['종가'] / df['시가'] - fee, 1)
-df['hpr'] = df['ror_bull'].cumprod()
-df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-print(ticker, "HPR: ", df['hpr'][-2])
-print(ticker, "MDD: ", df['dd'].max())
-print("-----------------------------------------------\n")
+        print("Stochastic + ema 전략")
+        df['ror_bull'] = np.where((df['Slow_OSC'] > 0) & (df['ma'] > 0), df['종가'] / df['시가'] - fee, 1)
+        df['hpr'] = df['ror_bull'].cumprod()
+        df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
+        print(ticker, "HPR: ", df['hpr'][-2])
+        print(ticker, "MDD: ", df['dd'].max())
+        print("-----------------------------------------------\n")
+
+        f.write(f"Stochastic + ema 전략\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n-----------------------------------------------\n\n")
+        time.sleep(1)
