@@ -40,7 +40,7 @@ info = {}
 for symbol in symbols:
     info[symbol] = {}
     info[symbol]['amount'] = 0 # 코인 매수/매도 갯수
-    info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short)
+    info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
     info[symbol]['price'] = 0 # 코인 거래한 가격
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['ma7'] = 0 # 지수이동평균 값
@@ -100,15 +100,17 @@ def adjust_money(free_balance, total_hold):
 
 total_hold = 0
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA 전략 시작합니다. 화이팅!")
-save_info() # 코인별 Stochastic OSC 값 + EMA7 값 저장
 
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour % 8 == 0 and now.minute == 0 and 0 <= now.second <= 10:
+        if now.hour == 9 and now.minute == 0 and 0 <= now.second <= 10:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
+                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
+                amount = money / current_price # 거래할 코인 갯수
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
@@ -128,17 +130,8 @@ while True:
                         total_hold -= 1
                         info[symbol]['position'] = 'wait'
 
-                time.sleep(0.5)
-                print(f"시간: {now} 코인: {symbol}\nStochastic OSC: {info[symbol]['slow_osc']}\nEMA7: {info[symbol]['ma7']}\n포지션 상태: {info[symbol]['position']}\n")
-
-            for symbol in symbols:
-                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
-                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
-                amount = money / current_price # 거래할 코인 갯수
-
                 # Stochastic + EMA7 둘 다 조건 만족시 롱 포지션
-                if total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and current_price > info[symbol]['ma7']:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and current_price > info[symbol]['ma7']:
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'long' # 포지션 'long' 으로 변경
@@ -150,12 +143,13 @@ while True:
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and current_price < info[symbol]['ma7']:
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
-                    info[symbol]['position'] = 'short' # 포지션 'long' 으로 변경
+                    info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
                     info[symbol]['amount'] = amount # 코인 갯수 저장
                     total_hold += 1
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 숏 포지션\n총 보유 코인: {total_hold}")
 
                 time.sleep(0.5)
+                print(f"시간: {now} 코인: {symbol}\nStochastic OSC: {info[symbol]['slow_osc']}\nEMA7: {info[symbol]['ma7']}\n포지션 상태: {info[symbol]['position']}\n")
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
