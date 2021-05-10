@@ -138,7 +138,7 @@ while True:
                     info[symbol]['position'] = 'long' # 포지션 'long' 으로 변경
                     info[symbol]['amount'] = amount # 코인 갯수 저장
                     total_hold += 1
-                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n총 보유 코인: {total_hold}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + EMA7 둘 다 조건 만족시 숏 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and current_price < info[symbol]['ma7']:
@@ -147,7 +147,7 @@ while True:
                     info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
                     info[symbol]['amount'] = amount # 코인 갯수 저장
                     total_hold += 1
-                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 숏 포지션\n총 보유 코인: {total_hold}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 time.sleep(0.5)
                 print(f"시간: {now} 코인: {symbol}\nStochastic OSC: {info[symbol]['slow_osc']}\nEMA7: {info[symbol]['ma7']}\n포지션 상태: {info[symbol]['position']}\n")
