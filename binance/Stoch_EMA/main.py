@@ -111,11 +111,11 @@ while True:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
                 money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
-                amount = money / current_price # 거래할 코인 갯수
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
                     if info[symbol]['slow_osc'] < 0 or current_price < info[symbol]['ma7']:
+                        amount = money / current_price # 거래할 코인 갯수
                         binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
@@ -125,6 +125,7 @@ while True:
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short':
                     if info[symbol]['slow_osc'] > 0 or current_price > info[symbol]['ma7']:
+                        amount = money / current_price # 거래할 코인 갯수
                         binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
@@ -133,6 +134,7 @@ while True:
 
                 # Stochastic + EMA7 둘 다 조건 만족시 롱 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and current_price > info[symbol]['ma7']:
+                    amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'long' # 포지션 'long' 으로 변경
@@ -142,6 +144,7 @@ while True:
 
                 # Stochastic + EMA7 둘 다 조건 만족시 숏 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and current_price < info[symbol]['ma7']:
+                    amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
