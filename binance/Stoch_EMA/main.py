@@ -94,9 +94,10 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(free_balance, total_hold):
-    available_hold = 5 - total_hold
-    money = round((free_balance * 3 / available_hold - 6), -1)
-    return money
+    if total_hold < 5:
+        available_hold = 5 - total_hold
+        money = round((free_balance * 3 / available_hold - 6), -1)
+        return money
 
 total_hold = 0
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA 전략 시작합니다. 화이팅!")
