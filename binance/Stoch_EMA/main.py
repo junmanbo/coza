@@ -105,7 +105,7 @@ bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA 전략 시작합니�
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour == 9 and now.minute == 0 and 0 <= now.second <= 10:
+        if now.hour % 8 == 0 and now.minute == 0 and 0 <= now.second <= 10:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
