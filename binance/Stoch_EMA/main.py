@@ -115,7 +115,6 @@ while True:
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
                     if info[symbol]['slow_osc'] < 0 or current_price < info[symbol]['ma7']:
-                        amount = money / current_price # 거래할 코인 갯수
                         binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
@@ -125,7 +124,6 @@ while True:
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short':
                     if info[symbol]['slow_osc'] > 0 or current_price > info[symbol]['ma7']:
-                        amount = money / current_price # 거래할 코인 갯수
                         binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
