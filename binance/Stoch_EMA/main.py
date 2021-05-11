@@ -43,6 +43,7 @@ for symbol in symbols:
     info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
     info[symbol]['price'] = 0 # 코인 거래한 가격
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
+    info[symbol]['macd_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['ma7'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
@@ -56,9 +57,18 @@ def calStochastic(df, n=9, m=3, t=3):
     df = df.assign(fast_k=fast_k, fast_d=slow_k, slow_k=slow_k, slow_d=slow_d, slow_osc=slow_osc)
     return df['slow_osc'][-1]
 
-def calMA7(df, fast=7):
+def calMA7(df, fast=14):
     df['ma7'] = df['close'].ewm(span=fast).mean()
     return df['ma7'][-1]
+
+def calMACD(df, m_NumFast=12, m_NumSlow=26, m_NumSignal=9):
+    EMAFast = df.close.ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
+    EMASlow = df.close.ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
+    MACD = EMAFast - EMASlow
+    MACDSignal = MACD.ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
+    MACD_OSC = MACD - MACDSignal
+    df = df.assign(EMAFast=EMAFast, EMASlow=EMASlow, MACD=MACD, MACDSignal=MACDSignal, MACD_OSC=MACD_OSC)
+    return df['MACD_OSC'][-1]
 
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
@@ -72,6 +82,7 @@ def save_info():
 
         # Save Stochastic Oscilator information
         info[symbol]['slow_osc'] = calStochastic(df)
+        info[symbol]['MACD_OSC'] = calMACD(df)
         info[symbol]['ma7'] = calMA7(df)
         time.sleep(0.5)
     bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic OSC + EMA7 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
@@ -114,7 +125,7 @@ while True:
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
-                    if info[symbol]['slow_osc'] < 0 or current_price < info[symbol]['ma7']:
+                    if info[symbol]['slow_osc'] < 0 or current_price < info[symbol]['ma7'] or info[symbol]['MACD_OSC'] < 0:
                         binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
@@ -123,7 +134,7 @@ while True:
 
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short':
-                    if info[symbol]['slow_osc'] > 0 or current_price > info[symbol]['ma7']:
+                    if info[symbol]['slow_osc'] > 0 or current_price > info[symbol]['ma7'] or info[symbol]['MACD_OSC'] > 0:
                         binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
@@ -131,7 +142,7 @@ while True:
                         info[symbol]['position'] = 'wait'
 
                 # Stochastic + EMA7 둘 다 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and current_price > info[symbol]['ma7']:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and current_price > info[symbol]['ma7'] and info[symbol]['MACD_OSC'] > 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
@@ -141,7 +152,7 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + EMA7 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and current_price < info[symbol]['ma7']:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and current_price < info[symbol]['ma7'] and info[symbol]['MACD_OSC'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
