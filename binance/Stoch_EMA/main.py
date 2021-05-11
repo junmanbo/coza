@@ -84,7 +84,7 @@ def save_info():
         info[symbol]['slow_osc'] = calStochastic(df)
         info[symbol]['macd_osc'] = calMACD(df)
         info[symbol]['ma'] = calMA(df)
-        print(f"시간: {now} 코인: {symbol}")
+        print(f"코인: {symbol}")
         print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}\nMACD OSC: {info[symbol]['macd_osc']}\n")
         time.sleep(0.5)
     bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic OSC + EMA 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
@@ -113,7 +113,7 @@ def adjust_money(free_balance, total_hold):
         return money
 
 total_hold = 0
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA 전략 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA + MACD 전략 시작합니다. 화이팅!")
 save_info()
 
 while True:
