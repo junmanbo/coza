@@ -97,7 +97,7 @@ def save_info():
         info[symbol]['ma'] = calMA(df)
         info[symbol]['open_price'] = binance.fetch_ticker(symbol=symbol)['open'] # 현재가 조회
 
-        print(f"코인: {symbol}\n현재가: {current_price}")
+        print(f"코인: {symbol}")
         print(f"지정 매수가: {info[symbol]['target_bull']}\n지정 매도가: {info[symbol]['target_bear']}")
         print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}")
         print(f"포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개\n")
