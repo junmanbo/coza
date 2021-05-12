@@ -109,7 +109,7 @@ def price_unit(price):
 def adjust_money(free_balance, total_hold):
     if total_hold < 3:
         available_hold = 3 - total_hold
-        money = round((free_balance * 2 / available_hold - 6), -1)
+        money = round((free_balance / available_hold - 6), -1)
         return money
 
 total_hold = 0

@@ -123,10 +123,12 @@ def price_unit(price):
 def adjust_money(free_balance, total_hold):
     if total_hold < 3:
         available_hold = 3 - total_hold
-        money = round((free_balance * 2 / available_hold - 6), -1)
+        money = round((free_balance / available_hold - 6), -1)
         return money
 
 total_hold = 0
+money = 0
+start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 bot.sendMessage(chat_id = chat_id, text=f"Volatility 전략 시작합니다. 화이팅!")
 save_info()
 
@@ -162,8 +164,10 @@ while True:
             elif now.hour == 9 and 0 <= now.minute <= 1:
                 total_hold = 0
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
+                total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
                 money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
                 bot.sendMessage(chat_id = chat_id, text=f"시작잔고: {start_balance} -> 현재잔고: {total_balance}원\n오늘 1코인당 투자금액: {money}")
+                start_balance = total_balance
                 save_info()
 
             # 조건을 만족하면 지정가 매수
