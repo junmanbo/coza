@@ -126,7 +126,7 @@ def adjust_money(free_balance, total_hold):
         money = round((free_balance / available_hold - 6), -1)
         return money
 
-total_hold = 0
+total_hold = 3
 money = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 bot.sendMessage(chat_id = chat_id, text=f"Volatility 전략 시작합니다. 화이팅!")
