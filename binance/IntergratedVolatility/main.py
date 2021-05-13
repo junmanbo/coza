@@ -123,10 +123,10 @@ def price_unit(price):
 def adjust_money(free_balance, total_hold):
     if total_hold < 3:
         available_hold = 3 - total_hold
-        money = round((free_balance / available_hold - 6), -1)
+        money = round((free_balance * 2 / available_hold - 6), -1)
         return money
 
-total_hold = 3
+total_hold = 0
 money = 0
 start_balance = round(binance.fetch_balance()['USDT']['total'], 2)
 bot.sendMessage(chat_id = chat_id, text=f"Volatility 전략 시작합니다. 화이팅!")
@@ -147,7 +147,7 @@ while True:
             print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}")
             print(f"포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개\n")
 
-            if now.hour == 9 and 25 <= now.minute <= 30:
+            if now.hour == 9 and 0 <= now.minute <= 4:
                 # 매수건 청산
                 if info[symbol]['position'] == 'long':
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
@@ -161,7 +161,7 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     info[symbol]['position'] = 'wait'
 
-            elif now.hour == 9 and 30 <= now.minute <= 31:
+            elif now.hour == 9 and 5 <= now.minute <= 6:
                 total_hold = 0
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
@@ -169,6 +169,7 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"시작잔고: {start_balance} -> 현재잔고: {total_balance}원\n오늘 1코인당 투자금액: {money}")
                 start_balance = total_balance
                 save_info()
+                time.sleep(60)
 
             # 조건을 만족하면 지정가 매수
             elif info[symbol]['position'] == 'wait' and total_hold < 3 and info[symbol]['slow_osc'] > 0 and info[symbol]['ma'] < info[symbol]['open_price'] and info[symbol]['macd_osc'] > 0 and (info[symbol]['target_bull'] * 0.995) <= current_price <= (info[symbol]['target_bull'] * 1.005):
@@ -192,10 +193,8 @@ while True:
 
             # Total 코인 도달시 장마감까지 기다리기
             elif total_hold == 3:
-                while True:
+                while (now.hour != 8 and now.minute != 59 and now.second != 59):
                     now = datetime.datetime.now()
-                    if now.hour == 9 and now.minute == 25:
-                        break
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
