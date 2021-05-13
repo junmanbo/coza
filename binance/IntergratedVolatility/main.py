@@ -147,7 +147,7 @@ while True:
             print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}")
             print(f"포지션 상태: {info[symbol]['position']}\n총 보유 코인: {total_hold}개\n")
 
-            if now.hour == 8 and 55 <= now.minute <= 59:
+            if now.hour == 9 and 25 <= now.minute <= 30:
                 # 매수건 청산
                 if info[symbol]['position'] == 'long':
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
@@ -161,7 +161,7 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     info[symbol]['position'] = 'wait'
 
-            elif now.hour == 9 and 0 <= now.minute <= 1:
+            elif now.hour == 9 and 30 <= now.minute <= 31:
                 total_hold = 0
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
                 total_balance = round(binance.fetch_balance()['USDT']['total'], 2)
@@ -192,8 +192,10 @@ while True:
 
             # Total 코인 도달시 장마감까지 기다리기
             elif total_hold == 3:
-                while now.hour != 8 and now.minute != 55:
-                    time.sleep(1)
+                while True:
+                    now = datetime.datetime.now()
+                    if now.hour == 9 and now.minute == 25:
+                        break
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
