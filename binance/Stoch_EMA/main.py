@@ -33,7 +33,9 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT']
+#  symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT']
+
+symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', '1INCH/USDT', 'CHZ/USDT', 'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT', 'HBAR/USDT', 'ONE/USDT', 'HOT/USDT', 'BTT/USDT', 'SC/USDT', 'DGB/USDT']
 
 # 코인별 저장 정보값 초기화
 info = {}
@@ -47,7 +49,7 @@ for symbol in symbols:
     info[symbol]['ma'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
-def calStochastic(df, n=9, m=3, t=3):
+def calStochastic(df, n=9, m=5, t=3):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
@@ -107,9 +109,9 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(free_balance, total_hold):
-    if total_hold < 3:
-        available_hold = 3 - total_hold
-        money = round((free_balance / available_hold - 6), -1)
+    if total_hold < 10:
+        available_hold = 10 - total_hold
+        money = round((free_balance * 2 / available_hold - 6), -1)
         return money
 
 total_hold = 0
@@ -119,7 +121,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour == 9 and now.minute == 0 and 0 <= now.second <= 10:
+        if now.hour == 14 and now.minute == 30 and 0 <= now.second <= 10:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -145,7 +147,7 @@ while True:
                         info[symbol]['position'] = 'wait'
 
                 # Stochastic + EMA 둘 다 조건 만족시 롱 포지션
-                elif total_hold < 3 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 1 and current_price > info[symbol]['ma'] and info[symbol]['macd_osc'] > 0:
+                elif total_hold < 10 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 1 and current_price > info[symbol]['ma'] and info[symbol]['macd_osc'] > 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
@@ -155,7 +157,7 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + EMA 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 3 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < -1 and current_price < info[symbol]['ma'] and info[symbol]['macd_osc'] < 0:
+                elif total_hold < 10 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < -1 and current_price < info[symbol]['ma'] and info[symbol]['macd_osc'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매수
                     info[symbol]['price'] = current_price
