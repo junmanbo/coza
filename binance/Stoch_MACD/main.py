@@ -120,7 +120,9 @@ while True:
         if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 2:
             symbols.clear()
             symbols = list(tickers)
+            print(f"코인 전체 리스트로 초기화\nList: {symbols}")
             save_info()
+
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
@@ -131,6 +133,7 @@ while True:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+                    print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
@@ -139,6 +142,7 @@ while True:
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+                    print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
@@ -153,6 +157,7 @@ while True:
                     info[symbol]['amount'] = amount # 코인 갯수 저장
                     total_hold += 1
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
+                    print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0:
@@ -165,6 +170,7 @@ while True:
                     info[symbol]['amount'] = amount # 코인 갯수 저장
                     total_hold += 1
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
+                    print(f"{symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 time.sleep(0.5)
                 print(f"시간: {now} 코인: {symbol}")
@@ -176,16 +182,19 @@ while True:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 if info[symbol]['position'] == 'wait':
                     symbols.remove(symbol)
+                    print(f"코인: {symbol} 보유X -> 코인 리스트에서 삭제\nList: {symbols}")
 
                 elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
                     profit = 1.5
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+                    print(f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.995 > current_price:
                     profit = 1.5
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+                    print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
