@@ -33,8 +33,9 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-symbols = ['BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', '1INCH/USDT', 'CHZ/USDT', 'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT', 'HBAR/USDT'] 
+tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', '1INCH/USDT', 'CHZ/USDT', 'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT', 'HBAR/USDT')
 
+symbols = list(tickers)
 # 코인별 저장 정보값 초기화
 info = {}
 for symbol in symbols:
@@ -43,6 +44,7 @@ for symbol in symbols:
     info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
     info[symbol]['price'] = 0 # 코인 거래한 가격
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
+    info[symbol]['macd_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['ma'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
@@ -52,17 +54,24 @@ def calStochastic(df, n=9, m=5, t=3):
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
     slow_k = fast_k.ewm(span=m).mean()
     slow_d = slow_k.ewm(span=t).mean()
-    slow_osc = slow_k - slow_d
-    df = df.assign(fast_k=fast_k, fast_d=slow_k, slow_k=slow_k, slow_d=slow_d, slow_osc=slow_osc)
+    df['slow_osc'] = slow_k - slow_d
     return df['slow_osc'][-1]
 
 def calMA(df, fast=14):
     df['ma'] = df['close'].ewm(span=fast).mean()
     return df['ma'][-1]
 
+def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
+    EMAFast = df.close.ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
+    EMASlow = df.close.ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
+    MACD = EMAFast - EMASlow
+    MACDSignal = MACD.ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
+    df['macd_osc'] = MACD - MACDSignal
+    return df['macd_osc'][-1]
+
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
-    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + EMA 수집중...")
+    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + MACD 수집중...")
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -72,11 +81,11 @@ def save_info():
 
         # Save Stochastic Oscilator information
         info[symbol]['slow_osc'] = calStochastic(df)
-        info[symbol]['ma'] = calMA(df)
+        info[symbol]['macd_osc'] = calMACD(df)
         print(f"코인: {symbol}")
-        print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}\n")
+        print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['macd_osc']}\n")
         time.sleep(0.5)
-    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + EMA 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
+    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + MACD 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
 
 # 호가 단위 맞추기
 def price_unit(price):
@@ -102,13 +111,15 @@ def adjust_money(free_balance, total_hold):
         return money
 
 total_hold = 0
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic + EMA 전략 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic + MACD 전략 시작합니다. 화이팅!")
 save_info()
 
 while True:
     try:
         now = datetime.datetime.now()
-        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 4:
+        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 2:
+            symbols.clear()
+            symbols = list(tickers)
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -132,7 +143,7 @@ while True:
                     info[symbol]['position'] = 'wait'
 
                 # Stochastic + EMA 둘 다 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 1 and current_price > info[symbol]['ma']:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and info[symbol]['macd_osc'] > 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     take_profit_params = {'stopPrice': current_price * 1.015}
@@ -144,7 +155,7 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + EMA 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < -1 and current_price < info[symbol]['ma']:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매도
                     take_profit_params = {'stopPrice': current_price * 0.995}
@@ -157,27 +168,30 @@ while True:
 
                 time.sleep(0.5)
                 print(f"시간: {now} 코인: {symbol}")
-                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}")
+                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(300)
+            time.sleep(150)
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                if info[symbol]['position'] == 'wait':
+                    symbols.remove(symbol)
 
-                if info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
-                    profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
+                elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
+                    profit = 1.5
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
+
                 elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.995 > current_price:
-                    profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
+                    profit = 1.5
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
-                time.sleep(1)
+                time.sleep(5)
                 print(f"시간: {now} 코인: {symbol}")
-                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nEMA: {info[symbol]['ma']}")
+                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"현재가: {current_price}\n포지션 상태: {info[symbol]['position']}\n")
 
     except Exception as e:
