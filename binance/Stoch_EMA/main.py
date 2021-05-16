@@ -121,7 +121,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour == 14 and now.minute == 30 and 0 <= now.second <= 10:
+        if (now.hour + 3) % 12 == 0 and now.minute == 30 and 0 <= now.second <= 10:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
