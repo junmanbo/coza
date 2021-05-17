@@ -176,7 +176,7 @@ while True:
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(150)
+            time.sleep(100)
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
