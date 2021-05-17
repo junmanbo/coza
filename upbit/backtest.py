@@ -56,7 +56,7 @@ with open("AnalysisStrategies.txt", 'w') as f:
         df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
         f.write(f"Just Holding\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n---------------------------------\n")
 
-        fee = 0.02 / 100
+        fee = 0.01 / 100
 
         #  ror_bull = np.where((df.open > df.ma) & (df.high > df.t_bull), df.close / df.t_bull - fee, 1)
         #  ror_bear = np.where((df.open < df.ma) & (df.low < df.t_bear), df.t_bear / df.close - fee, 1)
@@ -69,41 +69,30 @@ with open("AnalysisStrategies.txt", 'w') as f:
         #  df['승률'] = total_win / total_trading * 100
         #  f.write(f"변동성 돌파\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률'][-2]}\n---------------------------------\n")
 
+        #  df['bull'] = np.where((df['MACD_OSC'] > 0) & (df['Slow_OSC'] > 0), 1, 0)
+        #  df['bear'] = np.where((df['MACD_OSC'] < 0) & (df['Slow_OSC'] < 0), 1, 0)
+        #  df['ror_bull'] = np.where((df['bull'] == 1), np.where((df['high'] > (df['open'] * 1.015)), 1.015 - fee, (df['close'] / df['open']) - fee), 1)
+        #  df['ror_bear'] = np.where((df['bear'] == 1), np.where((df['low'] < (df['open'] * 0.985)), 1.015 - fee, (df['open'] / df['close']) - fee), 1)
+        #  df['hpr1'] = df['ror_bull'].cumprod() * df['ror_bear'].cumprod()
+        #  df['dd'] = (df['hpr1'].cummax() - df['hpr1']) / df['hpr1'].cummax() * 100
+        #  df['trading'] = np.where((df['ror_bull'] == 1) & (df['ror_bear'] == 1), 0, 1)
+        #  df['win'] = np.where((df['ror_bull'] > 1) | (df['ror_bear'] > 1), 1, 0)
+        #  df['total_trading'] = df['trading'].cumsum()
+        #  df['total_win'] = df['win'].cumsum()
+        #  df['승률1'] = df['total_win'] / df['total_trading'] * 100
+        #  f.write(f"stoch(1.5% 익절)+macd\nHPR: {df['hpr1'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률1'][-2]}\n---------------------------------\n")
+
         df['bull'] = np.where((df['MACD_OSC'] > 0) & (df['Slow_OSC'] > 0), 1, 0)
-        df['bear'] = np.where((df['MACD_OSC'] < 0) & (df['Slow_OSC'] < 0), 1, 0)
-        df['ror_bull'] = np.where((df['bull'] == 1), np.where((df['high'] > (df['open'] * 1.015)), 1.015 - fee, (df['close'] / df['open']) - fee), 1)
-        df['ror_bear'] = np.where((df['bear'] == 1), np.where((df['low'] < (df['open'] * 0.985)), 1.015 - fee, (df['open'] / df['close']) - fee), 1)
-        df['hpr1'] = df['ror_bull'].cumprod() * df['ror_bear'].cumprod()
+        df['ror_bull'] = np.where((df['bull'] == 1), np.where((df['high'] > (df['open'] * 1.05)), 1.05 - fee, (df['close'] / df['open']) - fee), 1)
+        df['hpr1'] = df['ror_bull'].cumprod()
         df['dd'] = (df['hpr1'].cummax() - df['hpr1']) / df['hpr1'].cummax() * 100
-        df['trading'] = np.where((df['ror_bull'] == 1) & (df['ror_bear'] == 1), 0, 1)
-        df['win'] = np.where((df['ror_bull'] > 1) | (df['ror_bear'] > 1), 1, 0)
+        df['trading'] = np.where((df['ror_bull'] == 1), 0, 1)
+        df['win'] = np.where((df['ror_bull'] > 1), 1, 0)
         df['total_trading'] = df['trading'].cumsum()
         df['total_win'] = df['win'].cumsum()
         df['승률1'] = df['total_win'] / df['total_trading'] * 100
-        f.write(f"stoch(1.5% 익절)+macd\nHPR: {df['hpr1'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률1'][-2]}\n---------------------------------\n")
+        f.write(f"stoch+macd(5%익절)\nHPR: {df['hpr1'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률1'][-2]}\n---------------------------------\n")
 
-        df['bull'] = np.where((df['MACD_OSC'] > 0) & (df['Slow_OSC'] > 0), 1, 0)
-        df['bear'] = np.where((df['MACD_OSC'] < 0) & (df['Slow_OSC'] < 0), 1, 0)
-        df['ror_bull'] = np.where((df['bull'] == 1), np.where((df['high'] > (df['open'] * 1.02)), 1.02 - fee, (df['close'] / df['open']) - fee), 1)
-        df['ror_bear'] = np.where((df['bear'] == 1), np.where((df['low'] < (df['open'] * 0.98)), 1.02 - fee, (df['open'] / df['close']) - fee), 1)
-        df['hpr2'] = df['ror_bull'].cumprod() * df['ror_bear'].cumprod()
-        df['dd'] = (df['hpr2'].cummax() - df['hpr2']) / df['hpr2'].cummax() * 100
-        df['trading'] = np.where((df['ror_bull'] == 1) & (df['ror_bear'] == 1), 0, 1)
-        df['win'] = np.where((df['ror_bull'] > 1) | (df['ror_bear'] > 1), 1, 0)
-        df['total_trading'] = df['trading'].cumsum()
-        df['total_win'] = df['win'].cumsum()
-        df['승률2'] = df['total_win'] / df['total_trading'] * 100
-        f.write(f"stoch(2% 익절)+macd\nHPR: {df['hpr2'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률2'][-2]}\n---------------------------------\n")
-
-        if df['hpr1'][-2] > df['hpr2'][-2]:
-            count_hpr1 += 1
-        if df['hpr1'][-2] < df['hpr2'][-2]:
-            count_hpr2 += 1
-
-        if df['승률1'][-2] > 75:
-            count1 += 1
-        if df['승률2'][-2] > 75:
-            count2 += 1
         #  ror_bull = np.where((df.Slow_OSC > 0), df.close / df.open - fee, 1)
         #  ror_bear = np.where((df.Slow_OSC < 0), df.open / df.close - fee, 1)
         #  df['hpr'] = ror_bull.cumprod() * ror_bear.cumprod()
@@ -114,22 +103,9 @@ with open("AnalysisStrategies.txt", 'w') as f:
         #  total_win = win.cumsum()
         #  df['승률'] = total_win / total_trading * 100
         #  f.write(f"Stochastic\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률'][-2]}\n---------------------------------\n")
-        #
-        #  ror_bull = np.where((df.Slow_OSC > 0) & (df.Slow_K < 80) & (df.MACD_OSC > 0) & (df.open > df.ma), df.close / df.open - fee, 1)
-        #  ror_bear = np.where((df.Slow_OSC < 0) & (df.Slow_K > 30) & (df.MACD_OSC < 0) & (df.open < df.ma), df.open / df.close - fee, 1)
-        #  df['hpr'] = ror_bull.cumprod() * ror_bear.cumprod()
-        #  df['dd'] = (df['hpr'].cummax() - df['hpr']) / df['hpr'].cummax() * 100
-        #  trading = np.where((ror_bull == 1) & (ror_bear == 1), 0, 1)
-        #  win = np.where((ror_bull > 1) | (ror_bear > 1), 1, 0)
-        #  total_trading = trading.cumsum()
-        #  total_win = win.cumsum()
-        #  df['승률'] = total_win / total_trading * 100
-        #  f.write(f"stoch+ema+macd\nHPR: {df['hpr'][-2]}\nMDD: {df['dd'].max()}\n승률: {df['승률'][-2]}\n---------------------------------\n")
 
         #  df.to_excel(f"{ticker}-Stochastic(50%).xlsx")
 
         time.sleep(0.1)
         print("\n")
         f.write("\n")
-    f.write(f"익절1.5% HPR: {count_hpr1} 승률75%이상: {count1}\n익절2% HPR: {count_hpr2} 승률75%이상: {count2}\n")
-
