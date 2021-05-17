@@ -117,7 +117,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 2:
+        if (now.hour + 3) % 12 == 0 and 10 <= now.minute <= 12:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
@@ -163,7 +163,7 @@ while True:
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매도
-                    take_profit_params = {'stopPrice': current_price * 0.995}
+                    take_profit_params = {'stopPrice': current_price * 0.985}
                     binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
@@ -191,7 +191,7 @@ while True:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
-                elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.995 > current_price:
+                elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.985 > current_price:
                     profit = 1.5
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
