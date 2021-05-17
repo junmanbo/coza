@@ -117,7 +117,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if (now.hour + 3) % 12 == 0 and 10 <= now.minute <= 12:
+        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 1:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
@@ -132,7 +132,7 @@ while True:
                 if info[symbol]['position'] == 'long':
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
@@ -141,7 +141,7 @@ while True:
                 elif info[symbol]['position'] == 'short':
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
@@ -176,7 +176,7 @@ while True:
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(100)
+            time.sleep(90)
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -186,19 +186,19 @@ while True:
 
                 elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
                     profit = 1.5
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.985 > current_price:
                     profit = 1.5
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
-                time.sleep(5)
+                time.sleep(3)
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"현재가: {current_price}\n포지션 상태: {info[symbol]['position']}\n")
