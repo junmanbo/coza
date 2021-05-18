@@ -89,6 +89,7 @@ start_price = 0
 end_price = 0
 profit = 0
 
+bot.sendMessage(chat_id = chat_id, text=f"AI 전략 자동매매를 시작합니다.")
 while True:
     try:
         now = datetime.datetime.now()
