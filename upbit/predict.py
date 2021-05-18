@@ -57,8 +57,8 @@ def calPrice(ticker, df):
 
 
 # Load the data
-ticker = "KRW-BTC"
+ticker = "KRW-XRP"
 df = pyupbit.get_ohlcv(ticker=ticker, interval="minute5", count=200)
 while True:
-    if calPrice(ticker=ticker, df=df) > 0.98:
+    if calPrice(ticker=ticker, df=df) > 0.97:
         break
