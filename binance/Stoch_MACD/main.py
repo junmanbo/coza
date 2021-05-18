@@ -178,8 +178,8 @@ while True:
                 print(f"포지션 상태: {info[symbol]['position']}\n")
             time.sleep(90)
 
-        # 30분 마다 stochastic 값 체크하여 손절
-        elif now.minute % 30 == 0:
+        # 1시간 마다 stochastic 값 체크하여 손절
+        elif now.hour % 2 == 0:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
