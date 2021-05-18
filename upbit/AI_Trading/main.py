@@ -93,6 +93,7 @@ bot.sendMessage(chat_id = chat_id, text=f"AI 전략 자동매매를 시작합니
 while True:
     try:
         now = datetime.datetime.now()
+        time.sleep(30)
         if now.minute % 15 == 0:
             df = pyupbit.get_ohlcv(ticker=ticker, interval="minute15", count=200)
 
