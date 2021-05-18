@@ -130,27 +130,27 @@ while True:
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
+                    total_hold -= 1
+                    info[symbol]['position'] = 'wait'
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
 
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short':
+                    total_hold -= 1
+                    info[symbol]['position'] = 'wait'
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
 
                 # Stochastic + MACD 둘 다 조건 만족시 롱 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and info[symbol]['macd_osc'] > 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
-                    take_profit_params = {'stopPrice': current_price * 1.015}
+                    take_profit_params = {'stopPrice': current_price * 1.02}
                     binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'long' # 포지션 'long' 으로 변경
@@ -163,7 +163,7 @@ while True:
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매도
-                    take_profit_params = {'stopPrice': current_price * 0.985}
+                    take_profit_params = {'stopPrice': current_price * 0.98}
                     binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
@@ -177,6 +177,35 @@ while True:
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
             time.sleep(90)
+
+        # 30분 마다 stochastic 값 체크하여 손절
+        elif now.minute % 30 == 0:
+            save_info()
+            for symbol in symbols:
+                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
+                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
+
+                # 롱 포지션 청산
+                if info[symbol]['position'] == 'long' and info[symbol]['slow_osc'] < 0:
+                    total_hold -= 1
+                    info[symbol]['position'] = 'wait'
+                    binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
+                    profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
+                    print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+
+                # 숏 포지션 청산
+                elif info[symbol]['position'] == 'short' and info[symbol]['slow_osc'] > 0:
+                    total_hold -= 1
+                    info[symbol]['position'] = 'wait'
+                    binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
+                    profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
+                    print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+            time.sleep(60)
+
+        # 실시간 가격 체크
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -184,21 +213,21 @@ while True:
                     symbols.remove(symbol)
                     print(f"코인: {symbol} 보유X -> 코인 리스트에서 삭제\nList: {symbols}")
 
-                elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
-                    profit = 1.5
+                elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.02 < current_price:
+                    profit = 2
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
-                elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.985 > current_price:
-                    profit = 1.5
+                elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.98 > current_price:
+                    profit = 2
                     bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
                     print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
 
-                time.sleep(3)
+                time.sleep(2)
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nMACD: {info[symbol]['macd_osc']}")
                 print(f"현재가: {current_price}\n포지션 상태: {info[symbol]['position']}\n")
