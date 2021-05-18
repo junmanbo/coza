@@ -117,6 +117,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
+        time.sleep(10)
         if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 1:
             symbols.clear()
             symbols = list(tickers)
