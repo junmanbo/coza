@@ -206,10 +206,11 @@ while True:
             time.sleep(60)
 
         elif len(symbols) == 0:
-            while (now.hour + 3) % 12 != 0 and now.minute != 0:
-                now = datetime.datetime.now()
-                print("리스트가 비어서 대기중입니다...")
-                time.sleep(10)
+            while True:
+                if (now.hour + 3) % 12 == 0 and now.minute == 0:
+                    now = datetime.datetime.now()
+                    time.sleep(10)
+                    break
 
         # 실시간 가격 체크
         else:
