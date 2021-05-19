@@ -205,16 +205,17 @@ while True:
                     print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
             time.sleep(60)
 
+        elif len(symbols) == 0:
+            while (now.hour + 3) % 12 != 0 and now.minute != 0:
+                now = datetime.datetime.now()
+                print("리스트가 비어서 대기중입니다...")
+                time.sleep(10)
+
         # 실시간 가격 체크
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                if len(symbols) == 0:
-                    while (now.hour + 3) % 12 != 0 and now.minute != 0:
-                        now = datetime.datetime.now()
-                        time.sleep(10)
-
-                elif info[symbol]['position'] == 'wait':
+                if info[symbol]['position'] == 'wait':
                     symbols.remove(symbol)
                     print(f"코인: {symbol} 보유X -> 코인 리스트에서 삭제\nList: {symbols}")
 
