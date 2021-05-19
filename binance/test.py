@@ -16,9 +16,22 @@ binance = ccxt.binance({
 })
 symbols = ['TRX/USDT', 'QTUM/USDT', 'BTC/USDT', 'ETH/USDT']
 
+# Stochastic Slow Oscilator 값 계산
+def calStochastic(df, n=9, m=5, t=3):
+    ndays_high = df.high.rolling(window=n, min_periods=1).max()
+    ndays_low = df.low.rolling(window=n, min_periods=1).min()
+    fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
+    slow_k = fast_k.ewm(span=m).mean()
+    slow_d = slow_k.ewm(span=t).mean()
+    df['slow_osc'] = slow_k - slow_d
+    return df['slow_osc'][-1]
+
 for symbol in symbols:
-    #  high = binance.fetch_ticker(symbol)['high']
-    #  low = binance.fetch_ticker(symbol)['low']
-    #  print(f"Coin: {symbol} High: {high} Low: {low}")
-    symbols.remove(symbol)
-    print(symbols)
+    ohlcv = binance.fetch_ohlcv(symbol, '1d')
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    calStochastic(df)
+    print(symbol)
+    print(df)
+    print(calStochastic(df))
