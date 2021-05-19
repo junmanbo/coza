@@ -122,7 +122,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 1:
+        if (now.hour + 3) % 12 == 0 and 0 <= now.minute <= 2:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
@@ -181,7 +181,7 @@ while True:
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nMACD: {info[symbol]['macd_osc']}\n")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(30)
+            time.sleep(180)
 
         # 2시간 마다 stochastic 값 체크하여 손절
         elif now.hour % 2 == 0 and now.minute == 0:
@@ -211,17 +211,14 @@ while True:
             time.sleep(60)
 
         elif len(symbols) == 0:
-            while True:
-                if (now.hour + 3) % 12 == 0 and now.minute == 0:
-                    now = datetime.datetime.now()
-                    time.sleep(10)
-                    break
+            if now.minute == 0:
+                time.sleep(3600)
 
         # 실시간 가격 체크
         else:
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                profit = 2
+                profit = 1.5
                 if info[symbol]['position'] == 'wait':
                     symbols.remove(symbol)
                     print(f"코인: {symbol} 보유X -> 코인 리스트에서 삭제\nList: {symbols}")
