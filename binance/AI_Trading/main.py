@@ -76,7 +76,7 @@ def calPrice(ticker):
 def savePrice(ticker):
     while True:
         calPrice(ticker)
-        if info[ticker]['linReg_confidence'] > 0.97:
+        if info[ticker]['linReg_confidence'] > 0.975:
             break
 
 bot.sendMessage(chat_id = chat_id, text=f"AI 전략 시작합니다. 화이팅!")
@@ -85,7 +85,7 @@ while True:
     try:
         now = datetime.datetime.now()
         if now.minute % 30 == 0:
-            money = round(binance.fetch_balance()['USDT']['free'] / 2, 0)
+            money = round(binance.fetch_balance()['USDT']['free'] / 4, 0)
             for ticker in tickers:
                 savePrice(ticker)
                 current_price = binance.fetch_ticker(symbol=ticker)['close'] # 현재가 조회
