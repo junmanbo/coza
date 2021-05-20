@@ -184,7 +184,7 @@ while True:
             time.sleep(60)
 
         # 1시간 마다 stochastic 값 체크하여 손절
-        elif now.hour == 0 and now.minute == 0:
+        elif now.minute == 0:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
