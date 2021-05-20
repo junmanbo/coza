@@ -33,7 +33,7 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-tickers = ('BTC/USDT', 'ETH/USDT', 'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'DOT/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', '1INCH/USDT', 'CHZ/USDT', 'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT', 'HBAR/USDT')
+tickers = ('BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT', 'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'IOTA/USDT', 'BAT/USDT', 'VET/USDT', 'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT', 'ZRX/USDT', 'COMP/USDT', 'OMG/USDT', 'DOGE/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT', 'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT', 'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT', 'FIL/USDT', 'RSR/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', '1INCH/USDT', 'CHZ/USDT', 'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT', 'HBAR/USDT')
 
 symbols = list(tickers)
 # 코인별 저장 정보값 초기화
@@ -77,7 +77,6 @@ def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
 
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
-    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + MACD 수집중...")
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -93,7 +92,6 @@ def save_info():
         print(f"코인: {symbol}")
         print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nStochastic K: {info[symbol]['slow_k']}\nMACD: {info[symbol]['macd_osc']}\n")
         time.sleep(0.5)
-    bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + MACD 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
 
 # 호가 단위 맞추기
 def price_unit(price):
@@ -115,7 +113,7 @@ def price_unit(price):
 def adjust_money(free_balance, total_hold):
     if total_hold < 5:
         available_hold = 5 - total_hold
-        money = round((free_balance * 4 / available_hold - 6), -1)
+        money = round((free_balance * 2 / available_hold - 6), -1)
         return money
 
 total_hold = 0
@@ -126,7 +124,7 @@ while True:
     try:
         now = datetime.datetime.now()
         time.sleep(1)
-        if (now.hour - 3) % 6 == 0 and now.minute == 0:
+        if (now.hour + 3) % 12 == 0 and now.minute == 0:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
@@ -142,18 +140,18 @@ while True:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    profit = round((current_price - info[symbol]['price']) / info[symbol]['price'] * 100, 2) # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
+                    profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}%")
+                    print(f"코인: {symbol} (롱) 포지션 청산\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}")
 
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short':
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    profit = round((info[symbol]['price'] - current_price) / current_price * 100, 2) # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
+                    profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
+                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
+                    print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 롱 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc_slope'] > 0 and info[symbol]['slow_k'] < 85:
@@ -220,31 +218,16 @@ while True:
             if now.minute == 2:
                 time.sleep(3480)
 
-        # 실시간 가격 체크
         else:
             for symbol in symbols:
-                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                profit = 1.5
                 if info[symbol]['position'] == 'wait':
                     symbols.remove(symbol)
                     print(f"코인: {symbol} 보유X -> 코인 리스트에서 삭제\nList: {symbols}")
 
-                elif info[symbol]['position'] == 'long' and info[symbol]['price'] * 1.015 < current_price:
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit}")
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
-
-                elif info[symbol]['position'] == 'short' and info[symbol]['price'] * 0.985 > current_price:
-                    bot.sendMessage(chat_id = chat_id, text=f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
-
                 time.sleep(1)
                 print(f"시간: {now} 코인: {symbol}")
-                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nMACD: {info[symbol]['macd_osc']}\n")
-                print(f"현재가: {current_price}\n포지션 상태: {info[symbol]['position']}\n")
+                print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nMACD: {info[symbol]['macd_osc']}")
+                print(f"포지션 상태: {info[symbol]['position']}\n")
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
