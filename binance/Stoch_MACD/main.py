@@ -112,7 +112,7 @@ def price_unit(price):
 def adjust_money(free_balance, total_hold):
     if total_hold < 5:
         available_hold = 5 - total_hold
-        money = round((free_balance * 4 / available_hold - 3), -1)
+        money = round((free_balance * 4 / available_hold - 6), -1)
         return money
 
 total_hold = 0
@@ -122,7 +122,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if (now.hour - 3) % 6 == 0 and 0 <= now.minute <= 2:
+        if (now.hour - 3) % 6 == 0 and now.minute == 0:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
@@ -181,7 +181,7 @@ while True:
                 print(f"시간: {now} 코인: {symbol}")
                 print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nMACD: {info[symbol]['macd_osc']}\n")
                 print(f"포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(180)
+            time.sleep(60)
 
         # 1시간 마다 stochastic 값 체크하여 손절
         elif now.hour == 0 and now.minute == 0:
@@ -213,8 +213,8 @@ while True:
             time.sleep(60)
 
         elif len(symbols) == 0:
-            if now.minute == 0:
-                time.sleep(3600)
+            if now.minute == 2:
+                time.sleep(3480)
 
         # 실시간 가격 체크
         else:
