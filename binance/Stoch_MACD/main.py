@@ -45,6 +45,7 @@ for symbol in symbols:
     info[symbol]['price'] = 0 # 코인 거래한 가격
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값
+    info[symbol]['slow_k'] = 0 # Stochastic Slow Oscilator 기울기 값
     info[symbol]['macd_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['ma'] = 0 # 지수이동평균 값
 
@@ -59,7 +60,8 @@ def calStochastic(df, n=9, m=5, t=3):
     slow_osc_slope = slow_osc - slow_osc.shift(1)
     df['slow_osc'] = slow_osc
     df['slow_osc_slope'] = slow_osc_slope
-    return df['slow_osc'][-1], df['slow_osc_slope'][-1]
+    df['slow_k'] = slow_k
+    return df['slow_osc'][-1], df['slow_osc_slope'][-1], df['slow_k'][-1]
 
 def calMA(df, fast=14):
     df['ma'] = df['close'].ewm(span=fast).mean()
@@ -86,9 +88,10 @@ def save_info():
         # Save Stochastic Oscilator information
         info[symbol]['slow_osc'] = calStochastic(df)[0]
         info[symbol]['slow_osc_slope'] = calStochastic(df)[1]
+        info[symbol]['slow_k'] = calStochastic(df)[2]
         info[symbol]['macd_osc'] = calMACD(df)
         print(f"코인: {symbol}")
-        print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nMACD: {info[symbol]['macd_osc']}\n")
+        print(f"Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\nStochastic K: {info[symbol]['slow_k']}\nMACD: {info[symbol]['macd_osc']}\n")
         time.sleep(0.5)
     bot.sendMessage(chat_id = chat_id, text="코인별 Stochastic + MACD 값을 저장했습니다.\n매수/매도 조건을 확인하겠습니다.")
 
@@ -152,7 +155,7 @@ while True:
                     print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc_slope'] > 0:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] > 0 and info[symbol]['macd_osc'] > 0 and info[symbol]['slow_osc_slope'] > 0 and info[symbol]['slow_k'] < 80:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     take_profit_params = {'stopPrice': current_price * 1.015}
@@ -165,7 +168,7 @@ while True:
                     print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc_slope'] < 0:
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and info[symbol]['slow_osc'] < 0 and info[symbol]['macd_osc'] < 0 and info[symbol]['slow_osc_slope'] < 0 and info[symbol]['slow_k'] > 30:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매도
                     take_profit_params = {'stopPrice': current_price * 0.985}
