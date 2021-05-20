@@ -122,7 +122,7 @@ save_info()
 while True:
     try:
         now = datetime.datetime.now()
-        if now.hour % 3 == 0 and 0 <= now.minute <= 2:
+        if (now.hour - 3) % 6 == 0 and 0 <= now.minute <= 2:
             symbols.clear()
             symbols = list(tickers)
             print(f"코인 전체 리스트로 초기화\nList: {symbols}")
