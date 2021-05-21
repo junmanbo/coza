@@ -33,7 +33,7 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-tickers = ('ADA/USDT', 'DOT/USDT', 'BTC/USDT', 'ETH/USDT')
+tickers = ('ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT')
 
 symbols = list(tickers)
 
@@ -48,7 +48,7 @@ for symbol in symbols:
     info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값
 
 # Stochastic Slow Oscilator 값 계산
-def calStochastic(df, n=9, m=5, t=3):
+def calStochastic(df, n=12, m=5, t=5):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
@@ -85,7 +85,7 @@ while True:
         time.sleep(10)
         if now.minute == 0:
             save_info()
-            money = binance.fetch_balance()['USDT']['free'] / 2
+            money = binance.fetch_balance()['USDT']['free'] / 4
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 amount = money / current_price # 거래할 코인 갯수
