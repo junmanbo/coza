@@ -55,8 +55,8 @@ for symbol in symbols:
     info[symbol]['price'] = 0 # 코인 거래한 가격
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
     info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값
-    info[symbol]['slow_k'] = 0 # Stochastic Slow Oscilator 기울기 값
-    info[symbol]['macd_osc'] = 0 # Stochastic Slow Oscilator 값
+    info[symbol]['slow_k'] = 0 # Stochastic Slow K 값
+    info[symbol]['macd_osc'] = 0 # MACD Oscilator 값
     info[symbol]['ma'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
@@ -99,8 +99,8 @@ def save_info():
         info[symbol]['slow_osc_slope'] = calStochastic(df)[1]
         info[symbol]['slow_k'] = calStochastic(df)[2]
         info[symbol]['macd_osc'] = calMACD(df)
-        print(f"코인: {symbol}")
-        print(f"Stochastic OSC: {info[symbol]['slow_osc']}\n\
+        print(f"코인: {symbol}\n\
+                Stochastic OSC: {info[symbol]['slow_osc']}\n\
                 Stochastic OSC Slope: {info[symbol]['slow_osc_slope']}\n\
                 Stochastic K: {info[symbol]['slow_k']}\n\
                 MACD: {info[symbol]['macd_osc']}\n")
