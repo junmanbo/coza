@@ -258,12 +258,6 @@ while True:
 
                 time.sleep(0.1)
 
-
-        elif now.minute == 2 and 0 <= now.second <= 5 :
-            if len(symbols) == 0:
-                print("List가 비어서 대기중 입니다...")
-                time.sleep(3475)
-
         else:
             for symbol in symbols:
                 if info[symbol]['position'] == 'wait':
