@@ -33,7 +33,7 @@ binance.load_markets()
 print('Loaded markets from', binance.id)
 
 # 코인 목록
-tickers = ('ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT')
+tickers = ('ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT', 'BTC/USDT', 'ETH/USDT')
 
 symbols = list(tickers)
 
@@ -108,7 +108,7 @@ while True:
     try:
         now = datetime.datetime.now()
         time.sleep(1)
-        if now.minute == 10 and 0 <= now.second <= 3:
+        if now.minute % 30 == 0 and 0 <= now.second <= 3:
             save_info()
             for symbol in symbols:
                 money = binance.fetch_balance()['USDT']['free']
