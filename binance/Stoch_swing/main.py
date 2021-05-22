@@ -100,18 +100,18 @@ def save_info():
             Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
             Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
             Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n")
-        time.sleep(0.1)
+        time.sleep(1)
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 
 while True:
     try:
         now = datetime.datetime.now()
-        time.sleep(10)
-        if now.minute == 0:
+        time.sleep(1)
+        if now.minute == 10 and 0 <= now.second <= 3:
             save_info()
-            money = binance.fetch_balance()['USDT']['free'] / 4
             for symbol in symbols:
+                money = binance.fetch_balance()['USDT']['free']
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 amount = money / current_price # 거래할 코인 갯수
                 # 코인 미보유 시 거래 (롱)
@@ -154,13 +154,7 @@ while True:
                             매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
                         print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
                         info[symbol]['position'] = 'wait'
-
                 time.sleep(1)
-                print(f"시간: {now} 코인: {symbol}\n\
-                    Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\nStochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
-                    Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\nStochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
-                    포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(60)
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")

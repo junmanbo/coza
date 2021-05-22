@@ -156,12 +156,11 @@ while True:
         now = datetime.datetime.now()
         time.sleep(1)
 
-        if now.minute == 0 and 1 <= now.second <= 5:
+        if now.minute == 0 and 0 <= now.second <= 3:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                free_balance = binance.fetch_balance()['USDT']['free']
-                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
+                money = binance.fetch_balance()['USDT']['free']
 
                 # 익절한 코인 체크
                 if info[symbol]['position'] == 'long' and info[symbol]['high_h'] > info[symbol]['price'] * 1.017:
@@ -241,6 +240,7 @@ while True:
                         매도가: {current_price}\n투자금액: {money}\n총 보유 코인: {total_hold}")
                     print(f"{symbol} 숏 포지션\n매도가: {current_price}\n\
                         투자금액: {money}\n총 보유 코인: {total_hold}")
+                time.sleep(0.1)
 
     except Exception as e:
         bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
