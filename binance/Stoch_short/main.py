@@ -42,14 +42,15 @@ for symbol in symbols:
     info[symbol]['amount'] = 0 # 코인 매수/매도 갯수
     info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
     info[symbol]['price'] = 0 # 코인 거래한 가격
-    info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값
-    info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값
-    info[symbol]['slow_k'] = 0 # Stochastic Slow K 값
+    info[symbol]['slow_osc_d'] = 0 # Stochastic Slow Oscilator 값 (Day)
+    info[symbol]['slow_osc_slope_d'] = 0 # Stochastic Slow Oscilator 기울기 값 (Day)
+    info[symbol]['slow_osc_h'] = 0 # Stochastic Slow Oscilator 값 (Hour)
+    info[symbol]['slow_osc_slope_h'] = 0 # Stochastic Slow Oscilator 기울기 값 (Hour)
     info[symbol]['macd_osc'] = 0 # MACD Oscilator 값
     info[symbol]['ma'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
-def calStochastic(df, n=12, m=5, t=5):
+def calStochastic_day(df, n=12, m=5, t=5):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
@@ -57,10 +58,22 @@ def calStochastic(df, n=12, m=5, t=5):
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
     slow_osc_slope = slow_osc - slow_osc.shift(1)
-    df['slow_osc'] = slow_osc
-    df['slow_osc_slope'] = slow_osc_slope
-    df['slow_k'] = slow_k
-    return df['slow_osc'][-1], df['slow_osc_slope'][-1], df['slow_k'][-1]
+    df['slow_osc_d'] = slow_osc
+    df['slow_osc_slope_d'] = slow_osc_slope
+    return df['slow_osc_d'][-1], df['slow_osc_slope_d'][-1]
+
+# Stochastic Slow Oscilator 값 계산
+def calStochastic_hour(df, n=20, m=12, t=12):
+    ndays_high = df.high.rolling(window=n, min_periods=1).max()
+    ndays_low = df.low.rolling(window=n, min_periods=1).min()
+    fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
+    slow_k = fast_k.ewm(span=m).mean()
+    slow_d = slow_k.ewm(span=t).mean()
+    slow_osc = slow_k - slow_d
+    slow_osc_slope = slow_osc - slow_osc.shift(1)
+    df['slow_osc_h'] = slow_osc
+    df['slow_osc_slope_h'] = slow_osc_slope
+    return df['slow_osc_h'][-1], df['slow_osc_slope_h'][-1]
 
 def calMA(df, fast=14):
     df['ma'] = df['close'].ewm(span=fast).mean()
@@ -78,26 +91,36 @@ def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
 def save_info():
     for symbol in symbols:
         # 일봉 데이터 수집
-        ohlcv = binance.fetch_ohlcv(symbol, '1d')
-        df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-        df.set_index('datetime', inplace=True)
+        ohlcv_d = binance.fetch_ohlcv(symbol, '1d')
+        df_d = pd.DataFrame(ohlcv_d, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+        df_d['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+        df_d.set_index('datetime', inplace=True)
+
+        ohlcv_h = binance.fetch_ohlcv(symbol, '1h')
+        df_h = pd.DataFrame(ohlcv_h, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+        df_h['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+        df_h.set_index('datetime', inplace=True)
 
         # Save Stochastic Oscilator information
-        info[symbol]['slow_osc'] = calStochastic(df)[0]
-        info[symbol]['slow_osc_slope'] = calStochastic(df)[1]
-        info[symbol]['slow_k'] = calStochastic(df)[2]
-        info[symbol]['macd_osc'] = calMACD(df)
-        info[symbol]['ma'] = calMA(df)
-        info[symbol]['open'] = df['open'][-1]
+        info[symbol]['slow_osc_d'] = calStochastic_day(df_d)[0]
+        info[symbol]['slow_osc_slope_d'] = calStochastic_day(df_d)[1]
+        info[symbol]['slow_osc_h'] = calStochastic_hour(df_h)[0]
+        info[symbol]['slow_osc_slope_h'] = calStochastic_hour(df_h)[1]
+        info[symbol]['macd_osc'] = calMACD(df_d)
+        info[symbol]['ma'] = calMA(df_d)
+        info[symbol]['open_d'] = df_d['open'][-1]
+        info[symbol]['high_h'] = df_h['high'][-1]
+        info[symbol]['low_h'] = df_h['low'][-1]
+
         print(f"코인: {symbol}\n\
-            Stochastic OSC: {info[symbol]['slow_osc']}\n\
-            Stochastic OSC Slope: {info[symbol]['slow_osc_slope']}\n\
-            Stochastic K: {info[symbol]['slow_k']}\n\
+            Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
+            Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
+            Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
+            Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
             MACD: {info[symbol]['macd_osc']}\n\
             EMA: {info[symbol]['ma']}\n\
-            OPEN: {info[symbol]['open']}\n")
-        time.sleep(0.5)
+            OPEN: {info[symbol]['open_d']}\n")
+        time.sleep(0.1)
 
 # 호가 단위 맞추기
 def price_unit(price):
@@ -131,7 +154,41 @@ while True:
     try:
         now = datetime.datetime.now()
         time.sleep(1)
-        if (now.hour + 3) % 12 == 0 and now.minute == 0:
+
+        # 1시간 마다 stochastic 값 체크하여 손절
+        if now.minute == 0 and 0 <= now.second <= 5:
+            save_info()
+            for symbol in symbols:
+                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
+                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
+
+                # 롱 포지션 청산
+                if info[symbol]['position'] == 'long':
+                    if info[symbol]['slow_osc_h'] < 0 or info[symbol]['slow_osc_slope_h'] < 0:
+                        total_hold -= 1
+                        info[symbol]['position'] = 'wait'
+                        binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
+                        profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
+                        bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n\
+                            매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}%")
+                        print(f"코인: {symbol} (롱) 포지션 청산\n\
+                            매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}")
+
+                # 숏 포지션 청산
+                elif info[symbol]['position'] == 'short':
+                    if info[symbol]['slow_osc_h'] > 0 or info[symbol]['slow_osc_slope_h'] > 0:
+                        total_hold -= 1
+                        info[symbol]['position'] = 'wait'
+                        binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
+                        profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
+                        bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n\
+                            매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
+                        print(f"코인: {symbol} (숏) 포지션 청산\n\
+                            매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
+            time.sleep(6)
+
+        elif now.minute == 1 and 0 <= now.second <= 5:
             symbols.clear()
             symbols = list(tickers)
             for coin in except_coin:
@@ -144,32 +201,11 @@ while True:
                 free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
                 money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
 
-                # 롱 포지션 청산
-                if info[symbol]['position'] == 'long':
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
-                    binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n\
-                        매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}%")
-                    print(f"코인: {symbol} (롱) 포지션 청산\n\
-                        매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}")
-
-                # 숏 포지션 청산
-                elif info[symbol]['position'] == 'short':
-                    total_hold -= 1
-                    info[symbol]['position'] = 'wait'
-                    binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n\
-                        매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
-                    print(f"코인: {symbol} (숏) 포지션 청산\n\
-                        매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
-
                 # 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
-                        info[symbol]['slow_osc'] > 0 and info[symbol]['slow_osc_slope'] > 0 and \
-                        info[symbol]['macd_osc'] > 0 and info[symbol]['open'] > info[symbol]['ma']:
+                if total_hold < 5 and info[symbol]['position'] == 'wait' and \
+                        info[symbol]['slow_osc_d'] > 0 and info[symbol]['slow_osc_slope_d'] > 0 and \
+                        info[symbol]['macd_osc'] > 0 and info[symbol]['open_d'] > info[symbol]['ma'] and \
+                        info[symbol]['slow_osc_h'] > 0 and info[symbol]['slow_osc_slope_h'] > 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_buy_order(symbol=symbol, amount=amount) # 시장가 매수
                     take_profit_params = {'stopPrice': current_price * 1.017}
@@ -185,8 +221,9 @@ while True:
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
                 elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
-                        info[symbol]['slow_osc'] < 0 and info[symbol]['slow_osc_slope'] < 0 and \
-                        info[symbol]['macd_osc'] < 0 and info[symbol]['open'] < info[symbol]['ma']:
+                        info[symbol]['slow_osc_d'] < 0 and info[symbol]['slow_osc_slope_d'] < 0 and \
+                        info[symbol]['macd_osc'] < 0 and info[symbol]['open_d'] < info[symbol]['ma'] and \
+                        info[symbol]['slow_osc_h'] < 0 and info[symbol]['slow_osc_slope_h'] < 0:
                     amount = money / current_price # 거래할 코인 갯수
                     binance.create_market_sell_order(symbol=symbol, amount=amount) # 시장가 매도
                     take_profit_params = {'stopPrice': current_price * 0.983}
@@ -200,51 +237,8 @@ while True:
                     print(f"{symbol} 숏 포지션\n매도가: {current_price}\n\
                         투자금액: {money}\n총 보유 코인: {total_hold}")
 
-                time.sleep(1)
-                print(f"시간: {now} 코인: {symbol}\n\
-                    Stochastic OSC: {info[symbol]['slow_osc']}\nStochastic OSC Slope: {info[symbol]['slow_osc_slope']}\n\
-                    포지션 상태: {info[symbol]['position']}\n")
-            time.sleep(60)
-
-        # 1시간 마다 stochastic 값 체크하여 손절
-        elif now.minute == 0:
-            save_info()
-            for symbol in symbols:
-                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                free_balance = round(binance.fetch_balance()['USDT']['free'], 2)
-                money = adjust_money(free_balance=free_balance, total_hold=total_hold) # 코인별 투자금액
-
-                # 롱 포지션 청산
-                if info[symbol]['position'] == 'long':
-                    if info[symbol]['slow_osc_slope'] < 0 or info[symbol]['slow_osc'] < 0:
-                        total_hold -= 1
-                        info[symbol]['position'] = 'wait'
-                        binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                        profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
-                        bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n\
-                            매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}%")
-                        print(f"코인: {symbol} (롱) 포지션 청산\n\
-                            매수가: {info[symbol]['price']} -> 매도가: {current_price}\n수익률: {profit:.2f}")
-
-                # 숏 포지션 청산
-                elif info[symbol]['position'] == 'short':
-                    if info[symbol]['slow_osc_slope'] > 0 or info[symbol]['slow_osc'] > 0:
-                        total_hold -= 1
-                        info[symbol]['position'] = 'wait'
-                        binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                        profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
-                        bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
-                        print(f"코인: {symbol} (숏) 포지션 청산\n\
-                            매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
-
-                # 시간단위 OHLCV 값
-                ohlcv = binance.fetch_ohlcv(symbol, '1h')
-                df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-                df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-                df.set_index('datetime', inplace=True)
-
                 # 익절한 코인 체크
-                if info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * 1.017:
+                elif info[symbol]['position'] == 'long' and info[symbol]['high_h'] > info[symbol]['price'] * 1.017:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = 1.7
@@ -253,7 +247,7 @@ while True:
                     print(f"코인: {symbol} (롱) 포지션 청산\n\
                         매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*1.017}\n수익률: {profit}")
 
-                elif info[symbol]['position'] == 'short' and df['low'][-1] < info[symbol]['price'] * 0.983:
+                elif info[symbol]['position'] == 'short' and info[symbol]['low_h'] < info[symbol]['price'] * 0.983:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = 1.7
@@ -262,12 +256,13 @@ while True:
                     print(f"코인: {symbol} (숏) 포지션 청산\n\
                         매도가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*0.983}\n수익률: {profit}")
 
-            time.sleep(60)
+                time.sleep(0.1)
 
-        elif len(symbols) == 0:
-            if now.minute == 2:
+
+        elif now.minute == 2 and 0 <= now.second <= 5 :
+            if len(symbols) == 0:
                 print("List가 비어서 대기중 입니다...")
-                time.sleep(3480)
+                time.sleep(3475)
 
         else:
             for symbol in symbols:
