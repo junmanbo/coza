@@ -156,7 +156,7 @@ while True:
         now = datetime.datetime.now()
         time.sleep(1)
 
-        if now.minute % 20 == 0 and 0 <= now.second <= 3:
+        if now.minute == 10 and 0 <= now.second <= 3:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -198,7 +198,7 @@ while True:
                         print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
 
                 # 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and now.hour % 2 == 0 and \
                         info[symbol]['slow_osc_d'] > 0 and info[symbol]['slow_osc_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['open_d'] > info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] > 0 and info[symbol]['slow_osc_slope_h'] > 0:
@@ -214,7 +214,7 @@ while True:
                     print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money:.2f}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and now.hour % 2 == 0 and \
                         info[symbol]['slow_osc_d'] < 0 and info[symbol]['slow_osc_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['open_d'] < info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] < 0 and info[symbol]['slow_osc_slope_h'] < 0:
