@@ -81,12 +81,12 @@ def save_info():
         # 일봉 데이터 수집
         ohlcv_d = binance.fetch_ohlcv(symbol, '1d')
         df_d = pd.DataFrame(ohlcv_d, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df_d['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+        df_d['datetime'] = pd.to_datetime(df_d['datetime'], unit='ms')
         df_d.set_index('datetime', inplace=True)
 
         ohlcv_h = binance.fetch_ohlcv(symbol, '1h')
         df_h = pd.DataFrame(ohlcv_h, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df_h['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+        df_h['datetime'] = pd.to_datetime(df_h['datetime'], unit='ms')
         df_h.set_index('datetime', inplace=True)
 
         # Save Stochastic Oscilator information
