@@ -103,7 +103,6 @@ def save_info():
         time.sleep(0.1)
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
-save_info()
 
 while True:
     try:
