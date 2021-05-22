@@ -147,16 +147,16 @@ def adjust_money(free_balance, total_hold):
 
 total_hold = 0
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
-except_coin = ['ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT', 'BTC/USDT', 'ETH/USDT'] # 거래에서 제외하고 싶은 코인
-for coin in except_coin:
-    symbols.remove(coin)
+#  except_coin = ['ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT', 'BTC/USDT', 'ETH/USDT'] # 거래에서 제외하고 싶은 코인
+#  for coin in except_coin:
+#      symbols.remove(coin)
 
 while True:
     try:
         now = datetime.datetime.now()
         time.sleep(1)
 
-        if now.minute == 0 and 0 <= now.second <= 3:
+        if now.minute % 30 == 0 and 0 <= now.second <= 3:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
