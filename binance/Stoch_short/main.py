@@ -156,7 +156,7 @@ while True:
         now = datetime.datetime.now()
         time.sleep(1)
 
-        if now.minute == 10 and 0 <= now.second <= 3:
+        if now.minute == 0 and 0 <= now.second <= 3:
             save_info()
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
