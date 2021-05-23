@@ -140,13 +140,13 @@ def price_unit(price):
 
 # 투자금액 조정
 def adjust_money(free_balance, total_hold):
-    if total_hold < 5:
-        available_hold = 5 - total_hold
+    if total_hold < total_investment:
+        available_hold = total_investment - total_hold
         money = round((free_balance * 4 / available_hold - 10), 0)
         return money
 
-total_hold = 0
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
+total_hold = 0 # 투자한 코인 갯수
+total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
 
@@ -155,6 +155,7 @@ except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT
 for coin in except_coin:
     symbols.remove(coin)
 
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
@@ -202,7 +203,7 @@ while True:
                         print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
 
                 # 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
+                elif total_hold < total_investment and info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc_d'] > 0 and info[symbol]['slow_osc_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['open_d'] > info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] > 0 and info[symbol]['slow_osc_slope_h'] > 0:
@@ -218,7 +219,7 @@ while True:
                     print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money:.2f}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
+                elif total_hold < total_investment and info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc_d'] < 0 and info[symbol]['slow_osc_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['open_d'] < info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] < 0 and info[symbol]['slow_osc_slope_h'] < 0:
