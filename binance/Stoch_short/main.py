@@ -63,7 +63,7 @@ def calStochastic_day(df, n=12, m=5, t=5):
     return df['slow_osc_d'][-1], df['slow_osc_slope_d'][-1]
 
 # Stochastic Slow Oscilator 값 계산
-def calStochastic_hour(df, n=20, m=12, t=12):
+def calStochastic_hour(df, n=9, m=3, t=3):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
     fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
@@ -96,7 +96,7 @@ def save_info():
         df_d['datetime'] = pd.to_datetime(df_d['datetime'], unit='ms')
         df_d.set_index('datetime', inplace=True)
 
-        ohlcv_h = binance.fetch_ohlcv(symbol, '1h')
+        ohlcv_h = binance.fetch_ohlcv(symbol, '4h')
         df_h = pd.DataFrame(ohlcv_h, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
         df_h['datetime'] = pd.to_datetime(df_h['datetime'], unit='ms')
         df_h.set_index('datetime', inplace=True)
@@ -156,11 +156,12 @@ while True:
         now = datetime.datetime.now()
         time.sleep(1)
 
-        if now.minute % 30 == 0 and 0 <= now.second <= 3:
+        if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 3:
             save_info()
+            free_balance = binance.fetch_balance()['USDT']['free']
+            money = adjust_money(free_balance, total_hold)
             for symbol in symbols:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-                money = binance.fetch_balance()['USDT']['free']
 
                 # 익절한 코인 체크
                 if info[symbol]['position'] == 'long' and info[symbol]['high_h'] > info[symbol]['price'] * 1.017:
@@ -198,7 +199,7 @@ while True:
                         print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
 
                 # 조건 만족시 롱 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and now.hour % 2 == 0 and \
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc_d'] > 0 and info[symbol]['slow_osc_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['open_d'] > info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] > 0 and info[symbol]['slow_osc_slope_h'] > 0:
@@ -214,7 +215,7 @@ while True:
                     print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money:.2f}\n총 보유 코인: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 숏 포지션
-                elif total_hold < 5 and info[symbol]['position'] == 'wait' and now.hour % 2 == 0 and \
+                elif total_hold < 5 and info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc_d'] < 0 and info[symbol]['slow_osc_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['open_d'] < info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] < 0 and info[symbol]['slow_osc_slope_h'] < 0:
