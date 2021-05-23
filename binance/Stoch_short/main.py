@@ -155,7 +155,7 @@ bear_profit = 0.983 # 숏 포지션 수익률
 #  for coin in except_coin:
 #      symbols.remove(coin)
 
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance}")
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
 print("Stochastic (단타) 전략 시작합니다. 화이팅!")
 
 while True:
@@ -206,7 +206,7 @@ while True:
         if now.hour == 9:
             end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
             profit = (end_balance - start_balance) / start_balance * 100
-            bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 종료합니다.\n시작 금액: {start_balance} -> 종료 금액: {end_balance}\n수익률: {profit:.2f}%")
+            bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 종료합니다.\n시작 금액: {start_balance:.2f} -> 종료 금액: {end_balance:.2f}\n수익률: {profit:.2f}%")
             sys.exit(f"{now} 9시에 정산을 마쳤습니다. 종료 후 재시작하겠습니다.")
 
     elif (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
