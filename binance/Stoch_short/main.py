@@ -159,7 +159,7 @@ bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합�
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
-    if (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 10:
+    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 10 <= now.second <= 20:
         save_info()
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
@@ -236,5 +236,5 @@ while True:
                 time.sleep(0.1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-    elif now.hour == 8 and now.minute == 59 and 50 <= now.second <= 59:
+    elif now.hour == 8 and now.minute == 58 and 50 <= now.second <= 59:
         break
