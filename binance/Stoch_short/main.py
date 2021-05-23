@@ -170,14 +170,14 @@ while True:
                 if info[symbol]['position'] == 'long' and info[symbol]['high_h'] > info[symbol]['price'] * bull_profit:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
-                    profit = 1.7
+                    profit = (bull_profit - 1) * 100
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit}%")
                     print(f"코인: {symbol} (롱) 포지션\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit}")
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['low_h'] < info[symbol]['price'] * bear_profit:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
-                    profit = 1.7
+                    profit = (1 - bear_profit) * 100
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {info[symbol]['price']*bear_profit}\n수익률: {profit}%")
                     print(f"코인: {symbol} (숏) 포지션\n매도가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bear_profit}\n수익률: {profit}")
 
