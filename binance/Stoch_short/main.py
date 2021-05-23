@@ -151,9 +151,9 @@ bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
 
 # 거래에서 제외하고 싶은 코인
-except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT']
-for coin in except_coin:
-    symbols.remove(coin)
+#  except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT']
+#  for coin in except_coin:
+#      symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
 while True:
