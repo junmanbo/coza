@@ -1,3 +1,4 @@
+import sys
 import ccxt
 import pandas as pd
 import datetime
@@ -145,6 +146,9 @@ def adjust_money(free_balance, total_hold):
         money = round((free_balance * 4 / available_hold - 10), 0)
         return money
 
+start_balance = binance.fetch_balance()['USDT']['total'] # 하루 시작 금액
+end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
+
 total_hold = 0 # 투자한 코인 갯수
 total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
@@ -159,14 +163,11 @@ bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합�
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
-    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 10 <= now.second <= 20:
-        save_info()
-        free_balance = binance.fetch_balance()['USDT']['free']
-        money = adjust_money(free_balance, total_hold)
+    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
+        save_info() # 분석 정보 저장
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
-
                 # 익절한 코인 체크
                 if info[symbol]['position'] == 'long' and info[symbol]['high_h'] > info[symbol]['price'] * bull_profit:
                     total_hold -= 1
@@ -201,9 +202,24 @@ while True:
                         profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                         bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
                         print(f"코인: {symbol} (숏) 포지션 청산\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}")
+                time.sleep(0.1)
+            except Exception as e:
+                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+        if now.hour == 9:
+            end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
+            profit = (end_balance - start_balance) / start_balance * 100
+            bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 종료합니다.\n시작 금액: {start_balance} -> 종료 금액: {end_balance}\n수익률: {profit:.2f}%")
+            sys.exit(f"{now} 9시에 정산을 마쳤습니다. 종료 후 재시작하겠습니다.")
 
+    elif (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
+        save_info() # 분석 정보 저장
+        free_balance = binance.fetch_balance()['USDT']['free']
+        money = adjust_money(free_balance, total_hold)
+        for symbol in symbols:
+            try:
+                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 # 조건 만족시 롱 포지션
-                elif total_hold < total_investment and info[symbol]['position'] == 'wait' and \
+                if total_hold < total_investment and info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc_d'] > 0 and info[symbol]['slow_osc_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['open_d'] > info[symbol]['ma'] and \
                         info[symbol]['slow_osc_h'] > 0 and info[symbol]['slow_osc_slope_h'] > 0:
@@ -236,5 +252,3 @@ while True:
                 time.sleep(0.1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-    elif now.hour == 8 and now.minute == 58 and 50 <= now.second <= 59:
-        break
