@@ -29,10 +29,6 @@ binance = ccxt.binance({
     }
 })
 
-print('Loading markets from', binance.id)
-binance.load_markets()
-print('Loaded markets from', binance.id)
-
 tickers = binance.load_markets().keys()
 
 symbols = list(tickers)
@@ -159,7 +155,9 @@ bear_profit = 0.983 # 숏 포지션 수익률
 #  for coin in except_coin:
 #      symbols.remove(coin)
 
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance}")
+print("Stochastic (단타) 전략 시작합니다. 화이팅!")
+
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
