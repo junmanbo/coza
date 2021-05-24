@@ -149,6 +149,7 @@ total_hold = 0 # 투자한 코인 갯수
 total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
+check = True # 익절 / 청산 체크 확인
 
 # 거래에서 제외하고 싶은 코인
 #  except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT']
@@ -203,13 +204,15 @@ while True:
                 time.sleep(0.1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+        check = True
+
         if now.hour == 9:
             end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
             profit = (end_balance - start_balance) / start_balance * 100
             bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 종료합니다.\n시작 금액: {start_balance:.2f} -> 종료 금액: {end_balance:.2f}\n수익률: {profit:.2f}%")
             sys.exit(f"{now} 9시에 정산을 마쳤습니다. 종료 후 재시작하겠습니다.")
 
-    elif (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
+    elif check == True: # 익절 / 청산 체크 끝나면 거래 진행
         save_info() # 분석 정보 저장
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
@@ -250,3 +253,4 @@ while True:
                 time.sleep(0.1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+        check = False
