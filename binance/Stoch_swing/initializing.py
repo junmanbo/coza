@@ -15,5 +15,5 @@ for symbol in symbols:
     info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값 (Day)
     info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값 (Day)
 
-with open('info_swing.txt', 'w') as f:
+with open('/home/cocojun/coza/binance/Stoch_swing/info.txt', 'w') as f:
     f.write(json.dumps(info)) # use `json.loads` to do the reverse

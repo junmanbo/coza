@@ -3,6 +3,7 @@ import pandas as pd
 import datetime
 import time
 import telegram
+import json
 
 # telegram setting
 with open("mybot.txt") as f:
@@ -11,13 +12,17 @@ with open("mybot.txt") as f:
     chat_id = lines[1].strip()
 bot = telegram.Bot(token = my_token)
 
-
 # 거래소 설정
 # 파일로부터 apiKey, Secret 읽기
 with open("binance.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
+
+# 코인정보 저장 파일 불러오기
+with open('/home/cocojun/coza/binance/Stoch_swing/info.txt', 'r') as f:
+    data = f.read()
+    info = json.loads(data)
 
 binance = ccxt.binance({
     'apiKey': api_key,
@@ -32,16 +37,6 @@ binance = ccxt.binance({
 tickers = ('BTC/USDT', 'ETH/USDT')
 
 symbols = list(tickers)
-
-# 코인별 저장 정보값 초기화
-info = {}
-for symbol in symbols:
-    info[symbol] = {}
-    info[symbol]['amount'] = 0 # 코인 매수/매도 갯수
-    info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
-    info[symbol]['price'] = 0 # 코인 거래한 가격
-    info[symbol]['slow_osc'] = 0 # Stochastic Slow Oscilator 값 (Day)
-    info[symbol]['slow_osc_slope'] = 0 # Stochastic Slow Oscilator 기울기 값 (Day)
 
 # Stochastic Slow Oscilator 값 계산
 def calStochastic_day(df, n=12, m=5, t=5):
@@ -77,16 +72,16 @@ def save_info():
         time.sleep(1)
     print(f"{now} 정보 수집을 마칩니다.")
 
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 money = 100 # 한 코인당 투자 금액
+bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 
 while True:
-    try:
-        now = datetime.datetime.now()
-        time.sleep(1)
-        if now.minute == 30 and 0 <= now.second <= 2:
-            save_info()
-            for symbol in symbols:
+    now = datetime.datetime.now()
+    time.sleep(1)
+    if now.minute == 30 and 0 <= now.second <= 1:
+        save_info()
+        for symbol in symbols:
+            try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 amount = money / current_price # 거래할 코인 갯수
                 # 코인 미보유 시 거래 (롱)
@@ -96,8 +91,8 @@ while True:
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'long' # 포지션 'long' 으로 변경
                     info[symbol]['amount'] = amount # 코인 갯수 저장
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money:.2f}")
-                    print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}")
+                    print(f"{symbol} 롱 포지션\n매수가: {current_price}\n투자금액: {money}")
                 # 코인 미보유 시 거래 (숏)
                 elif info[symbol]['position'] == 'wait' and \
                         info[symbol]['slow_osc'] < 0 and info[symbol]['slow_osc_slope'] < 0:
@@ -105,8 +100,8 @@ while True:
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # 포지션 'short' 으로 변경
                     info[symbol]['amount'] = amount # 코인 갯수 저장
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money:.2f}")
-                    print(f"{symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money}")
+                    print(f"{symbol} 숏 포지션\n매도가: {current_price}\n투자금액: {money}")
                 # 반환점 가까워지면 청산
                 elif info[symbol]['position'] == 'long':
                     if info[symbol]['slow_osc'] < 0 or info[symbol]['slow_osc_slope'] < 0:
@@ -128,6 +123,8 @@ while True:
                         print(f"코인: {symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {current_price}\n수익률: {profit:.2f}%")
                         info[symbol]['position'] = 'wait'
                 time.sleep(1)
+            except Exception as e:
+                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
 
-    except Exception as e:
-        bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+        with open('/home/cocojun/coza/binance/Stoch_swing/info.txt', 'w') as f:
+            f.write(json.dumps(info)) # use `json.loads` to do the reverse
