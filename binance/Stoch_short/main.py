@@ -103,14 +103,14 @@ def save_info():
         info[symbol]['high_h'] = df_h['high'][-2]
         info[symbol]['low_h'] = df_h['low'][-2]
 
-        logging.info(f"Coin: {symbol}\n\
-            Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
-            Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
-            Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
-            Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
-            MACD: {info[symbol]['macd_osc']}\n\
-            EMA: {info[symbol]['ma']}\n\
-            OPEN: {info[symbol]['open_d']}\n")
+        #  logging.info(f"Coin: {symbol}\n\
+        #      Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
+        #      Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
+        #      Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
+        #      Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
+        #      MACD: {info[symbol]['macd_osc']}\n\
+        #      EMA: {info[symbol]['ma']}\n\
+        #      OPEN: {info[symbol]['open_d']}\n")
         time.sleep(0.1)
     logging.info('Finished collecting')
 
@@ -162,8 +162,7 @@ save_info() # 분석 정보 저장
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (Short-term) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
 logging.info(f"Start Strategy of Stochastic (Short-term). Strat Balance: {start_balance:.2f}\n\
-        The number of current Holding Coin: {total_hold}\nThe number of Investing Coin: {total_investment-total_hold}\n\
-        Target profit per a trading: {(bull_profit-1)*100:.2f}%")
+        The number of current Holding Coin: {total_hold}\nThe number of Investing Coin: {total_investment-total_hold}\nTarget profit per a trading: {(bull_profit-1)*100:.2f}%")
 
 while True:
     now = datetime.datetime.now()
