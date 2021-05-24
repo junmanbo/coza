@@ -141,7 +141,6 @@ def adjust_money(free_balance, total_hold):
 tickers = binance.load_markets().keys()
 symbols = list(tickers)
 
-time.sleep(1)
 start_balance = binance.fetch_balance()['USDT']['total']
 
 total_hold = 0
@@ -159,7 +158,6 @@ for coin in except_coin:
     symbols.remove(coin)
 
 check = True # 익절 / 청산 체크 확인
-time.sleep(1)
 save_info() # 분석 정보 저장
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (Short-term) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
