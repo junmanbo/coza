@@ -153,13 +153,13 @@ total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
 
-check = True # 익절 / 청산 체크 확인
-save_info() # 분석 정보 저장
-
 # 거래에서 제외하고 싶은 코인
 except_coin = ['BTC/USDT', 'ETH/USDT']
 for coin in except_coin:
     symbols.remove(coin)
+
+check = True # 익절 / 청산 체크 확인
+save_info() # 분석 정보 저장
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
 print(f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
