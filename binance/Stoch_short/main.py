@@ -157,9 +157,9 @@ check = True # 익절 / 청산 체크 확인
 save_info() # 분석 정보 저장
 
 # 거래에서 제외하고 싶은 코인
-#  except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT']
-#  for coin in except_coin:
-#      symbols.remove(coin)
+except_coin = ['BTC/USDT', 'ETH/USDT']
+for coin in except_coin:
+    symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
 print(f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
@@ -169,7 +169,7 @@ while True:
     time.sleep(1)
     if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
         save_info() # 분석 정보 저장
-        print("익절한 코인이나 청산할 코인을 체크합니다.")
+        print(f"{now} 익절한 코인이나 청산할 코인을 체크합니다.")
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -221,7 +221,7 @@ while True:
     elif check == True: # 익절 / 청산 체크 끝나면 거래 진행
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
-        print("체크를 마치고 거래를 진행합니다.")
+        print(f"{now} 체크를 마치고 거래를 진행합니다.")
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
