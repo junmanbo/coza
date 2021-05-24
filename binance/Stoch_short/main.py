@@ -6,7 +6,7 @@ import time
 import telegram
 
 # telegram setting
-with open("heebot.txt") as f:
+with open("mybot.txt") as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
