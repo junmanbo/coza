@@ -6,7 +6,7 @@ import telegram
 import json
 import logging
 
-logging.basicConfig(filename='/home/cocojun/logs/stoch_swing.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+logging.basicConfig(filename='/home/cocojun/logs/stoch_swing.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 # telegram setting
 with open("/home/cocojun/coza/binance/mybot.txt") as f:
