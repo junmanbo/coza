@@ -86,8 +86,8 @@ def save_info():
 
 # 투자금액 조정
 def adjust_money(free_balance, total_hold):
-    if total_hold < 5:
-        available_hold = 5 - total_hold
+    if total_hold < n_coin:
+        available_hold = n_coin - total_hold
         money = round((free_balance / available_hold - 10000), 0)
         return money
 
@@ -100,9 +100,27 @@ def cancel_order(ticker):
     except:
         pass
 
+# 원화 마켓 주문 가격 단위
+def price_unit(price):
+    if price < 10:
+        price = round(price, 2)
+    elif 10 <= price < 100:
+        price = round(price, 1)
+    elif 100 <= price < 1000:
+        price = round(price)
+    elif 1000 <= price < 100000:
+        price = round(price, -1)
+    elif 100000 <= price < 1000000:
+        price = round(price, -2)
+    elif price >= 1000000:
+        price = round(price, -3)
+    return price
+
 total_hold = 0 # 총 보유 코인
+n_coin = 3 # 투자할 코인 갯수
 profit = 1.015 # 익절 수익률
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 화이팅!")
+
 #  except_coin = ['KRW-BTC', 'KRW-ETH'] # 거래에서 제외하고 싶은 코인
 #  for coin in except_coin:
 #      tickers.remove(coin)
@@ -113,7 +131,7 @@ while True:
         time.sleep(1)
         if now.hour == 9 and now.minute == 0 and 30 <= now.second <= 33:
             save_info()
-            free_balance = upbit.get_balances("KRW")
+            free_balance = upbit.get_balances()[0]['balance']
             money = adjust_money(free_balance, total_hold)
             for ticker in tickers:
                 current_price = pyupbit.get_current_price(ticker)
@@ -136,6 +154,7 @@ while True:
                     order = upbit.buy_market_order(ticker=ticker, price=money) # 시장가 매수
                     time.sleep(1)
                     target_price = current_price * profit
+                    target_price = price_unit(target_price)
                     order = upbit.sell_limit_order(ticker=ticker, price=target_price, volume=amount)
                     info[ticker]['price'] = current_price
                     info[ticker]['position'] = 'long' # 포지션 'long' 으로 변경

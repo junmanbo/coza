@@ -86,6 +86,8 @@ def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
 
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
+    now = datetime.datetime.now()
+    print(f"{now} 정보 수집을 시작합니다.")
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv_d = binance.fetch_ohlcv(symbol, '1d')
@@ -109,15 +111,16 @@ def save_info():
         info[symbol]['high_h'] = df_h['high'][-2]
         info[symbol]['low_h'] = df_h['low'][-2]
 
-        #  print(f"코인: {symbol}\n\
-        #      Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
-        #      Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
-        #      Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
-        #      Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
-        #      MACD: {info[symbol]['macd_osc']}\n\
-        #      EMA: {info[symbol]['ma']}\n\
-        #      OPEN: {info[symbol]['open_d']}\n")
+        print(f"코인: {symbol}\n\
+            Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
+            Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
+            Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
+            Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
+            MACD: {info[symbol]['macd_osc']}\n\
+            EMA: {info[symbol]['ma']}\n\
+            OPEN: {info[symbol]['open_d']}\n")
         time.sleep(0.1)
+    print(f"{now} 정보 수집을 마칩니다.")
 
 # 호가 단위 맞추기
 def price_unit(price):
@@ -159,13 +162,14 @@ save_info() # 분석 정보 저장
 #      symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
-print("Stochastic (단타) 전략 시작합니다. 화이팅!")
+print(f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
 
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
     if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
         save_info() # 분석 정보 저장
+        print("익절한 코인이나 청산할 코인을 체크합니다.")
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -217,6 +221,7 @@ while True:
     elif check == True: # 익절 / 청산 체크 끝나면 거래 진행
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
+        print("체크를 마치고 거래를 진행합니다.")
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
