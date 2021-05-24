@@ -149,7 +149,9 @@ total_hold = 0 # 투자한 코인 갯수
 total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
+
 check = True # 익절 / 청산 체크 확인
+save_info() # 분석 정보 저장
 
 # 거래에서 제외하고 싶은 코인
 #  except_coin = ['BAKE/USDT', 'ICP/USDT', '1000SHIB/USDT', 'DGB/USDT', 'BTCST/USDT']
@@ -213,7 +215,6 @@ while True:
             sys.exit(f"{now} 9시에 정산을 마쳤습니다. 종료 후 재시작하겠습니다.")
 
     elif check == True: # 익절 / 청산 체크 끝나면 거래 진행
-        save_info() # 분석 정보 저장
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
         for symbol in symbols:
