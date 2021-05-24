@@ -109,14 +109,14 @@ def save_info():
         info[symbol]['high_h'] = df_h['high'][-2]
         info[symbol]['low_h'] = df_h['low'][-2]
 
-        print(f"코인: {symbol}\n\
-            Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
-            Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
-            Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
-            Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
-            MACD: {info[symbol]['macd_osc']}\n\
-            EMA: {info[symbol]['ma']}\n\
-            OPEN: {info[symbol]['open_d']}\n")
+        #  print(f"코인: {symbol}\n\
+        #      Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
+        #      Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
+        #      Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
+        #      Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
+        #      MACD: {info[symbol]['macd_osc']}\n\
+        #      EMA: {info[symbol]['ma']}\n\
+        #      OPEN: {info[symbol]['open_d']}\n")
         time.sleep(0.1)
 
 # 호가 단위 맞추기
