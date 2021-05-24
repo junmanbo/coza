@@ -76,6 +76,7 @@ def save_info():
     logging.info(f"정보 수집을 마칩니다.")
 
 money = 200 # 한 코인당 투자 금액
+logging.info(f'현재 코인 정보: {info}')
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 logging.info('Stochastic (스윙) 전략 시작합니다. 화이팅!')
 
@@ -130,7 +131,7 @@ while True:
                 time.sleep(1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-                logging.info(f"에러발생 {e}")
+                logging.error(f"에러발생 {e}")
 
         with open('/home/cocojun/coza/binance/Stoch_swing/info.txt', 'w') as f:
             f.write(json.dumps(info)) # use `json.loads` to do the reverse
