@@ -6,7 +6,7 @@ import telegram
 import json
 
 # telegram setting
-with open("mybot.txt") as f:
+with open("/home/cocojun/coza/binance/mybot.txt") as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
@@ -14,7 +14,7 @@ bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
 # 파일로부터 apiKey, Secret 읽기
-with open("binance.txt") as f:
+with open("/home/cocojun/coza/binance/binance.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()

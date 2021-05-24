@@ -7,7 +7,7 @@ import telegram
 import json
 
 # telegram setting
-with open("/home/cocojun/coza/binance/Stoch_short/mybot.txt") as f:
+with open("/home/cocojun/coza/binance/mybot.txt") as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
@@ -16,7 +16,7 @@ bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
 # 파일로부터 apiKey, Secret 읽기
-with open("/home/cocojun/coza/binance/Stoch_short/binance.txt") as f:
+with open("/home/cocojun/coza/binance/binance.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
@@ -210,6 +210,8 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
         check = True
+        with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'w') as f:
+            f.write(json.dumps(info)) # use `json.loads` to do the reverse
 
         if now.hour == 9:
             end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
@@ -261,3 +263,6 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
         check = False
+        with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'w') as f:
+            f.write(json.dumps(info)) # use `json.loads` to do the reverse
+        print(f"{now} 거래를 마칩니다.")
