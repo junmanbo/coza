@@ -5,7 +5,7 @@ import time
 import telegram
 
 # telegram setting
-with open("heebot.txt") as f:
+with open("mybot.txt") as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
@@ -27,10 +27,6 @@ binance = ccxt.binance({
         'defaultType': 'future',
     }
 })
-
-print('Loading markets from', binance.id)
-binance.load_markets()
-print('Loaded markets from', binance.id)
 
 # 코인 목록
 tickers = ('BTC/USDT', 'ETH/USDT')
@@ -62,6 +58,8 @@ def calStochastic_day(df, n=12, m=5, t=5):
 
 # 코인별 Stochastic OSC 값 info에 저장
 def save_info():
+    now = datetime.datetime.now()
+    print(f"{now} 정보 수집을 시작합니다.")
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -77,6 +75,7 @@ def save_info():
             Stochastic OSC (Day): {info[symbol]['slow_osc']}\n\
             Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope']}\n")
         time.sleep(1)
+    print(f"{now} 정보 수집을 마칩니다.")
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 money = 100 # 한 코인당 투자 금액

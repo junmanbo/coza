@@ -4,9 +4,10 @@ import pandas as pd
 import datetime
 import time
 import telegram
+import json
 
 # telegram setting
-with open("mybot.txt") as f:
+with open("/home/cocojun/coza/binance/Stoch_short/mybot.txt") as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
@@ -15,10 +16,15 @@ bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
 # 파일로부터 apiKey, Secret 읽기
-with open("binance.txt") as f:
+with open("/home/cocojun/coza/binance/Stoch_short/binance.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
+
+# 코인정보 저장 파일 불러오기
+with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'r') as f:
+    data = f.read()
+    info = json.loads(data)
 
 binance = ccxt.binance({
     'apiKey': api_key,
@@ -28,23 +34,6 @@ binance = ccxt.binance({
         'defaultType': 'future',
     }
 })
-
-tickers = binance.load_markets().keys()
-
-symbols = list(tickers)
-# 코인별 저장 정보값 초기화
-info = {}
-for symbol in symbols:
-    info[symbol] = {}
-    info[symbol]['amount'] = 0 # 코인 매수/매도 갯수
-    info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
-    info[symbol]['price'] = 0 # 코인 거래한 가격
-    info[symbol]['slow_osc_d'] = 0 # Stochastic Slow Oscilator 값 (Day)
-    info[symbol]['slow_osc_slope_d'] = 0 # Stochastic Slow Oscilator 기울기 값 (Day)
-    info[symbol]['slow_osc_h'] = 0 # Stochastic Slow Oscilator 값 (Hour)
-    info[symbol]['slow_osc_slope_h'] = 0 # Stochastic Slow Oscilator 기울기 값 (Hour)
-    info[symbol]['macd_osc'] = 0 # MACD Oscilator 값
-    info[symbol]['ma'] = 0 # 지수이동평균 값
 
 # Stochastic Slow Oscilator 값 계산
 def calStochastic_day(df, n=12, m=5, t=5):
@@ -145,10 +134,18 @@ def adjust_money(free_balance, total_hold):
         money = round((free_balance * 4 / available_hold - 10), 0)
         return money
 
+# 코인 목록 불러오기
+tickers = binance.load_markets().keys()
+symbols = list(tickers)
+
 start_balance = binance.fetch_balance()['USDT']['total'] # 하루 시작 금액
 end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
 
-total_hold = 0 # 투자한 코인 갯수
+total_hold = 0
+for symbol in symbols:
+    if info[symbol]['position'] != 'wait':
+        total_hold += 1 # 투자한 코인 갯수
+
 total_investment = 5 # 투자할 코인 갯수
 bull_profit = 1.017 # 롱 포지션 수익률
 bear_profit = 0.983 # 숏 포지션 수익률
@@ -162,7 +159,9 @@ check = True # 익절 / 청산 체크 확인
 save_info() # 분석 정보 저장
 
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
-print(f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
+print(f"Stochastic (단타) 전략 시작합니다. 시작 금액: {start_balance:.2f}\n\
+        현재 보유 코인 갯수: {total_hold}\n투자할 코인 갯수: {total_investment-total_hold}\n\
+        1 거래당 목표 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
     now = datetime.datetime.now()
@@ -178,15 +177,15 @@ while True:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = (bull_profit - 1) * 100
-                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (롱) 포지션\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit:.2f}%")
+                    print(f"코인: {symbol} (롱) 포지션\n매수가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bull_profit}\n수익률: {profit:.2f}")
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['low_h'] < info[symbol]['price'] * bear_profit:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = (1 - bear_profit) * 100
-                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {info[symbol]['price']*bear_profit}\n수익률: {profit}%")
-                    print(f"코인: {symbol} (숏) 포지션\n매도가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bear_profit}\n수익률: {profit}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n매도가: {info[symbol]['price']} -> 매수가: {info[symbol]['price']*bear_profit}\n수익률: {profit:.2f}%")
+                    print(f"코인: {symbol} (숏) 포지션\n매도가: {info[symbol]['price']} -> 매도가: {info[symbol]['price']*bear_profit}\n수익률: {profit:.2f}")
 
                 # 롱 포지션 청산
                 elif info[symbol]['position'] == 'long':
@@ -216,6 +215,8 @@ while True:
             end_balance = binance.fetch_balance()['USDT']['total'] # 하루 종료 금액
             profit = (end_balance - start_balance) / start_balance * 100
             bot.sendMessage(chat_id = chat_id, text=f"Stochastic (단타) 전략 종료합니다.\n시작 금액: {start_balance:.2f} -> 종료 금액: {end_balance:.2f}\n수익률: {profit:.2f}%")
+            with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'w') as f:
+                f.write(json.dumps(info)) # use `json.loads` to do the reverse
             sys.exit(f"{now} 9시에 정산을 마쳤습니다. 종료 후 재시작하겠습니다.")
 
     elif check == True: # 익절 / 청산 체크 끝나면 거래 진행
