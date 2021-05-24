@@ -72,14 +72,16 @@ def save_info():
         time.sleep(1)
     print(f"{now} 정보 수집을 마칩니다.")
 
-money = 100 # 한 코인당 투자 금액
+money = 200 # 한 코인당 투자 금액
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
+print(f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
     if now.minute == 30 and 0 <= now.second <= 1:
         save_info()
+        print(f"{now} 수집한 정보를 바탕으로 거래를 시작합니다.")
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -125,6 +127,7 @@ while True:
                 time.sleep(1)
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+                print(f"에러발생 {e}")
 
         with open('/home/cocojun/coza/binance/Stoch_swing/info.txt', 'w') as f:
             f.write(json.dumps(info)) # use `json.loads` to do the reverse
