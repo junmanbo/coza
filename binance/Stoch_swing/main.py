@@ -84,7 +84,7 @@ logging.info('Stochastic (스윙) 전략 시작합니다. 화이팅!')
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
-    if now.hour == 9 and now.minute == 30 and 0 <= now.second <= 1:
+    if (now.hour + 3) % 12 == 0 and now.minute == 30 and 0 <= now.second <= 1:
         save_info()
         logging.info('수집한 정보를 바탕으로 거래를 시작합니다.')
         for symbol in symbols:
