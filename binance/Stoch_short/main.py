@@ -102,15 +102,6 @@ def save_info():
         info[symbol]['open_d'] = df_d['open'][-1]
         info[symbol]['high_h'] = df_h['high'][-2]
         info[symbol]['low_h'] = df_h['low'][-2]
-
-        #  logging.info(f"Coin: {symbol}\n\
-        #      Stochastic OSC (Day): {info[symbol]['slow_osc_d']}\n\
-        #      Stochastic OSC Slope (Day): {info[symbol]['slow_osc_slope_d']}\n\
-        #      Stochastic OSC (Hour): {info[symbol]['slow_osc_h']}\n\
-        #      Stochastic OSC Slope (Hour): {info[symbol]['slow_osc_slope_h']}\n\
-        #      MACD: {info[symbol]['macd_osc']}\n\
-        #      EMA: {info[symbol]['ma']}\n\
-        #      OPEN: {info[symbol]['open_d']}\n")
         time.sleep(0.1)
     logging.info('Finished collecting')
 
@@ -158,7 +149,7 @@ except_coin = ['BTC/USDT', 'ETH/USDT']
 for coin in except_coin:
     symbols.remove(coin)
 
-bot.sendMessage(chat_id = chat_id, text=f"Stochastic (Short-term) 전략 시작합니다. 시작 금액: {start_balance:.2f}")
+bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱 (단타) 전략 시작합니다. 시작 금액: ${start_balance:.2f}")
 logging.info(f"스토캐스틱(단타). 시작: ${start_balance:.2f}\n현재보유: {total_hold}개\n투자할 코인: {total_investment-total_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
@@ -166,7 +157,7 @@ while True:
     time.sleep(1)
     if (now.hour + 3) % 2 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 2시간 마다 체크
         save_info() # 분석 정보 저장
-        logging.info('Checking Stop Profit or Stop Loss')
+        logging.info('손절 및 이익실현 체크')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
@@ -213,7 +204,7 @@ while True:
         if (now.hour + 3) % 4 == 0:
             check = True
 
-    elif check == True: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
+    elif check == True:
         free_balance = binance.fetch_balance()['USDT']['free']
         money = adjust_money(free_balance, total_hold)
         logging.info('Finished Checking and Start Trading.')
