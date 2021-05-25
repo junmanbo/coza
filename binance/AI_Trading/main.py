@@ -23,11 +23,6 @@ binance = ccxt.binance({
     }
 })
 
-# telegram setting
-my_token = '1725701346:AAFoCMr7xeQwjaqvBsOPoIS99PyRFwVFK_E'
-bot = telegram.Bot(token = my_token)
-chat_id = '1459236537'
-
 tickers = ['LINK/USDT', 'ADA/USDT']
 
 info = {}
