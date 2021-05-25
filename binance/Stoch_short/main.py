@@ -167,7 +167,7 @@ logging.info(f"Start Strategy of Stochastic (Short-term). Strat Balance: {start_
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
-    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 4시간 마다 (1, 5, 9, 13, 17, 21) 체크
+    if (now.hour + 3) % 6 == 0 and now.minute == 0 and 0 <= now.second <= 9: # 6시간 마다 (3, 9, 15, 21) 체크
         save_info() # 분석 정보 저장
         logging.info('Checking Stop Profit or Stop Loss')
         for symbol in symbols:
