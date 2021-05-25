@@ -77,7 +77,7 @@ def save_info():
         time.sleep(1)
     logging.info(f"정보 수집을 마칩니다.")
 
-money = 100 # 한 코인당 투자 금액
+money = 200 # 한 코인당 투자 금액
 bot.sendMessage(chat_id = chat_id, text=f"Stochastic (스윙) 전략 시작합니다. 화이팅!")
 logging.info('Stochastic (스윙) 전략 시작합니다. 화이팅!')
 
