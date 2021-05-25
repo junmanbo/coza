@@ -178,16 +178,14 @@ while True:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = (bull_profit - 1) * 100
-                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Long)\n\
-                            Buying: {info[symbol]['price']} -> Selling: {info[symbol]['price']*bull_profit}\nProfit: {profit:.2f}%")
+                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Long)\nBuying: {info[symbol]['price']} -> Selling: {info[symbol]['price']*bull_profit}\nProfit: {profit:.2f}%")
                     logging.info(f"Coin: {symbol} (Long) Position\nBuying: {info[symbol]['price']} -> Selling: {info[symbol]['price']*bull_profit}\nProfit: {profit:.2f}")
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['low_h'] < info[symbol]['price'] * bear_profit:
                     total_hold -= 1
                     info[symbol]['position'] = 'wait'
                     profit = (1 - bear_profit) * 100
-                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Short)\n\
-                            Selling: {info[symbol]['price']} -> Buying: {info[symbol]['price']*bear_profit}\nProfit: {profit:.2f}%")
+                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Short)\nSelling: {info[symbol]['price']} -> Buying: {info[symbol]['price']*bear_profit}\nProfit: {profit:.2f}%")
                     logging.info(f"Coin: {symbol} (Short) Position\nSelling: {info[symbol]['price']} -> Buying: {info[symbol]['price']*bear_profit}\nProfit: {profit:.2f}")
 
                 # Long Position 청산
@@ -197,8 +195,7 @@ while True:
                         info[symbol]['position'] = 'wait'
                         binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # Profit 계산
-                        bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Long)\n\
-                                Buying: {info[symbol]['price']} -> Selling: {current_price}\nProfit: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Long)\nBuying: {info[symbol]['price']} -> Selling: {current_price}\nProfit: {profit:.2f}%")
                         logging.info(f"Coin: {symbol} (Long) Position Loss\nBuying: {info[symbol]['price']} -> Selling: {current_price}\nProfit: {profit:.2f}")
 
                 # Short Position 청산
@@ -208,8 +205,7 @@ while True:
                         info[symbol]['position'] = 'wait'
                         binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
                         profit = (info[symbol]['price'] - current_price) / current_price * 100 # Profit 계산
-                        bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Short)\n\
-                                Selling: {info[symbol]['price']} -> Buying: {current_price}\nProfit: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} (Short)\nSelling: {info[symbol]['price']} -> Buying: {current_price}\nProfit: {profit:.2f}%")
                         logging.info(f"Coin: {symbol} (Short) Position Loss\nSelling: {info[symbol]['price']} -> Buying: {current_price}\nProfit: {profit:.2f}")
                 time.sleep(0.1)
             except Exception as e:
@@ -239,8 +235,7 @@ while True:
                     info[symbol]['position'] = 'long' # Position 'long' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
                     total_hold += 1
-                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} Long Position\n\
-                            Buying: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} Long Position\nBuying: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
                     logging.info(f"{symbol} Long Position\nBuying: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
 
                 # Stochastic + MACD 둘 다 조건 만족시 Short Position
@@ -256,8 +251,7 @@ while True:
                     info[symbol]['position'] = 'short' # Position 'short' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
                     total_hold += 1
-                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} Short Position\n\
-                            Selling: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
+                    bot.sendMessage(chat_id = chat_id, text=f"(Short-term){symbol} Short Position\nSelling: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
                     logging.info(f"{symbol} Short Position\nSelling: {current_price}\nInvestment Amount: {money:.2f}\nTotal holding: {total_hold}")
                 time.sleep(0.1)
             except Exception as e:
