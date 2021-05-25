@@ -87,7 +87,7 @@ def save_info():
         df_d['datetime'] = pd.to_datetime(df_d['datetime'], unit='ms')
         df_d.set_index('datetime', inplace=True)
 
-        ohlcv_h = binance.fetch_ohlcv(symbol, '4h')
+        ohlcv_h = binance.fetch_ohlcv(symbol, '6h')
         df_h = pd.DataFrame(ohlcv_h, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
         df_h['datetime'] = pd.to_datetime(df_h['datetime'], unit='ms')
         df_h.set_index('datetime', inplace=True)
