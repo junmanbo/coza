@@ -2,28 +2,34 @@
 
 import ccxt
 import pandas as pd
+import numpy as np
 import datetime
 import time
 import telegram
 import json
 import logging
+import os
 
-logging.basicConfig(filename='/home/cocojun/logs/stoch_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+# 경로 설정
+home = os.getcwd()
+
+# 로깅 설정
+logging.basicConfig(filename=home+'/logs/stoch_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 # telegram 설정
-with open("/home/cocojun/coza/binance/mybot.txt") as f:
+with open(home+'/coza/binance/mybot.txt') as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
 bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
-# 파일로부터 apiKey, Secret 읽기
 with open("/home/cocojun/coza/binance/binance.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
 
+# 기본 옵션: 선물
 binance = ccxt.binance({
     'apiKey': api_key,
     'secret': secret,
@@ -33,12 +39,17 @@ binance = ccxt.binance({
     }
 })
 
-# Coin정보 저장 파일 불러오기
-with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'r') as f:
+# 코인 정보 저장 파일 불러오기
+with open(home+'/coza/binance/Stoch_short/info.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
-# Stochastic Slow Oscilator 값 계산
+# 지수 이동평균 계산
+def calMA(df, fast=14):
+    df['ma'] = df['close'].ewm(span=fast).mean()
+    return df['ma'][-1]
+
+# Stochastic 계산
 def calStochastic(df, n=12, m=5, t=5):
     ndays_high = df.high.rolling(window=n, min_periods=1).max()
     ndays_low = df.low.rolling(window=n, min_periods=1).min()
@@ -51,21 +62,29 @@ def calStochastic(df, n=12, m=5, t=5):
     df['slow_osc_slope'] = slow_osc_slope
     return df['slow_osc'][-1], df['slow_osc_slope'][-1]
 
-def calMA(df, fast=14):
-    df['ma'] = df['close'].ewm(span=fast).mean()
-    return df['ma'][-1]
-
+# MACD 계산
 def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
     EMAFast = df.close.ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
     EMASlow = df.close.ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
     MACD = EMAFast - EMASlow
     MACDSignal = MACD.ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
-    df['macd_osc'] = MACD - MACDSignal
+    MACDOSC = MACD - MACDSignal
+    df['macd_osc'] = MACDOSC - MACDOSC.shift(1)
     return df['macd_osc'][-1]
 
-# Coin별 Stochastic OSC 값 info에 저장
+# RSI 계산
+def calRSI(df, N=14):
+
+    df['U'] = np.where(df.close.diff(1) > 0, df.close.diff(1), 0)
+    df['D'] = np.where(df.close.diff(1) < 0, df.close.diff(1) * (-1), 0)
+    df['AU'] = df['U'].rolling( window=N, min_periods=N).mean()
+    df['AD'] = df['D'].rolling( window=N, min_periods=N).mean()
+    df['RSI'] = df['AU'] / (df['AD']+df['AU']) * 100
+    return df['RSI'][-1]
+
+# 코인별 정보값 info 딕셔너리에 저장
 def save_info():
-    logging.info('Stochastic + MACD + EMA 데이터 분석중...')
+    logging.info('Stochastic + MACD + EMA + RSI 데이터 분석중...')
     for symbol in symbols:
         # 일봉 데이터 수집
         ohlcv = binance.fetch_ohlcv(symbol, '1d')
@@ -77,6 +96,7 @@ def save_info():
         info[symbol]['stoch_slope_d'] = calStochastic(df)[1]
         info[symbol]['macd_osc'] = calMACD(df)
         info[symbol]['ma'] = calMA(df)
+        info[symbol]['rsi'] = calRSI(df)
         info[symbol]['close'] = df['close'][-1]
         info[symbol]['high'] = df['high'][-1]
         info[symbol]['low'] = df['low'][-1]
@@ -120,7 +140,7 @@ except_coin = ['BTC/USDT', 'ETH/USDT']
 for coin in except_coin:
     symbols.remove(coin)
 
-bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱 (단타) 전략 시작합니다.")
+bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 logging.info(f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
@@ -144,7 +164,7 @@ while True:
                     profit = (1 - bear_profit) * 100
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n성공")
 
-                # Long Position 청산
+                # 롱 포지션 청산
                 elif info[symbol]['position'] == 'long' and info[symbol]['stoch_slope_4h'] < 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
                     current_hold -= 1
@@ -153,7 +173,7 @@ while True:
                     profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n수익률: {profit:.2f}%\n실패")
 
-                # Short Position 청산
+                # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short' and info[symbol]['stoch_slope_4h'] > 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
                     current_hold -= 1
@@ -165,12 +185,12 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.error(f"Occured an error {e}")
         # 파일에 수집한 정보 및 거래 정보 info.txt에 저장
-        with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'w') as f:
+        with open(home+'/coza/binance/Stoch_short/info.txt', 'w') as f:
             f.write(json.dumps(info))
         if now.hour == 8:
             check = True
 
-    elif check == True:
+    elif check == True and current_hold < total_hold:
         free_balance = binance.fetch_balance()['USDT']['free']
         invest_money = free_balance * 4 / (total_hold - current_hold)
         logging.info('체크 끝 - 당일 거래 시작')
@@ -178,7 +198,7 @@ while True:
             try:
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 # 조건 만족시 Long Position
-                if current_hold < total_hold and info[symbol]['position'] == 'wait' and \
+                if info[symbol]['position'] == 'wait' and info[symbol]['rsi'] < 70 and \
                         info[symbol]['stoch_osc_d'] > 0 and info[symbol]['stoch_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['close'] > info[symbol]['ma'] and \
                         info[symbol]['stoch_slope_4h'] > 0 and info[symbol]['stoch_slope_1h'] > 0:
@@ -193,8 +213,8 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
                     logging.info(f"{symbol} (롱)\n매수가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
 
-                # Stochastic + MACD 둘 다 조건 만족시 Short Position
-                elif current_hold < total_hold and info[symbol]['position'] == 'wait' and \
+                # 조건 만족시 Short Position
+                elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] > 30 and \
                         info[symbol]['stoch_osc_d'] < 0 and info[symbol]['stoch_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['close'] < info[symbol]['ma'] and \
                         info[symbol]['stoch_slope_4h'] < 0 and info[symbol]['stoch_slope_1h'] < 0:
@@ -211,7 +231,7 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.info(f"Occured an error {e}")
-        with open('/home/cocojun/coza/binance/Stoch_short/info.txt', 'w') as f:
-            f.write(json.dumps(info)) # use `json.loads` to do the reverse
+        with open(home+'/coza/binance/Stoch_short/info.txt', 'w') as f:
+            f.write(json.dumps(info))
         logging.info('거래 끝')
         check = False
