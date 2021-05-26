@@ -12,19 +12,22 @@ import os
 
 # 경로 설정
 home = os.getcwd()
+path_log = home + '/Log/'
+path_api = home + '/Api/'
+path_data = home + '/Data/'
 
 # 로깅 설정
-logging.basicConfig(filename=home+'/logs/stoch_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+logging.basicConfig(filename=path_log+'binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 # telegram 설정
-with open(home+'/coza/binance/mybot.txt') as f:
+with open(path_api+'mybot.txt') as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
 bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
-with open("/home/cocojun/coza/binance/binance.txt") as f:
+with open(path_api+'binance.txt') as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
@@ -40,7 +43,7 @@ binance = ccxt.binance({
 })
 
 # 코인 정보 저장 파일 불러오기
-with open(home+'/coza/binance/Stoch_short/info.txt', 'r') as f:
+with open(path_data+'binance_short.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
@@ -131,11 +134,11 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 2 # 투자할 코인 총 갯수
-bull_profit = 1.012 # Long Position Profit
-bear_profit = 0.988 # Short Position Profit
+bull_profit = 1.012 # 롱 포지션 수익률
+bear_profit = 0.988 # 숏 포지션 수익률
 check = False
 
-# 거래에서 제외하고 싶은 Coin
+# 거래에서 제외하고 싶은 코인
 except_coin = ['BTC/USDT', 'ETH/USDT']
 for coin in except_coin:
     symbols.remove(coin)
@@ -184,8 +187,8 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.error(f"Occured an error {e}")
-        # 파일에 수집한 정보 및 거래 정보 info.txt에 저장
-        with open(home+'/coza/binance/Stoch_short/info.txt', 'w') as f:
+        # 파일에 수집한 정보 및 거래 정보 파일에 저장
+        with open(path_data+'binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
         if now.hour == 8:
             check = True
@@ -231,7 +234,7 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.info(f"Occured an error {e}")
-        with open(home+'/coza/binance/Stoch_short/info.txt', 'w') as f:
+        with open(path_data+'binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
         logging.info('거래 끝')
         check = False

@@ -1,5 +1,11 @@
 import ccxt
 import json
+import os
+
+# 경로 설정
+home = os.getcwd()
+path_data = home + '/Data/'
+print(home)
 
 binance = ccxt.binance({
     'enableRateLimit': True,
@@ -26,5 +32,5 @@ for symbol in symbols:
     info[symbol]['ma'] = 0 # 지수이동평균 값
     info[symbol]['RSI'] = 0 # RSI 지수 값
 
-with open('info.txt', 'w') as f:
+with open(path_data+'binance_short.txt', 'w') as f:
     f.write(json.dumps(info)) # use `json.loads` to do the reverse
