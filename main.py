@@ -8,7 +8,6 @@ import json
 import logging
 from myPackage import indicators as indi
 
-
 # 로깅 설정
 logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
@@ -128,8 +127,8 @@ while True:
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n실패")
             except Exception as e:
-                bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
-                logging.error(f"Occured an error {e}")
+                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+                logging.error(f"에러발생 {e}")
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
@@ -175,8 +174,8 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
                     logging.info(f"{symbol} (숏)\n매도가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
             except Exception as e:
-                bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
-                logging.info(f"Occured an error {e}")
+                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+                logging.info(f"에러발생 {e}")
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
         logging.info('거래 끝')
