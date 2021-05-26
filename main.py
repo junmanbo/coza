@@ -1,33 +1,26 @@
 #!/usr/bin/env python
 
 import ccxt
-import pandas as pd
-import numpy as np
 import datetime
 import time
 import telegram
 import json
 import logging
-import os
+from myPackage import indicators as indi
 
-# 경로 설정
-home = os.getcwd()
-path_log = home + '/Log/'
-path_api = home + '/Api/'
-path_data = home + '/Data/'
 
 # 로깅 설정
-logging.basicConfig(filename=path_log+'binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 # telegram 설정
-with open(path_api+'mybot.txt') as f:
+with open('./Api/mybot.txt') as f:
     lines = f.readlines()
     my_token = lines[0].strip()
     chat_id = lines[1].strip()
 bot = telegram.Bot(token = my_token)
 
 # 거래소 설정
-with open(path_api+'binance.txt') as f:
+with open('./Api/binance.txt') as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
@@ -43,82 +36,32 @@ binance = ccxt.binance({
 })
 
 # 코인 정보 저장 파일 불러오기
-with open(path_data+'binance_short.txt', 'r') as f:
+with open('./Data/binance_short.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
-
-# 지수 이동평균 계산
-def calMA(df, fast=14):
-    df['ma'] = df['close'].ewm(span=fast).mean()
-    return df['ma'][-1]
-
-# Stochastic 계산
-def calStochastic(df, n=12, m=5, t=5):
-    ndays_high = df.high.rolling(window=n, min_periods=1).max()
-    ndays_low = df.low.rolling(window=n, min_periods=1).min()
-    fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
-    slow_k = fast_k.ewm(span=m).mean()
-    slow_d = slow_k.ewm(span=t).mean()
-    slow_osc = slow_k - slow_d
-    slow_osc_slope = slow_osc - slow_osc.shift(1)
-    df['slow_osc'] = slow_osc
-    df['slow_osc_slope'] = slow_osc_slope
-    return df['slow_osc'][-1], df['slow_osc_slope'][-1]
-
-# MACD 계산
-def calMACD(df, m_NumFast=14, m_NumSlow=30, m_NumSignal=10):
-    EMAFast = df.close.ewm( span = m_NumFast, min_periods = m_NumFast - 1 ).mean()
-    EMASlow = df.close.ewm( span = m_NumSlow, min_periods = m_NumSlow - 1 ).mean()
-    MACD = EMAFast - EMASlow
-    MACDSignal = MACD.ewm( span = m_NumSignal, min_periods = m_NumSignal - 1 ).mean()
-    MACDOSC = MACD - MACDSignal
-    df['macd_osc'] = MACDOSC - MACDOSC.shift(1)
-    return df['macd_osc'][-1]
-
-# RSI 계산
-def calRSI(df, N=14):
-
-    df['U'] = np.where(df.close.diff(1) > 0, df.close.diff(1), 0)
-    df['D'] = np.where(df.close.diff(1) < 0, df.close.diff(1) * (-1), 0)
-    df['AU'] = df['U'].rolling( window=N, min_periods=N).mean()
-    df['AD'] = df['D'].rolling( window=N, min_periods=N).mean()
-    df['RSI'] = df['AU'] / (df['AD']+df['AU']) * 100
-    return df['RSI'][-1]
 
 # 코인별 정보값 info 딕셔너리에 저장
 def save_info():
     logging.info('Stochastic + MACD + EMA + RSI 데이터 분석중...')
     for symbol in symbols:
         # 일봉 데이터 수집
-        ohlcv = binance.fetch_ohlcv(symbol, '1d')
-        df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-        df.set_index('datetime', inplace=True)
-
-        info[symbol]['sotch_osc_d'] = calStochastic(df)[0]
-        info[symbol]['stoch_slope_d'] = calStochastic(df)[1]
-        info[symbol]['macd_osc'] = calMACD(df)
-        info[symbol]['ma'] = calMA(df)
-        info[symbol]['rsi'] = calRSI(df)
+        df = indi.getOHLCV(binance, symbol, '1d')
+        info[symbol]['sotch_osc_d'] = indi.calStochastic(df, 12, 5, 5)[0]
+        info[symbol]['stoch_slope_d'] = indi.calStochastic(df, 12, 5, 5)[1]
+        info[symbol]['macd_osc'] = indi.calMACD(df, 12, 26, 9)
+        info[symbol]['ema'] = indi.calEMA(df, 14)
+        info[symbol]['rsi'] = indi.calRSI(df, 14)
         info[symbol]['close'] = df['close'][-1]
         info[symbol]['high'] = df['high'][-1]
         info[symbol]['low'] = df['low'][-1]
 
         # 4시봉 데이터 수집
-        ohlcv = binance.fetch_ohlcv(symbol, '4h')
-        df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-        df.set_index('datetime', inplace=True)
-
-        info[symbol]['stoch_slope_4h'] = calStochastic(df)[1]
+        df = indi.getOHLCV(binance, symbol, '4h')
+        info[symbol]['stoch_slope_4h'] = indi.calStochastic(df, 12, 5, 5)[1]
 
         # 1시봉 데이터 수집
-        ohlcv = binance.fetch_ohlcv(symbol, '1h')
-        df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-        df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-        df.set_index('datetime', inplace=True)
-
-        info[symbol]['stoch_slope_1h'] = calStochastic(df)[1]
+        df = indi.getOHLCV(binance, symbol, '1h')
+        info[symbol]['stoch_slope_1h'] = indi.calStochastic(df, 12, 5, 5)[1]
 
         time.sleep(0.1)
     logging.info('분석 끝, 저장 완료')
@@ -188,7 +131,7 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.error(f"Occured an error {e}")
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
-        with open(path_data+'binance_short.txt', 'w') as f:
+        with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
         if now.hour == 8:
             check = True
@@ -203,7 +146,7 @@ while True:
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and info[symbol]['rsi'] < 70 and \
                         info[symbol]['stoch_osc_d'] > 0 and info[symbol]['stoch_slope_d'] > 0 and \
-                        info[symbol]['macd_osc'] > 0 and info[symbol]['close'] > info[symbol]['ma'] and \
+                        info[symbol]['macd_osc'] > 0 and info[symbol]['close'] > info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] > 0 and info[symbol]['stoch_slope_1h'] > 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_buy_order(symbol, amount, current_price) # 지정가 매수
@@ -219,7 +162,7 @@ while True:
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] > 30 and \
                         info[symbol]['stoch_osc_d'] < 0 and info[symbol]['stoch_slope_d'] < 0 and \
-                        info[symbol]['macd_osc'] < 0 and info[symbol]['close'] < info[symbol]['ma'] and \
+                        info[symbol]['macd_osc'] < 0 and info[symbol]['close'] < info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] < 0 and info[symbol]['stoch_slope_1h'] < 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
@@ -234,7 +177,7 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"Occured an error {e}")
                 logging.info(f"Occured an error {e}")
-        with open(path_data+'binance_short.txt', 'w') as f:
+        with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
         logging.info('거래 끝')
         check = False
