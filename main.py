@@ -45,7 +45,7 @@ def save_info():
     for symbol in symbols:
         # 일봉 데이터 수집
         df = indi.getOHLCV(binance, symbol, '1d')
-        info[symbol]['sotch_osc_d'] = indi.calStochastic(df, 12, 5, 5)[0]
+        info[symbol]['stoch_osc_d'] = indi.calStochastic(df, 12, 5, 5)[0]
         info[symbol]['stoch_slope_d'] = indi.calStochastic(df, 12, 5, 5)[1]
         info[symbol]['macd_osc'] = indi.calMACD(df, 12, 26, 9)
         info[symbol]['ema'] = indi.calEMA(df, 14)
