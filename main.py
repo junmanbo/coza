@@ -86,7 +86,6 @@ for coin in except_coin:
     symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
-logging.info(f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
     now = datetime.datetime.now()
