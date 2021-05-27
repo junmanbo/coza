@@ -96,7 +96,12 @@ while True:
     time.sleep(1)
     # 익절한 코인 및 손절할 코인 체크
     if now.minute == 55 and 0 <= now.second <= 9:
+<<<<<<< HEAD:short_main.py
         free_balance = binance.fetch_balance()['USDT']['free'] - 300
+=======
+        logging.info("조건 체크")
+        free_balance = binance.fetch_balance()['USDT']['free'] - 100
+>>>>>>> d5cad86d791e7361b6571108339dd621681e29ee:main.py
         invest_money = free_balance * 4 / (total_hold - current_hold)
         for symbol in symbols:
             try:
