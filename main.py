@@ -40,30 +40,25 @@ with open('./Data/binance_short.txt', 'r') as f:
     info = json.loads(data)
 
 # 코인별 정보값 info 딕셔너리에 저장
-def save_info():
-    logging.info('Stochastic + MACD + EMA + RSI 데이터 분석중...')
-    for symbol in symbols:
-        # 일봉 데이터 수집
-        df = indi.getOHLCV(binance, symbol, '1d')
-        info[symbol]['stoch_osc_d'] = indi.calStochastic(df, 12, 5, 5)[0]
-        info[symbol]['stoch_slope_d'] = indi.calStochastic(df, 12, 5, 5)[1]
-        info[symbol]['macd_osc'] = indi.calMACD(df, 12, 26, 9)
-        info[symbol]['ema'] = indi.calEMA(df, 14)
-        info[symbol]['rsi'] = indi.calRSI(df, 14)
-        info[symbol]['close'] = df['close'][-1]
-        info[symbol]['high'] = df['high'][-1]
-        info[symbol]['low'] = df['low'][-1]
+def save_info(symbol):
+    # 일봉 데이터 수집
+    df = indi.getOHLCV(binance, symbol, '1d')
+    info[symbol]['stoch_osc_d'] = indi.calStochastic(df, 12, 5, 5)[0]
+    info[symbol]['stoch_slope_d'] = indi.calStochastic(df, 12, 5, 5)[1]
+    info[symbol]['macd_osc'] = indi.calMACD(df, 12, 26, 9)
+    info[symbol]['ema'] = indi.calEMA(df, 14)
+    info[symbol]['rsi'] = indi.calRSI(df, 14)
+    info[symbol]['close'] = df['close'][-1]
 
-        # 4시봉 데이터 수집
-        df = indi.getOHLCV(binance, symbol, '4h')
-        info[symbol]['stoch_slope_4h'] = indi.calStochastic(df, 12, 5, 5)[1]
+    # 4시봉 데이터 수집
+    df = indi.getOHLCV(binance, symbol, '4h')
+    info[symbol]['stoch_slope_4h'] = indi.calStochastic(df, 12, 5, 5)[1]
 
-        # 1시봉 데이터 수집
-        df = indi.getOHLCV(binance, symbol, '1h')
-        info[symbol]['stoch_slope_1h'] = indi.calStochastic(df, 12, 5, 5)[1]
-
-        time.sleep(0.1)
-    logging.info('분석 끝, 저장 완료')
+    # 1시봉 데이터 수집
+    df = indi.getOHLCV(binance, symbol, '1h')
+    info[symbol]['stoch_slope_1h'] = indi.calStochastic(df, 12, 5, 5)[1]
+    info[symbol]['high'] = df['high'][-1]
+    info[symbol]['low'] = df['low'][-1]
 
 # Coin 목록 불러오기
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
@@ -92,13 +87,6 @@ for symbol in symbols:
 total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.012 # 롱 포지션 수익률
 bear_profit = 0.988 # 숏 포지션 수익률
-check = True
-save_info()
-
-# 거래에서 제외하고 싶은 코인
-#  except_coin = ['BTC/USDT', 'ETH/USDT']
-#  for coin in except_coin:
-#      symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
@@ -107,9 +95,12 @@ while True:
     time.sleep(1)
     # 익절한 코인 및 손절할 코인 체크
     if now.minute == 55 and 0 <= now.second <= 9:
-        save_info() # 분석 정보 저장
+        free_balance = binance.fetch_balance()['USDT']['free'] - 100
+        invest_money = free_balance * 4 / (total_hold - current_hold)
         for symbol in symbols:
             try:
+                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                save_info(symbol)
                 # 익절한 Coin 체크
                 if info[symbol]['position'] == 'long' and info[symbol]['high'] > info[symbol]['price'] * bull_profit:
                     current_hold -= 1
@@ -140,29 +131,14 @@ while True:
                     current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n실패")
-            except Exception as e:
-                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-                logging.error(f"에러발생 {e}")
-        # 파일에 수집한 정보 및 거래 정보 파일에 저장
-        with open('./Data/binance_short.txt', 'w') as f:
-            f.write(json.dumps(info))
-        if now.hour == 8:
-            check = True
 
-    elif check == True and current_hold < total_hold:
-        free_balance = binance.fetch_balance()['USDT']['free'] - 100
-        invest_money = free_balance * 4 / (total_hold - current_hold)
-        logging.info('체크 끝 - 당일 거래 시작')
-        for symbol in symbols:
-            try:
-                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 # 조건 만족시 Long Position
-                if info[symbol]['position'] == 'wait' and info[symbol]['rsi'] < 70 and \
+                elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] < 70 and current_hold < total_hold and \
                         info[symbol]['stoch_osc_d'] > 0 and info[symbol]['stoch_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['close'] > info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] > 0 and info[symbol]['stoch_slope_1h'] > 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
-                    binance.create_limit_buy_order(symbol, amount, current_price) # 지정가 매수
+                    binance.create_market_buy_order(symbol, amount)
                     take_profit_params = {'stopPrice': current_price * bull_profit} # 이익실현 옵션
                     binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params) # 이익실현 예약 주문
                     info[symbol]['price'] = current_price # 현재가 저장
@@ -173,12 +149,12 @@ while True:
                     logging.info(f"{symbol} (롱)\n매수가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] > 30 and \
+                elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] > 30 and current_hold < total_hold and \
                         info[symbol]['stoch_osc_d'] < 0 and info[symbol]['stoch_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['close'] < info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] < 0 and info[symbol]['stoch_slope_1h'] < 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
-                    binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
+                    binance.create_market_sell_order(symbol, amount)
                     take_profit_params = {'stopPrice': current_price * bear_profit} # 이익실현 옵션
                     binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params) # 이익실현 예약 주문
                     info[symbol]['price'] = current_price
@@ -189,8 +165,8 @@ while True:
                     logging.info(f"{symbol} (숏)\n매도가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-                logging.info(f"에러발생 {e}")
+                logging.error(f"에러발생 {e}")
+            time.sleep(0.1)
+        # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
-        logging.info('거래 끝')
-        check = False
