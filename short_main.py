@@ -9,7 +9,7 @@ import logging
 from myPackage import indicators as indi
 
 # 로깅 설정
-logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
 
 # telegram 설정
 with open('./Api/mybot.txt') as f:
@@ -96,11 +96,10 @@ while True:
     time.sleep(1)
     # 익절한 코인 및 손절할 코인 체크
     if now.minute == 55 and 0 <= now.second <= 9:
-        free_balance = binance.fetch_balance()['USDT']['free'] - 300
-        logging.info("조건 체크")
-        invest_money = free_balance * 4 / (total_hold - current_hold)
         for symbol in symbols:
             try:
+                free_balance = binance.fetch_balance()['USDT']['free'] - 300
+                invest_money = free_balance * 4 / (total_hold - current_hold)
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 save_info(symbol)
                 # 익절한 Coin 체크
@@ -108,14 +107,16 @@ while True:
                     current_hold -= 1
                     profit = (bull_profit - 1) * 100
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n수익률: {profit:.2f}%\n성공")
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=info[symbol]['invest_money'], profit_rate=profit)
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
 
                 elif info[symbol]['position'] == 'short' and info[symbol]['low'] < info[symbol]['price'] * bear_profit:
                     current_hold -= 1
                     profit = (1 - bear_profit) * 100
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n성공")
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=info[symbol]['invest_money'], profit_rate=profit)
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
 
                 # 롱 포지션 청산
@@ -125,7 +126,8 @@ while True:
                     current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n수익률: {profit:.2f}%\n실패")
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=info[symbol]['invest_money'], profit_rate=profit)
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
 
                 # 숏 포지션 청산
@@ -135,7 +137,8 @@ while True:
                     current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n실패")
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=info[symbol]['invest_money'], profit_rate=profit)
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
 
                 # 조건 만족시 Long Position
@@ -150,10 +153,8 @@ while True:
                     info[symbol]['price'] = current_price # 현재가 저장
                     info[symbol]['position'] = 'long' # Position 'long' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
-                    info[symbol]['invest_money'] = invest_money # 투자금액 저장
                     current_hold += 1
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
-                    logging.info(f"{symbol} (롱)\n매수가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and info[symbol]['rsi'] > 30 and current_hold < total_hold and \
@@ -167,13 +168,10 @@ while True:
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # Position 'short' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
-                    info[symbol]['invest_money'] = invest_money # 투자금액 저장
                     current_hold += 1
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
-                    logging.info(f"{symbol} (숏)\n매도가: ${current_price}\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n거래")
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-                logging.error(f"에러발생 {e}")
             time.sleep(0.1)
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:

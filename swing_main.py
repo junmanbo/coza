@@ -52,9 +52,7 @@ strategy = 'Swing'
 tickers = ('BTC/USDT', 'ETH/USDT')
 symbols = list(tickers)
 
-check = True
-bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱(스윙) 전략 시작")
-logging.info(f"{strategy} 전략 시작")
+bot.sendMessage(chat_id = chat_id, text=f"{strategy} 전략 시작")
 
 while True:
     now = datetime.datetime.now()
