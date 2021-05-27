@@ -150,5 +150,6 @@ Thumbs.db #thumbnail cache on Windows
 # api key data
 *.txt
 *.log
+*.xlsx
 
 # End of https://www.toptal.com/developers/gitignore/api/python
