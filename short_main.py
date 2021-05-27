@@ -35,7 +35,7 @@ binance = ccxt.binance({
 })
 
 # 코인 정보 저장 파일 불러오기
-with open('./Data/binance_short.txt', 'r') as f:
+with open('./Data/binance_short.json', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
@@ -181,7 +181,7 @@ while True:
             time.sleep(0.1)
         logging.info(f"현재 거래 진행중인 리스트: \n{symbols}")
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
-        with open('./Data/binance_short.txt', 'w') as f:
+        with open('./Data/binance_short.json', 'w') as f:
             f.write(json.dumps(info))
         if now.hour == 8:
             end_balance = binance.fetch_balance()['USDT']['total']
