@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
 import datetime
+import openpyxl
 
 # OHLCV 데이터 가져오기
 def getOHLCV(exchange, symbol, period):
     """
-    exchange=거래소
-    symbol=코인 티커
-    period=기간 (일봉=1d, 4시간봉=4h)
+    exchange: 거래소
+    symbol: 코인 티커
+    period: 기간 (일봉=1d, 4시간봉=4h)
     """
     ohlcv = exchange.fetch_ohlcv(symbol, period)
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
@@ -19,7 +20,7 @@ def getOHLCV(exchange, symbol, period):
 def calEMA(df, n):
     """
     지수 이동평균 계산
-    n = n일의 지수 이동평균
+    n: n일의 지수 이동평균
     """
 
     df['ema'] = df['close'].ewm(span=n).mean()

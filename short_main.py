@@ -98,8 +98,6 @@ while True:
     if now.minute == 55 and 0 <= now.second <= 9:
         for symbol in symbols:
             try:
-                free_balance = binance.fetch_balance()['USDT']['free'] - 300
-                invest_money = free_balance * 4 / (total_hold - current_hold)
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 save_info(symbol)
                 # 익절한 Coin 체크
@@ -146,6 +144,8 @@ while True:
                         info[symbol]['stoch_osc_d'] > 0 and info[symbol]['stoch_slope_d'] > 0 and \
                         info[symbol]['macd_osc'] > 0 and info[symbol]['close'] > info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] > 0 and info[symbol]['stoch_slope_1h'] > 0:
+                    free_balance = binance.fetch_balance()['USDT']['free'] - 300
+                    invest_money = free_balance * 4 / (total_hold - current_hold)
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_market_buy_order(symbol, amount)
                     take_profit_params = {'stopPrice': current_price * bull_profit} # 이익실현 옵션
@@ -161,6 +161,8 @@ while True:
                         info[symbol]['stoch_osc_d'] < 0 and info[symbol]['stoch_slope_d'] < 0 and \
                         info[symbol]['macd_osc'] < 0 and info[symbol]['close'] < info[symbol]['ema'] and \
                         info[symbol]['stoch_slope_4h'] < 0 and info[symbol]['stoch_slope_1h'] < 0:
+                    free_balance = binance.fetch_balance()['USDT']['free'] - 300
+                    invest_money = free_balance * 4 / (total_hold - current_hold)
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_market_sell_order(symbol, amount)
                     take_profit_params = {'stopPrice': current_price * bear_profit} # 이익실현 옵션
