@@ -66,7 +66,21 @@ def save_info():
     logging.info('분석 끝, 저장 완료')
 
 # Coin 목록 불러오기
-tickers = binance.load_markets().keys()
+#  tickers = binance.load_markets().keys() # 목록 전체 조회
+tickers = (
+        'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT',
+        'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ICP/USDT', 'BAKE/USDT',
+        'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT',
+        'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'BAT/USDT', 'VET/USDT',
+        'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT',
+        'ZRX/USDT', 'OMG/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT',
+        'DOT/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT',
+        'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT',
+        'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT',
+        'FIL/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', 'CHZ/USDT',
+        'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT',
+        'HBAR/USDT', 'HOT/USDT', 'BTT/USDT', 'SC/USDT', 'DGB/USDT',
+        )
 symbols = list(tickers)
 
 # 보유하고 있는 코인 갯수
@@ -75,15 +89,16 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 2 # 투자할 코인 총 갯수
+total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.012 # 롱 포지션 수익률
 bear_profit = 0.988 # 숏 포지션 수익률
-check = False
+check = True
+save_info()
 
 # 거래에서 제외하고 싶은 코인
-except_coin = ['BTC/USDT', 'ETH/USDT']
-for coin in except_coin:
-    symbols.remove(coin)
+#  except_coin = ['BTC/USDT', 'ETH/USDT']
+#  for coin in except_coin:
+#      symbols.remove(coin)
 
 bot.sendMessage(chat_id = chat_id, text=f"스토캐스틱(단타)\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
@@ -135,7 +150,7 @@ while True:
             check = True
 
     elif check == True and current_hold < total_hold:
-        free_balance = binance.fetch_balance()['USDT']['free'] - 50
+        free_balance = binance.fetch_balance()['USDT']['free'] - 100
         invest_money = free_balance * 4 / (total_hold - current_hold)
         logging.info('체크 끝 - 당일 거래 시작')
         for symbol in symbols:
