@@ -59,7 +59,7 @@ while True:
     time.sleep(1)
     # 익절한 코인 및 손절할 코인 체크
     if now.minute == 30 and 0 <= now.second <= 1:
-        free_balance = binance.fetch_balance()['USDT']['free'] - 300
+        free_balance = binance.fetch_balance()['USDT']['free'] - 100
         invest_money = free_balance
         for symbol in symbols:
             try:
