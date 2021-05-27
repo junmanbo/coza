@@ -98,8 +98,8 @@ while True:
     if now.minute == 55 and 0 <= now.second <= 9:
         for symbol in symbols:
             try:
-                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 save_info(symbol)
+                current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 # 익절한 Coin 체크
                 if info[symbol]['position'] == 'long' and info[symbol]['high'] > info[symbol]['price'] * bull_profit:
                     profit = (bull_profit - 1) * 100
@@ -120,7 +120,6 @@ while True:
                 # 롱 포지션 청산
                 elif info[symbol]['position'] == 'long' and info[symbol]['stoch_slope_4h'] < 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (롱)\n수익률: {profit:.2f}%\n실패")
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
@@ -131,7 +130,6 @@ while True:
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short' and info[symbol]['stoch_slope_4h'] > 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
-                    current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     bot.sendMessage(chat_id = chat_id, text=f"(단타){symbol} (숏)\n수익률: {profit:.2f}%\n실패")
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
