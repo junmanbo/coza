@@ -135,7 +135,7 @@ while True:
             check = True
 
     elif check == True and current_hold < total_hold:
-        free_balance = binance.fetch_balance()['USDT']['free']
+        free_balance = binance.fetch_balance()['USDT']['free'] - 50
         invest_money = free_balance * 4 / (total_hold - current_hold)
         logging.info('체크 끝 - 당일 거래 시작')
         for symbol in symbols:
