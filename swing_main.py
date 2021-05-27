@@ -52,8 +52,6 @@ strategy = 'Swing'
 tickers = ('BTC/USDT', 'ETH/USDT')
 symbols = list(tickers)
 
-bot.sendMessage(chat_id = chat_id, text=f"{strategy} 전략 시작")
-
 while True:
     now = datetime.datetime.now()
     time.sleep(1)
@@ -70,20 +68,20 @@ while True:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
                     current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} (롱)\n수익률: {profit:.2f}%")
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
                     indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (롱)\n수익률: {profit:.2f}%")
 
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short' and info[symbol]['stoch_slope'] > 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
                     current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} (숏)\n수익률: {profit:.2f}%")
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
                     indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
                     info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (숏)\n수익률: {profit:.2f}%")
 
                 # 조건 만족시 Long Position
                 elif info[symbol]['position'] == 'wait' and \
@@ -93,7 +91,6 @@ while True:
                     info[symbol]['price'] = current_price # 현재가 저장
                     info[symbol]['position'] = 'long' # Position 'long' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} (롱)\n투자금액: ${invest_money:.2f}\n거래")
                     logging.info(f"{symbol} (롱)\n매수가: ${current_price}\n투자금액: ${invest_money:.2f}\n거래")
 
                 # 조건 만족시 Short Position
@@ -104,7 +101,6 @@ while True:
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # Position 'short' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
-                    bot.sendMessage(chat_id = chat_id, text=f"(스윙){symbol} (숏)\n투자금액: ${invest_money:.2f}\n거래")
                     logging.info(f"{symbol} (숏)\n매도가: ${current_price}\n투자금액: ${invest_money:.2f}\n거래")
 
             except Exception as e:

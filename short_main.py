@@ -9,7 +9,7 @@ import logging
 from myPackage import indicators as indi
 
 # 로깅 설정
-logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.WARNING)
+logging.basicConfig(filename='./Log/binance_short.log', format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 # telegram 설정
 with open('./Api/mybot.txt') as f:
