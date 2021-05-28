@@ -43,8 +43,9 @@ with open('./Data/binance_swing.txt', 'r') as f:
 def save_info(symbol):
     # 일봉 데이터 수집
     df = indi.getOHLCV(binance, symbol, '1d')
-    info[symbol]['stoch_osc'] = indi.calStochastic(df, 12, 5, 5)[0]
-    info[symbol]['stoch_slope'] = indi.calStochastic(df, 12, 5, 5)[1]
+    stoch_osc = indi.calStochastic(df, 12, 5, 5)[0]
+    stoch_slope = indi.calStochastic(df, 12, 5, 5)[1]
+    return stoch_osc, stoch_slope
 
 # 전략 이름
 strategy = 'Swing'
@@ -52,7 +53,7 @@ strategy = 'Swing'
 tickers = ('BTC/USDT', 'ETH/USDT')
 symbols = list(tickers)
 
-invest_money = 100
+invest_money = 150
 
 while True:
     now = datetime.datetime.now()
@@ -61,51 +62,48 @@ while True:
     if (now.hour +3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 1:
         for symbol in symbols:
             try:
-                save_info(symbol)
+                values = save_info(symbol)
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                 # 롱 포지션 청산
-                if info[symbol]['position'] == 'long' and info[symbol]['stoch_osc'] < 0:
+                if info[symbol]['position'] == 'long' and values[0] < 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
-                    current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
-                    invest_money = info[symbol]['price'] * info[symbol]['amount']
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
+                    invest_money = info[symbol]['price'] * info[symbol]['amount'] # 투자금액
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit)
                     info[symbol]['position'] = 'wait'
-                    info[symbol]['total_trading'] = 0
-                    logging.info(f"{symbol} (롱)\n수익률: {profit:.2f}%")
+                    info[symbol]['total_trading'] = 0 # 분할 매수 횟수
+                    logging.info(f"{symbol} (롱)\n수익률: {profit:.2f}%\n청산")
 
                 # 숏 포지션 청산
-                elif info[symbol]['position'] == 'short' and info[symbol]['stoch_osc'] > 0:
+                elif info[symbol]['position'] == 'short' and values[0] > 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
-                    current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
-                    indi.saveHistory(strategy=strategy, symbol=symbol, position=info[symbol]['position'], invest_money=invest_money, profit_rate=profit)
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit)
                     info[symbol]['position'] = 'wait'
-                    info[symbol]['total_trading'] = 0
-                    logging.info(f"{symbol} (숏)\n수익률: {profit:.2f}%")
+                    info[symbol]['total_trading'] = 0 # 분할 매수 횟수
+                    logging.info(f"{symbol} (숏)\n수익률: {profit:.2f}%\n청산")
 
                 # 롱 포지션이면서 마이너스일 경우 추가 매수
-                elif info[symbol]['position'] == 'long' and info[symbol]['stoch_slope'] > 0 and current_price < info[symbol]['price']:
+                elif info[symbol]['position'] == 'long' and current_price < info[symbol]['price']:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_buy_order(symbol, amount, current_price) # 지정가 매수
                     info[symbol]['total_trading'] += 1 # 분할매수 횟수
                     info[symbol]['amount'] += amount # Coin 갯수 저장
-                    info[symbol]['price'] = 100 * info[symbol]['total_trading'] / info[symbol]['amount'] # 평균 매수 단가
-                    logging.info(f"{symbol} (롱)\n평균매수단가: ${info[symbol]['price']}\n총 투자금액: ${info[symbol]['total_trading'] *100}\n추가매수")
+                    info[symbol]['price'] = invest_money * info[symbol]['total_trading'] / info[symbol]['amount'] # 평균 매수 단가
+                    logging.info(f"{symbol} (롱)\n평균매수단가: ${info[symbol]['price']}\n총 투자금액: ${info[symbol]['total_trading'] * invest_money}\n추가매수")
 
                 # 숏 포지션이면서 마이너스일 경우 추가 매수
-                elif info[symbol]['position'] == 'short' and info[symbol]['stoch_slope'] < 0 and current_price > info[symbol]['price']:
+                elif info[symbol]['position'] == 'short' and current_price > info[symbol]['price']:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
                     info[symbol]['total_trading'] += 1 # 분할매도 횟수
                     info[symbol]['amount'] += amount # Coin 갯수 저장
-                    info[symbol]['price'] = 100 * info[symbol]['total_trading'] / info[symbol]['amount'] # 평균 매도 단가
-                    logging.info(f"{symbol} (숏)\n평균매도단가: ${info[symbol]['price']}\n총 투자금액: ${info[symbol]['total_trading'] *100}\n추가매도")
+                    info[symbol]['price'] = invest_money * info[symbol]['total_trading'] / info[symbol]['amount'] # 평균 매도 단가
+                    logging.info(f"{symbol} (숏)\n평균매도단가: ${info[symbol]['price']}\n총 투자금액: ${info[symbol]['total_trading'] * invest_money}\n추가매도")
 
                 # 조건 만족시 Long Position
-                elif info[symbol]['position'] == 'wait' and now.hour == 9 and \
-                        info[symbol]['stoch_osc'] > 0 and info[symbol]['stoch_slope'] > 0:
+                elif info[symbol]['position'] == 'wait' and values[0] > 0 and values[1] > 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_buy_order(symbol, amount, current_price) # 지정가 매수
                     info[symbol]['price'] = current_price # 현재가 저장
@@ -115,8 +113,7 @@ while True:
                     logging.info(f"{symbol} (롱)\n매수가: ${current_price}\n투자금액: ${invest_money:.2f}\n거래")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and now.hour == 9 and \
-                        info[symbol]['stoch_osc'] < 0 and info[symbol]['stoch_slope'] < 0:
+                elif info[symbol]['position'] == 'wait' and values[0] < 0 and values[1] < 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
                     binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
                     info[symbol]['price'] = current_price
