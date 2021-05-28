@@ -39,7 +39,6 @@ with open('./Data/binance_short.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
-data = {}
 # 코인별 정보값 info 딕셔너리에 저장
 def save_info(symbol):
     # 일봉 데이터 수집
