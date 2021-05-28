@@ -18,13 +18,6 @@ for symbol in symbols:
     info[symbol]['amount'] = 0 # 코인 매수/매도 갯수
     info[symbol]['position'] = 'wait' # 현재 거래 포지션 (long / short / wait)
     info[symbol]['price'] = 0 # 코인 거래한 가격
-    info[symbol]['stoch_osc_d'] = 0 # Stochastic Slow Oscilator 값 (Day)
-    info[symbol]['stoch_slope_d'] = 0 # Stochastic Slow Oscilator 기울기 값 (Day)
-    info[symbol]['stoch_slope_4h'] = 0 # Stochastic Slow Oscilator 기울기 값 (4Hour)
-    info[symbol]['stoch_slope_1h'] = 0 # Stochastic Slow Oscilator 기울기 값 (1Hour)
-    info[symbol]['macd_osc'] = 0 # MACD Oscilator 값
-    info[symbol]['ema'] = 0 # 지수이동평균 값
-    info[symbol]['rsi'] = 0 # RSI 지수 값
 
 with open('./Data/binance_short.txt', 'w') as f:
     f.write(json.dumps(info)) # use `json.loads` to do the reverse
