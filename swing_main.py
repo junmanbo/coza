@@ -35,7 +35,7 @@ binance = ccxt.binance({
 })
 
 # 코인 정보 저장 파일 불러오기
-with open('./Data/binance_swing.json', 'r') as f:
+with open('./Data/binance_swing.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
@@ -130,5 +130,5 @@ while True:
                 logging.error(f"에러발생 {e}")
 
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
-        with open('./Data/binance_swing.json', 'w') as f:
+        with open('./Data/binance_swing.txt', 'w') as f:
             f.write(json.dumps(info))
