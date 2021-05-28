@@ -3,19 +3,6 @@ import pandas as pd
 import datetime
 import openpyxl
 
-# OHLCV 데이터 가져오기
-def getOHLCV(exchange, symbol, period):
-    """
-    exchange: 거래소
-    symbol: 코인 티커
-    period: 기간 (일봉=1d, 4시간봉=4h)
-    """
-    ohlcv = exchange.fetch_ohlcv(symbol, period)
-    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-    df.set_index('datetime', inplace=True)
-    return df
-
 # 지수 이동평균 계산
 def calEMA(df, n):
     """

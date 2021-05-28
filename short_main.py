@@ -6,6 +6,7 @@ import time
 import telegram
 import json
 import logging
+import pandas as pd
 from myPackage import indicators as indi
 
 # 로깅 설정
@@ -39,10 +40,23 @@ with open('./Data/binance_short.txt', 'r') as f:
     data = f.read()
     info = json.loads(data)
 
+# OHLCV 데이터 가져오기
+def getOHLCV(exchange, symbol, period):
+    """
+    exchange: 거래소
+    symbol: 코인 티커
+    period: 기간 (일봉=1d, 4시간봉=4h)
+    """
+    ohlcv = exchange.fetch_ohlcv(symbol, period)
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    return df
+
 # 코인별 정보값 info 딕셔너리에 저장
 def save_info(symbol):
     # 일봉 데이터 수집
-    df = indi.getOHLCV(binance, symbol, '1d')
+    df = getOHLCV(binance, symbol, '1d')
     stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
     stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
     macd_osc = indi.calMACD(df, 12, 26, 9)
@@ -50,7 +64,7 @@ def save_info(symbol):
     low = df['low'][-1]
 
     # 4시봉 데이터 수집
-    df = indi.getOHLCV(binance, symbol, '4h')
+    df = getOHLCV(binance, symbol, '4h')
     stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)[1]
 
     return stoch_osc_d, stoch_slope_d, stoch_slope_4h, macd_osc, high, low
