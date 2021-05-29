@@ -175,13 +175,13 @@ while True:
             f.write(json.dumps(info))
 
     # 10분 마다 익절 / 손절 체크
-    elif now.minute % 10 == 0 and 0 <= now.second <= 3:
+    elif now.minute % 15 == 0 and 0 <= now.second <= 3:
         for symbol in symbols:
             try:
                 if info[symbol]['position'] != 'wait':
-                    # 10분봉 데이터 조회
+                    # 15분봉 데이터 조회
                     df = getOHLCV(symbol, '15m')
-                    logging.info(f"{symbol} 10분 - 고가: {df['high'][-1]} 저가: {df['low'][-1]}")
+                    logging.info(f"{symbol} 15분 - 고가: {df['high'][-1]} 저가: {df['low'][-1]}")
 
                     # 롱 포지션 이익실현 / 손절 체크
                     if info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * bull_profit:
