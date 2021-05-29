@@ -42,11 +42,6 @@ with open('./Data/binance_short.txt', 'r') as f:
 
 # OHLCV 데이터 가져오기
 def getOHLCV(exchange, symbol, period):
-    """
-    exchange: 거래소
-    symbol: 코인 티커
-    period: 기간 (일봉=1d, 4시간봉=4h)
-    """
     ohlcv = exchange.fetch_ohlcv(symbol, period)
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
@@ -59,7 +54,7 @@ def save_info(symbol):
     df = getOHLCV(binance, symbol, '1d')
     stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
     stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
-    macd_osc = indi.calMACD(df, 12, 26, 9)
+    macd_osc = indi.calMACD(df, 14, 30, 10)
     high = df['high'][-1]
     low = df['low'][-1]
 

@@ -42,11 +42,6 @@ with open('./Data/binance_swing.txt', 'r') as f:
 
 # OHLCV 데이터 가져오기
 def getOHLCV(exchange, symbol, period):
-    """
-    exchange: 거래소
-    symbol: 코인 티커
-    period: 기간 (일봉=1d, 4시간봉=4h)
-    """
     ohlcv = exchange.fetch_ohlcv(symbol, period)
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
@@ -78,6 +73,7 @@ while True:
             try:
                 values = save_info(symbol)
                 current_price = binance.fetch_ticker(symbol=symbol)['close'] # 현재가 조회
+                logging.info(f"{symbol} 지표값\n{values}")
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long' and values[0] < 0:
                     binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
