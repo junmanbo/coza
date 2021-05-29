@@ -93,7 +93,6 @@ while True:
                 df = getOHLCV(symbol, '1d')
                 stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
                 stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
-                macd_osc = indi.calMACD(df, 14, 30, 10)
 
                 # 4시봉 데이터 수집
                 df = getOHLCV(symbol, '4h')
@@ -124,7 +123,7 @@ while True:
 
                 # 조건 만족시 Long Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_slope_4h > 0 and macd_osc > 0:
+                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_slope_4h > 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 100
                     invest_money = free_balance * 4 / (total_hold - current_hold)
@@ -146,7 +145,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d < 0 and stoch_slope_d < 0 and stoch_slope_4h < 0 and macd_osc < 0:
+                        stoch_osc_d < 0 and stoch_slope_d < 0 and stoch_slope_4h < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 100
                     invest_money = free_balance * 4 / (total_hold - current_hold)
