@@ -97,7 +97,7 @@ while True:
                 # 4시봉 데이터 수집
                 df = getOHLCV(symbol, '4h')
                 stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)[1]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {macd_osc} {stoch_slope_4h}')
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_slope_4h}')
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
