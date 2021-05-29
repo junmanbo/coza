@@ -82,7 +82,7 @@ while True:
 
                 # 숏 포지션 청산
                 elif info[symbol]['position'] == 'short' and stoch_osc > 0:
-                    binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
+                    order = binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True}) # 포지션 청산
                     profit = (info[symbol]['price'] - current_price) / current_price * 100 # 수익률 계산
                     invest_money = info[symbol]['price'] * info[symbol]['amount']
                     indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit)
@@ -119,9 +119,9 @@ while True:
                     logging.info(f"{symbol} (롱) 매수가: ${current_price} 투자금액: ${invest_money:.2f} 거래\n주문: {order}")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and values[0] < 0 and values[1] < 0:
+                elif info[symbol]['position'] == 'wait' and stoch_osc < 0 and stoch_slope < 0:
                     amount = invest_money / current_price # 거래할 Coin 갯수
-                    binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
+                    order = binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short' # Position 'short' 으로 변경
                     info[symbol]['amount'] = amount # Coin 갯수 저장
