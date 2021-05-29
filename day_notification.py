@@ -1,13 +1,8 @@
 #!/usr/bin/env python
 
 import ccxt
-import datetime
-import time
 import telegram
 import json
-import logging
-import pandas as pd
-from myPackage import indicators as indi
 
 # telegram 설정
 with open('./Api/mybot.txt') as f:
@@ -39,7 +34,7 @@ with open('./Data/balance.txt', 'r') as f:
 
 end_balance = binance.fetch_balance()['USDT']['total']
 
-bot.sendMessage(chat_id = chat_id, text=f"하루 정산\n어제: ${start_balance} -> 오늘: ${end_balance}\n차액: ${end_balance - start_balance}")
+bot.sendMessage(chat_id = chat_id, text=f"하루 정산\n어제: ${start_balance:.2f} -> 오늘: ${end_balance:.2f}\n차액: ${end_balance - start_balance:.2f}")
 
 # 파일에 수집한 정보 및 거래 정보 파일에 저장
 with open('./Data/balance.txt', 'w') as f:
