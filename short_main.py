@@ -51,6 +51,7 @@ def getOHLCV(symbol, period):
 strategy = 'Short-term'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
 tickers = (
+        'BTC/USDT', 'ETH/USDT',
         'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT',
         'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ICP/USDT', 'BAKE/USDT',
         'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT',
@@ -72,12 +73,13 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 3 # 투자할 코인 총 갯수
-bull_profit = 1.07 # 롱 포지션 수익률
+total_hold = 5 # 투자할 코인 총 갯수
+bull_profit = 1.03 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
-bear_profit = 0.93 # 숏 포지션 수익률
+bear_profit = 0.97 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 
+leverage = 6 # 현재 레버리지 값 x6
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
@@ -85,7 +87,7 @@ while True:
     time.sleep(1)
 
     # 익절한 코인 및 손절할 코인 체크
-    if now.hour == 9 and now.minute == 2 and 0 <= now.second <= 9:
+    if now.hour == 9 and now.minute == 1 and 0 <= now.second <= 9:
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
@@ -93,11 +95,12 @@ while True:
                 df = getOHLCV(symbol, '1d')
                 stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
                 stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
+                macd_osc = indi.calMACD(df, 14, 30, 10)
 
                 # 4시봉 데이터 수집
                 df = getOHLCV(symbol, '4h')
                 stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)[1]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_slope_4h}')
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_slope_4h} {macd_osc}')
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
@@ -123,10 +126,10 @@ while True:
 
                 # 조건 만족시 Long Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_slope_4h > 0:
+                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_slope_4h > 0 and macd_osc > 0:
                     # 투자를 위한 세팅
-                    free_balance = binance.fetch_balance()['USDT']['free'] - 100
-                    invest_money = free_balance * 4 / (total_hold - current_hold)
+                    free_balance = binance.fetch_balance()['USDT']['free'] - 50
+                    invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
                     # 지정가 매수 주문
                     order = binance.create_limit_buy_order(symbol, amount, current_price)
@@ -145,10 +148,10 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d < 0 and stoch_slope_d < 0 and stoch_slope_4h < 0:
+                        stoch_osc_d < 0 and stoch_slope_d < 0 and stoch_slope_4h < 0 and macd_osc < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 100
-                    invest_money = free_balance * 4 / (total_hold - current_hold)
+                    invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
                     # 지정가 매수 주문
                     order = binance.create_limit_sell_order(symbol, amount, current_price)
@@ -175,13 +178,15 @@ while True:
             f.write(json.dumps(info))
 
     # 10분 마다 익절 / 손절 체크
-    elif now.minute % 15 == 0 and 0 <= now.second <= 3:
+    elif now.minute % 10 == 0 and 0 <= now.second <= 2:
         for symbol in symbols:
             try:
                 if info[symbol]['position'] != 'wait':
-                    # 15분봉 데이터 조회
-                    df = getOHLCV(symbol, '15m')
-                    logging.info(f"{symbol} 15분 - 고가: {df['high'][-1]} 저가: {df['low'][-1]}")
+                    df = getOHLCV(symbol, '1d')
+                    if info[symbol]['position'] == 'long':
+                        logging.info(f"{symbol} (롱) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매수가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
+                    elif info[symbol]['position'] == 'short':
+                        logging.info(f"{symbol} (숏) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매도가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
 
                     # 롱 포지션 이익실현 / 손절 체크
                     if info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * bull_profit:
