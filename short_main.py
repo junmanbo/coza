@@ -79,7 +79,7 @@ bull_loss = 0.96 # 롱 포지션 손실률
 bear_profit = 0.97 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 
-leverage = 10 # 현재 레버리지 값 x6
+leverage = 5 # 현재 레버리지 값 x6
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
@@ -152,7 +152,7 @@ while True:
                         stoch_osc_d < 0 and stoch_slope_d < 0 and  stoch_osc_4h < 0 and \
                         stoch_slope_4h < 0 and macd_osc < 0 and mfi < 0:
                     # 투자를 위한 세팅
-                    free_balance = binance.fetch_balance()['USDT']['free'] - 100
+                    free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
                     # 지정가 매수 주문
