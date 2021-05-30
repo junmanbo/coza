@@ -79,7 +79,7 @@ bull_loss = 0.96 # 롱 포지션 손실률
 bear_profit = 0.97 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 
-leverage = 6 # 현재 레버리지 값 x6
+leverage = 10 # 현재 레버리지 값 x6
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 
 while True:
@@ -93,14 +93,14 @@ while True:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
                 # 일봉 데이터 수집
                 df = getOHLCV(symbol, '1d')
-                stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
-                stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
+                stoch_osc_d, stoch_slope_d = indi.calStochastic(df, 12, 5, 5)
                 macd_osc = indi.calMACD(df, 14, 30, 10)
+                mfi = indi.calMFI(df, 14)
 
                 # 4시봉 데이터 수집
                 df = getOHLCV(symbol, '4h')
-                stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)[1]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_slope_4h} {macd_osc}')
+                stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_osc_4h} {stoch_slope_4h} {macd_osc} {mfi}')
 
                 # 롱 포지션 청산
                 if info[symbol]['position'] == 'long':
@@ -126,7 +126,8 @@ while True:
 
                 # 조건 만족시 Long Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_slope_4h > 0 and macd_osc > 0:
+                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_osc_4h > 0 and \
+                        stoch_slope_4h > 0 and macd_osc > 0 and mfi > 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
@@ -148,7 +149,8 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d < 0 and stoch_slope_d < 0 and stoch_slope_4h < 0 and macd_osc < 0:
+                        stoch_osc_d < 0 and stoch_slope_d < 0 and  stoch_osc_4h < 0 and \
+                        stoch_slope_4h < 0 and macd_osc < 0 and mfi < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 100
                     invest_money = free_balance * leverage / (total_hold - current_hold)
@@ -186,7 +188,7 @@ while True:
                     if info[symbol]['position'] == 'long':
                         logging.info(f"{symbol} (롱) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매수가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
                     elif info[symbol]['position'] == 'short':
-                        logging.info(f"{symbol} (숏) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매도가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
+                        logging.info(f"{symbol} (숏) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매도가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bear_profit}")
 
                     # 롱 포지션 이익실현 / 손절 체크
                     if info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * bull_profit:

@@ -66,6 +66,41 @@ def calRSI(df, n):
     df['RSI'] = df['AU'] / (df['AD']+df['AU']) * 100
     return df['RSI'][-1]
 
+# # MFI 계산
+def calMFI(df, period):
+    typical_price = (df['close'] + df['high'] + df['low']) / 3 # 대표 주가 계산
+    money_flow = typical_price * df['volume'] # 자금 흐름 계산
+    # 양의 자금 흐름과 음의 자금 흐름 계산
+    positive_flow = []
+    negative_flow = []
+    for i in range(1, len(typical_price)):
+        # 현재 대표 주가가 어제 대표 주가보다 높을 때
+        if typical_price[i] > typical_price[i - 1]:
+            positive_flow.append(money_flow[i - 1])
+            negative_flow.append(0)
+        # 현재 대표 주가가 어제 대표 주가보다 낮을 때
+        elif typical_price[i] < typical_price[i - 1]:
+            negative_flow.append(money_flow[i - 1])
+            positive_flow.append(0)
+        # 대표 주가의 변동이 없을 때
+        else:
+            positive_flow.append(0)
+            negative_flow.append(0)
+    # 지정된 기간 내 양의 자금 흐름과 음의 자금 흐름 계산
+    positive_mf = []
+    negative_mf = []
+
+    # 기간내 모든 양의 자금흐름
+    for i in range(period - 1, len(positive_flow)):
+        positive_mf.append(sum(positive_flow[i + 1 - period : i + 1]))
+
+    # 기간내 모든 음의 자금흐름
+    for i in range(period - 1, len(negative_flow)):
+        negative_mf.append(sum(negative_flow[i + 1 - period : i + 1]))
+    # 자금 흐름 지수 (MFI) 계산
+    mfi = 100 * (np.array(positive_mf) / (np.array(positive_mf) + np.array(negative_mf)))
+    mfi_slope = mfi[-1] - mfi[-2]
+    return mfi_slope
 
 def saveHistory(strategy, symbol, position, invest_money, profit_rate):
     """
