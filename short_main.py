@@ -92,18 +92,18 @@ while True:
                 # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_d = indi.calStochastic(df, 12, 5, 5)
-                mfi = indi.calMFI(df, 14)
+                macd = indi.calMACD(df, 14, 30, 10)
                 df = getOHLCV(symbol, '4h')
                 stoch_4h = indi.calStochastic(df, 12, 5, 5)
                 df = getOHLCV(symbol, '1h')
                 stoch_1h = indi.calStochastic(df, 12, 5, 5)
                 df = getOHLCV(symbol, '30m')
                 stoch_30m = indi.calStochastic(df, 12, 5, 5)
-                logging.info(f'코인: {symbol}\nStochastic: {stoch_d} {stoch_4h} {stoch_1h} {stoch_30m} MFI: {mfi}')
+                logging.info(f'코인: {symbol}\nStochastic: {stoch_d} {stoch_4h} {stoch_1h} {stoch_30m} MACD: {macd}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_d > 0 and stoch_4h > 0 and stoch_1h > 0 and stoch_30m > 0 and mfi > 0:
+                        stoch_d > 0 and stoch_4h > 0 and stoch_1h > 0 and stoch_30m > 0 and macd > 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
@@ -123,7 +123,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_d < 0 and stoch_4h < 0 and  stoch_1h < 0 and stoch_30m < 0 and mfi < 0:
+                        stoch_d < 0 and stoch_4h < 0 and  stoch_1h < 0 and stoch_30m < 0 and macd < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
