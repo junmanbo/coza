@@ -110,7 +110,9 @@ while True:
                     invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
                     # 지정가 매수 주문
-                    order = binance.create_limit_buy_order(symbol, amount, current_price)
+                    #  order = binance.create_limit_buy_order(symbol, amount, current_price)
+                    # 시장가 매수 주문
+                    order = binance.create_market_buy_order(symbol, amount)
                     # 이익실현 예약 주문
                     take_profit_params = {'stopPrice': current_price * bull_profit}
                     order1 = binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
@@ -133,7 +135,9 @@ while True:
                     invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
                     # 지정가 매수 주문
-                    order = binance.create_limit_sell_order(symbol, amount, current_price)
+                    #  order = binance.create_limit_sell_order(symbol, amount, current_price)
+                    # 시장가 매도 주문
+                    order = binance.create_market_sell_order(symbol, amount)
                     # 이익실현 예약 주문
                     take_profit_params = {'stopPrice': current_price * bear_profit}
                     order1 = binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
