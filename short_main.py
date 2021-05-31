@@ -52,7 +52,7 @@ strategy = 'Short-term'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
 tickers = (
         'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT',
-        'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ICP/USDT', 'BAKE/USDT',
+        'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'BTC/USDT', 'BAKE/USDT',
         'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT',
         'BNB/USDT', 'ATOM/USDT', 'ONT/USDT', 'BAT/USDT', 'VET/USDT',
         'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT',
