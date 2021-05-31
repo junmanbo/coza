@@ -85,7 +85,7 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.hour % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9:
+    if (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9:
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
