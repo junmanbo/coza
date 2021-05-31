@@ -92,13 +92,15 @@ while True:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
                 # 일봉 데이터 수집
                 df = getOHLCV(symbol, '1d')
-                stoch_osc_d, stoch_slope_d = indi.calStochastic(df, 12, 5, 5)
+                stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
+                stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
                 macd_osc = indi.calMACD(df, 14, 30, 10)
                 mfi = indi.calMFI(df, 14)
 
                 # 4시봉 데이터 수집
                 df = getOHLCV(symbol, '4h')
-                stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)
+                stoch_osc_4h = indi.calStochastic(df, 12, 5, 5)[0]
+                stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)
                 logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_osc_4h} {stoch_slope_4h} {macd_osc} {mfi}')
 
                 # 조건 만족시 Long Position
