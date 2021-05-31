@@ -73,9 +73,9 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 5 # 투자할 코인 총 갯수
-bull_profit = 1.03 # 롱 포지션 수익률
+bull_profit = 1.05 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
-bear_profit = 0.97 # 숏 포지션 수익률
+bear_profit = 0.95 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 
 leverage = 5 # 현재 레버리지 값 x6
@@ -85,130 +85,98 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 9:
+    if now.minute % 30 == 0 and 0 <= now.second <= 5:
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
-                # 일봉 데이터 수집
+                # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
-                stoch_osc_d = indi.calStochastic(df, 12, 5, 5)[0]
-                stoch_slope_d = indi.calStochastic(df, 12, 5, 5)[1]
-                macd_osc = indi.calMACD(df, 14, 30, 10)
-                mfi = indi.calMFI(df, 14)
-
-                # 4시봉 데이터 수집
+                stoch_d = indi.calStochastic(df, 12, 5, 5)
                 df = getOHLCV(symbol, '4h')
-                stoch_osc_4h = indi.calStochastic(df, 12, 5, 5)[0]
-                stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)[1]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_osc_4h} {stoch_slope_4h} {macd_osc} {mfi}')
+                stoch_4h = indi.calStochastic(df, 12, 5, 5)
+                df = getOHLCV(symbol, '1h')
+                stoch_1h = indi.calStochastic(df, 12, 5, 5)
+                df = getOHLCV(symbol, '30m')
+                stoch_30m = indi.calStochastic(df, 12, 5, 5)
+                logging.info(f'코인: {symbol}\n지표: {stoch_d} {stoch_4h} {stoch_1h} {stoch_30m}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_osc_4h > 0 and \
-                        stoch_slope_4h > 0 and macd_osc > 0 and mfi > 0:
+                        stoch_d > 0 and stoch_4h > 0 and stoch_1h > 0 and stoch_30m > 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
-                    # 지정가 매수 주문
-                    #  order = binance.create_limit_buy_order(symbol, amount, current_price)
-                    # 시장가 매수 주문
-                    order = binance.create_market_buy_order(symbol, amount)
-                    # 이익실현 예약 주문
-                    take_profit_params = {'stopPrice': current_price * bull_profit}
+                    #  order = binance.create_limit_buy_order(symbol, amount, current_price) # 지정가 매수 주문
+                    order = binance.create_market_buy_order(symbol, amount) # 시장가 매수 주문
+                    take_profit_params = {'stopPrice': current_price * bull_profit} # 이익실현 예약 주문
                     order1 = binance.create_order(symbol, 'take_profit_market', 'sell', amount, None, take_profit_params)
-                    # 손절 예약 주문
-                    stop_loss_params = {'stopPrice': current_price * bull_loss}
+                    stop_loss_params = {'stopPrice': current_price * bull_loss} # 손절 예약 주문
                     order2 = binance.create_order(symbol, 'stop_market', 'sell', amount, None, stop_loss_params)
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'long'
                     info[symbol]['amount'] = amount
                     current_hold += 1
-                    logging.info(f"{symbol} (롱)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n주문: {order} 이익실현 주문: {order1} 손절 주문: {order2}")
+                    logging.info(f"{symbol} (롱)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n주문: {order}")
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_d < 0 and stoch_slope_d < 0 and  stoch_osc_4h < 0 and \
-                        stoch_slope_4h < 0 and macd_osc < 0 and mfi < 0:
+                        stoch_d < 0 and stoch_4h < 0 and  stoch_1h < 0 and stoch_30m < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free'] - 50
                     invest_money = free_balance * leverage / (total_hold - current_hold)
                     amount = invest_money / current_price
-                    # 지정가 매수 주문
-                    #  order = binance.create_limit_sell_order(symbol, amount, current_price)
-                    # 시장가 매도 주문
-                    order = binance.create_market_sell_order(symbol, amount)
-                    # 이익실현 예약 주문
-                    take_profit_params = {'stopPrice': current_price * bear_profit}
+                    #  order = binance.create_limit_sell_order(symbol, amount, current_price) # 지정가 매도 주문
+                    order = binance.create_market_sell_order(symbol, amount) # 시장가 매도 주문
+                    take_profit_params = {'stopPrice': current_price * bear_profit} # 이익실현 예약 주문
                     order1 = binance.create_order(symbol, 'take_profit_market', 'buy', amount, None, take_profit_params)
-                    # 손절 예약 주문
-                    stop_loss_params = {'stopPrice': current_price * bear_loss}
+                    stop_loss_params = {'stopPrice': current_price * bear_loss} # 손절 예약 주문
                     order2 = binance.create_order(symbol, 'stop_market', 'buy', amount, None, stop_loss_params)
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short'
                     info[symbol]['amount'] = amount
                     current_hold += 1
-                    logging.info(f"{symbol} (숏)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n주문: {order} 이익실현 주문: {order1} 손절 주문: {order2}")
+                    logging.info(f"{symbol} (숏)\n투자금액: ${invest_money:.2f}\n현재보유: {current_hold}개\n주문: {order}")
 
-            except Exception as e:
-                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
-                logging.error(e)
-            time.sleep(0.1)
+                # 롱 포지션 이익실현 / 손절 체크
+                elif info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * bull_profit:
+                    profit = (bull_profit - 1) * 100
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    logging.info(f"{symbol} (롱) 수익률: {profit:.2f}% 성공\n취소주문: {cancel_order}")
 
-        # 파일에 수집한 정보 및 거래 정보 파일에 저장
-        with open('./Data/binance_short.txt', 'w') as f:
-            f.write(json.dumps(info))
+                elif info[symbol]['position'] == 'long' and df['low'][-1] < info[symbol]['price'] * bull_loss:
+                    profit = (bull_loss - 1) * 100
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    logging.info(f"{symbol} (롱) 수익률: {profit:.2f}% 실패\n취소주문: {cancel_order}")
 
-    # 15분 마다 익절 / 손절 체크
-    elif now.minute % 15 == 0 and 0 <= now.second <= 2:
-        for symbol in symbols:
-            try:
-                if info[symbol]['position'] != 'wait':
-                    df = getOHLCV(symbol, '15m')
-                    if info[symbol]['position'] == 'long':
-                        logging.info(f"{symbol} (롱) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매수가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
-                    elif info[symbol]['position'] == 'short':
-                        logging.info(f"{symbol} (숏) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매도가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bear_profit}")
+                # 숏 포지션 이익실현 / 손절 체크
+                elif info[symbol]['position'] == 'short' and df['low'][-1] < info[symbol]['price'] * bear_profit:
+                    profit = (1 - bear_profit) * 100
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    logging.info(f"{symbol} (숏) 수익률: {profit:.2f}% 성공\n취소주문: {cancel_order}")
 
-                    # 롱 포지션 이익실현 / 손절 체크
-                    if info[symbol]['position'] == 'long' and df['high'][-1] > info[symbol]['price'] * bull_profit:
-                        profit = (bull_profit - 1) * 100
-                        invest_money = info[symbol]['price'] * info[symbol]['amount']
-                        indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (롱) 수익률: {profit:.2f}% 성공\n취소주문: {cancel_order}")
-
-                    elif info[symbol]['position'] == 'long' and df['low'][-1] < info[symbol]['price'] * bull_loss:
-                        profit = (bull_loss - 1) * 100
-                        invest_money = info[symbol]['price'] * info[symbol]['amount']
-                        indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (롱) 수익률: {profit:.2f}% 실패\n취소주문: {cancel_order}")
-
-                    # 숏 포지션 이익실현 / 손절 체크
-                    elif info[symbol]['position'] == 'short' and df['low'][-1] < info[symbol]['price'] * bear_profit:
-                        profit = (1 - bear_profit) * 100
-                        invest_money = info[symbol]['price'] * info[symbol]['amount']
-                        indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (숏) 수익률: {profit:.2f}% 성공\n취소주문: {cancel_order}")
-
-                    elif info[symbol]['position'] == 'short' and df['high'][-1] > info[symbol]['price'] * bear_loss:
-                        profit = (1 - bear_loss) * 100
-                        invest_money = info[symbol]['price'] * info[symbol]['amount']
-                        indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (숏)\n수익률: {profit:.2f}% 실패\n취소주문: {cancel_order}")
+                elif info[symbol]['position'] == 'short' and df['high'][-1] > info[symbol]['price'] * bear_loss:
+                    profit = (1 - bear_loss) * 100
+                    invest_money = info[symbol]['price'] * info[symbol]['amount']
+                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit) # 엑셀 파일에 저장
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    logging.info(f"{symbol} (숏)\n수익률: {profit:.2f}% 실패\n취소주문: {cancel_order}")
 
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
