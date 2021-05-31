@@ -51,7 +51,6 @@ def getOHLCV(symbol, period):
 strategy = 'Short-term'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
 tickers = (
-        'BTC/USDT', 'ETH/USDT',
         'BCH/USDT', 'XRP/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT',
         'ETC/USDT', 'LINK/USDT', 'XLM/USDT', 'ICP/USDT', 'BAKE/USDT',
         'ADA/USDT', 'XMR/USDT', 'DASH/USDT', 'ZEC/USDT', 'XTZ/USDT',
@@ -74,9 +73,9 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 5 # 투자할 코인 총 갯수
-bull_profit = 1.03 # 롱 포지션 수익률
+bull_profit = 1.05 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
-bear_profit = 0.97 # 숏 포지션 수익률
+bear_profit = 0.95 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 
 leverage = 5 # 현재 레버리지 값 x6
@@ -87,7 +86,7 @@ while True:
     time.sleep(1)
 
     # 익절한 코인 및 손절할 코인 체크
-    if now.hour == 9 and now.minute == 1 and 0 <= now.second <= 9:
+    if now.hour % 2 == 0 and now.minute == 1 and 0 <= now.second <= 9:
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
@@ -102,30 +101,8 @@ while True:
                 stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 12, 5, 5)
                 logging.info(f'코인: {symbol}\n지표: {stoch_osc_d} {stoch_slope_d} {stoch_osc_4h} {stoch_slope_4h} {macd_osc} {mfi}')
 
-                # 롱 포지션 청산
-                if info[symbol]['position'] == 'long':
-                    order = binance.create_order(symbol=symbol, type="MARKET", side="sell", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    cancel_order = binance.cancel_all_orders(symbol)
-                    profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100 # 수익률 계산
-                    invest_money = info[symbol]['price'] * info[symbol]['amount']
-                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit)
-                    info[symbol]['position'] = 'wait'
-                    current_hold -= 1
-                    logging.info(f"{symbol} (롱)\n수익률: {profit}\n주문: {order} 취소주문: {cancel_order}")
-
-                # 숏 포지션 청산
-                elif info[symbol]['position'] == 'short':
-                    order = binance.create_order(symbol=symbol, type="MARKET", side="buy", amount=info[symbol]['amount'], params={"reduceOnly": True})
-                    cancel_order = binance.cancel_all_orders(symbol)
-                    profit = (info[symbol]['price'] - current_hold) / current_hold * 100 # 수익률 계산
-                    invest_money = info[symbol]['price'] * info[symbol]['amount']
-                    indi.saveHistory(strategy, symbol, info[symbol]['position'], invest_money, profit)
-                    info[symbol]['position'] = 'wait'
-                    current_hold -= 1
-                    logging.info(f"{symbol} (숏)\n수익률: {profit}\n주문: {order} 취소주문: {cancel_order}")
-
                 # 조건 만족시 Long Position
-                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
+                if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
                         stoch_osc_d > 0 and stoch_slope_d > 0 and stoch_osc_4h > 0 and \
                         stoch_slope_4h > 0 and macd_osc > 0 and mfi > 0:
                     # 투자를 위한 세팅
@@ -179,12 +156,12 @@ while True:
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
 
-    # 10분 마다 익절 / 손절 체크
-    elif now.minute % 10 == 0 and 0 <= now.second <= 2:
+    # 15분 마다 익절 / 손절 체크
+    elif now.minute % 15 == 0 and 0 <= now.second <= 2:
         for symbol in symbols:
             try:
                 if info[symbol]['position'] != 'wait':
-                    df = getOHLCV(symbol, '1d')
+                    df = getOHLCV(symbol, '15m')
                     if info[symbol]['position'] == 'long':
                         logging.info(f"{symbol} (롱) 고가: {df['high'][-1]} 저가: {df['low'][-1]}\n매수가: {info[symbol]['price']} 목표가: {info[symbol]['price']*bull_profit}")
                     elif info[symbol]['position'] == 'short':
