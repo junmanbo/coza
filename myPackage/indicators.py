@@ -32,7 +32,7 @@ def calStochastic(df, n, m, t):
     slow_osc_slope = slow_osc - slow_osc.shift(1)
     df['slow_osc'] = slow_osc
     df['slow_osc_slope'] = slow_osc_slope
-    return df['slow_osc'][-1], df['slow_osc_slope'][-1]
+    return [df['slow_osc'][-1], df['slow_osc_slope'][-1]]
 
 # MACD 계산
 def calMACD(df, n_Fast, n_Slow, n_Signal):
