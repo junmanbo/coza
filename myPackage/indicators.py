@@ -14,7 +14,7 @@ def calEMA(df, n):
     return df['ema'][-1]
 
 # Stochastic 계산
-def calStochastic_OSC(df, n, m, t):
+def calStochastic(df, n, m, t):
     """
     df = dataframe
     n = 기간
@@ -29,55 +29,13 @@ def calStochastic_OSC(df, n, m, t):
     slow_k = fast_k.ewm(span=m).mean()
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
-<<<<<<< HEAD
-    df['slow_osc'] = slow_osc
-    return df['slow_osc'][-1]
-=======
     slow_osc_slope = slow_osc - slow_osc.shift(1)
     df['slow_osc'] = slow_osc
     df['slow_osc_slope'] = slow_osc_slope
     return df['slow_osc'][-1], df['slow_osc_slope'][-1]
->>>>>>> back
-
-def calStochastic_Slope(df, n, m, t):
-    """
-    df = dataframe
-    n = 기간
-    m = %k
-    t = %d
-    보통 (9,3,3) (12,5,5) 이용
-    """
-
-    ndays_high = df.high.rolling(window=n, min_periods=1).max()
-    ndays_low = df.low.rolling(window=n, min_periods=1).min()
-    fast_k = ((df.close - ndays_low) / (ndays_high - ndays_low)) * 100
-    slow_k = fast_k.ewm(span=m).mean()
-    slow_d = slow_k.ewm(span=t).mean()
-    slow_osc = slow_k - slow_d
-    slow_osc_slope = slow_osc - slow_osc.shift(1)
-    df['slow_osc_slope'] = slow_osc_slope
-    return df['slow_osc_slope'][-1]
 
 # MACD 계산
-def calMACD_OSC(df, n_Fast, n_Slow, n_Signal):
-    """
-    df = dataframe
-    n_Fast = 단기추세
-    n_Slow = 장기추세
-    n_Signal = 신호
-    보통 (12, 26, 9) (5, 20, 5) 이용
-    """
-
-    EMAFast = df.close.ewm( span = n_Fast, min_periods = n_Fast - 1 ).mean()
-    EMASlow = df.close.ewm( span = n_Slow, min_periods = n_Slow - 1 ).mean()
-    MACD = EMAFast - EMASlow
-    MACDSignal = MACD.ewm( span = n_Signal, min_periods = n_Signal - 1 ).mean()
-    MACDOSC = MACD - MACDSignal
-    df['macd_osc'] = MACDOSC
-    return df['macd_osc'][-1]
-
-# MACD 계산
-def calMACD_Slope(df, n_Fast, n_Slow, n_Signal):
+def calMACD(df, n_Fast, n_Slow, n_Signal):
     """
     df = dataframe
     n_Fast = 단기추세
@@ -92,7 +50,9 @@ def calMACD_Slope(df, n_Fast, n_Slow, n_Signal):
     MACDSignal = MACD.ewm( span = n_Signal, min_periods = n_Signal - 1 ).mean()
     MACDOSC = MACD - MACDSignal
     df['macd_slope'] = MACDOSC - MACDOSC.shift(1)
+    df['macd_osc'] = MACDOSC
     return df['macd_slope'][-1]
+    #  return df['macd_osc'][-1]
 
 # RSI 계산
 def calRSI(df, n):
