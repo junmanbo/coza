@@ -104,28 +104,28 @@ def calMFI(df, period):
     mfi_slope = mfi[-1] - mfi[-2]
     return mfi_slope
 
-def saveHistory(strategy, symbol, position, invest_money, profit_rate):
+def saveHistory(strategy, symbol, position, amount, rate_profit):
     """
     strategy = 전략 이름
     symbol = 코인 심볼
     position = 현재 포지션 상태
-    invest_money = 투자 금액
-    profit_rate = 수익률 (1.5% -> 1.5)
+    amount = 투자 금액
+    rate_profit = 수익률 (1.5% -> 1.5)
     """
 
     now = datetime.datetime.today()
     fee = 0.1 / 100 # 사고 팔고 0.05% 씩 두 번 계산
-    profit_rate = profit_rate / 100
-    profit = invest_money * (profit_rate - fee)
+    rate_profit = rate_profit / 100
+    realized_profit = amount * (rate_profit - fee)
     win = 0
-    if profit > 0:
+    if realized_profit > 0:
         win = 1
 
     date = [str(now.year)+"-"+str(now.month)+"-"+str(now.day)]
     index = pd.to_datetime(date)
 
     df = pd.read_excel(io='./Data/coin.xlsx', index_col='date')
-    new_data = [ (strategy, symbol.split('/')[0], position, invest_money, profit_rate, profit, win) ]
+    new_data = [ (strategy, symbol.split('/')[0], position, amount, rate_profit, realized_profit, win) ]
     dfNew = pd.DataFrame(data=new_data, columns=df.columns, index=index)
 
     #append one dataframe to othher
