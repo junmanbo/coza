@@ -29,8 +29,15 @@ def calStochastic_OSC(df, n, m, t):
     slow_k = fast_k.ewm(span=m).mean()
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
+<<<<<<< HEAD
     df['slow_osc'] = slow_osc
     return df['slow_osc'][-1]
+=======
+    slow_osc_slope = slow_osc - slow_osc.shift(1)
+    df['slow_osc'] = slow_osc
+    df['slow_osc_slope'] = slow_osc_slope
+    return df['slow_osc'][-1], df['slow_osc_slope'][-1]
+>>>>>>> back
 
 def calStochastic_Slope(df, n, m, t):
     """
