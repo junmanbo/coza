@@ -100,7 +100,7 @@ while True:
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > -5 and stoch_slope > 0 and macd_slope > 0:
+                        stoch_osc > 0 and stoch_slope > 0 and macd_slope > 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free']
                     invest_money = free_balance * leverage / (total_hold - current_hold)
@@ -120,7 +120,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < 5 and stoch_slope < 0 and macd_slope < 0:
+                        stoch_osc < 0 and stoch_slope < 0 and macd_slope < 0:
                     # 투자를 위한 세팅
                     free_balance = binance.fetch_balance()['USDT']['free']
                     invest_money = free_balance * leverage / (total_hold - current_hold)
