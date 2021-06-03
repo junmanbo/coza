@@ -21,5 +21,5 @@ for symbol in symbols:
     info[symbol]['price'] = 0 # 코인 거래한 가격
     #  info[symbol]['total_trading'] = 0
 
-with open('./Data/binance_short.txt', 'w') as f:
+with open('./Data/binance_swing.txt', 'w') as f:
     f.write(json.dumps(info)) # use `json.loads` to do the reverse
