@@ -73,9 +73,9 @@ for symbol in symbols:
 
 total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.03 # 롱 포지션 수익률
-bull_loss = 0.95 # 롱 포지션 손실률
+bull_loss = 0.96 # 롱 포지션 손실률
 bear_profit = 0.97 # 숏 포지션 수익률
-bear_loss = 1.05 # 숏 포지션 손실률
+bear_loss = 1.04 # 숏 포지션 손실률
 leverage = 5 # 현재 레버리지 값 x5
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
@@ -85,11 +85,11 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.minute % 30 == 0 and 0 <= now.second <= 5:
+    if now.minute % 15 == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance * leverage / total_hold / 6
-        logging.info('30분 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
+        amount = total_balance * leverage / total_hold
+        logging.info('15분 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
@@ -100,19 +100,16 @@ while True:
                 stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
                 df = getOHLCV(symbol, '1h')
                 stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
-                df = getOHLCV(symbol, '30m')
-                stoch_osc_30m = indi.calStochastic(df, 9, 3, 3)[0]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h} {stoch_osc_30m}')
+                df = getOHLCV(symbol, '15m')
+                stoch_osc_15m = indi.calStochastic(df, 9, 3, 3)[0]
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h} {stoch_osc_15m}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_30m > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0:
+                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_15m > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
-                    order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.99) # -1% 분할 매수
-                    order2 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.98) # -2% 분할 매수
-
                     take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
@@ -128,13 +125,10 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_30m < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0:
+                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_15m < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
-                    order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.01) # -1% 분할 매수
-                    order2 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # -2% 분할 매수
-
                     take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
