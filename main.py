@@ -82,28 +82,26 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.minute % 15 == 0 and 0 <= now.second <= 5:
+    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance / total_hold
-        logging.info('15분 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
+        logging.info('4시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
                 # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
-                df = getOHLCV(symbol, '4h')
-                stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
                 df = getOHLCV(symbol, '1h')
                 stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
-                df = getOHLCV(symbol, '15m')
-                stoch_osc_15m = indi.calStochastic(df, 9, 3, 3)[0]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h} {stoch_osc_15m}')
+                df = getOHLCV(symbol, '4h')
+                stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_15m > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0:
+                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -122,7 +120,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_15m < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0:
+                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
