@@ -51,9 +51,7 @@ def getOHLCV(symbol, period):
 strategy = 'Short-term'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
 tickers = (
-        'BCH/USDT', 'EOS/USDT', 'LTC/USDT', 'TRX/USDT', 'ETC/USDT',
         'XLM/USDT', 'BAKE/USDT', 'ICP/USDT', 'XMR/USDT', 'DASH/USDT',
-        'ZEC/USDT', 'XTZ/USDT', 'ATOM/USDT', 'ONT/USDT', 'BAT/USDT',
         'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT',
         'ZRX/USDT', 'OMG/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT',
         'VET/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT',
@@ -71,12 +69,11 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 3 # 투자할 코인 총 갯수
+total_hold = 5 # 투자할 코인 총 갯수
 bull_profit = 1.03 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
 bear_profit = 0.97 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
-leverage = 5 # 현재 레버리지 값 x5
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
@@ -88,7 +85,7 @@ while True:
     if now.minute % 15 == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance * leverage / total_hold
+        amount = total_balance / total_hold
         logging.info('15분 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:

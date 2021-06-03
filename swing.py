@@ -50,7 +50,11 @@ def getOHLCV(symbol, period):
 
 strategy = 'Swing'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
-tickers = ('BTC/USDT', 'ETH/USDT', 'DOT/USDT', 'LINK/USDT', 'XRP/USDT', 'ADA/USDT', 'BNB/USDT')
+tickers = (
+        'BTC/USDT', 'ETH/USDT', 'DOT/USDT', 'LINK/USDT', 'XRP/USDT', 'TRX/USDT',
+        'ADA/USDT', 'BNB/USDT', 'BCH/USDT', 'EOS/USDT', 'LTC/USDT', 'ETC/USDT',
+        'ZEC/USDT', 'XTZ/USDT', 'ATOM/USDT', 'ONT/USDT', 'BAT/USDT'
+        )
 symbols = list(tickers)
 
 # 보유하고 있는 코인 갯수
@@ -59,10 +63,9 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 3 # 투자할 코인 총 갯수
+total_hold = 5 # 투자할 코인 총 갯수
 bull_loss = 0.95 # 롱 포지션 손실률
 bear_loss = 1.05 # 숏 포지션 손실률
-leverage = 5 # 현재 레버리지 값 x5
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
@@ -74,7 +77,7 @@ while True:
     if now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance * leverage / total_hold / 6
+        amount = total_balance / total_hold
         logging.info('1시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
@@ -91,8 +94,6 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
-                    order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.98) # -1% 분할 매수
-                    order2 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.96) # -2% 분할 매수
                     stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
 
@@ -110,8 +111,6 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
-                    order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # -1% 분할 매도
-                    order2 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.04) # -2% 분할 매도
                     stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
 
