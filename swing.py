@@ -74,7 +74,7 @@ while True:
     if now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance / total_hold / 6
+        amount = total_balance * leverage / total_hold / 6
         logging.info('1시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
