@@ -49,18 +49,7 @@ def getOHLCV(symbol, period):
     return df
 
 strategy = 'Short-term'
-#  tickers = binance.load_markets().keys() # 목록 전체 조회
-tickers = (
-        'XLM/USDT', 'BAKE/USDT', 'ICP/USDT', 'XMR/USDT', 'DASH/USDT',
-        'NEO/USDT', 'QTUM/USDT', 'THETA/USDT', 'ALGO/USDT', 'ZIL/USDT',
-        'ZRX/USDT', 'OMG/USDT', 'WAVES/USDT', 'MKR/USDT', 'SNX/USDT',
-        'VET/USDT', 'YFI/USDT', 'RUNE/USDT', 'SUSHI/USDT', 'EGLD/USDT',
-        'SOL/USDT', 'ICX/USDT', 'UNI/USDT', 'AVAX/USDT', 'FTM/USDT',
-        'HNT/USDT', 'ENJ/USDT', 'KSM/USDT', 'NEAR/USDT', 'AAVE/USDT',
-        'FIL/USDT', 'MATIC/USDT', 'ZEN/USDT', 'GRT/USDT', 'CHZ/USDT',
-        'ANKR/USDT', 'LUNA/USDT', 'RVN/USDT', 'XEM/USDT', 'MANA/USDT',
-        'HBAR/USDT', 'HOT/USDT', 'BTT/USDT', 'SC/USDT', 'DGB/USDT'
-        )
+tickers = binance.load_markets().keys() # 목록 전체 조회
 symbols = list(tickers)
 
 # 보유하고 있는 코인 갯수
@@ -93,10 +82,10 @@ while True:
                 # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
-                df = getOHLCV(symbol, '1h')
-                stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
                 df = getOHLCV(symbol, '4h')
                 stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
+                df = getOHLCV(symbol, '1h')
+                stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
                 logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h}')
 
                 # 조건 만족시 Long Position
@@ -105,10 +94,10 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
-                    take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
-                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
-                    stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
-                    stop_order2 = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                    take_profit_params = {'stopPrice': current_price * bull_profit, 'reduceOnly': True} # 이익실현 예약 주문
+                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', quantity, None, take_profit_params)
+                    stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order2 = binance.create_order(symbol, 'stop_market', 'sell', quantity, None, stop_loss_params)
 
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
@@ -116,7 +105,7 @@ while True:
                     info[symbol]['quantity'] = quantity
                     current_hold += 1
                     logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                    bot.sendMessage(chat_id=chat_id, text=f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
+                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
@@ -124,38 +113,55 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
-                    take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
-                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
-                    stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
-                    stop_order2 = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                    take_profit_params = {'stopPrice': current_price * bear_profit, 'reduceOnly': True} # 이익실현 예약 주문
+                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', quantity, None, take_profit_params)
+                    stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order2 = binance.create_order(symbol, 'stop_market', 'buy', quantity, None, stop_loss_params)
 
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
                     info[symbol]['position'] = 'short'
                     info[symbol]['quantity'] = quantity
                     current_hold += 1
-                    logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                    bot.sendMessage(chat_id=chat_id, text=f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
-
-                # 이익실현 / 손절 체크
-                elif info[symbol]['position'] == 'long':
-                    if df['high'][-2] > info[symbol]['price'] * bull_profit or df['low'][-2] < info[symbol]['price'] * bull_loss:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
-
-                elif info[symbol]['position'] == 'short':
-                    if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
+                    logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
+                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
 
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
                 logging.error(e)
             time.sleep(0.1)
+
+        # 파일에 수집한 정보 및 거래 정보 파일에 저장
+        with open('./Data/binance_short.txt', 'w') as f:
+            f.write(json.dumps(info))
+
+    elif now.minute % 30 == 0 and 0 <= now.second <= 5:
+        logging.info('30분 정기 체크 - 이익실현, 손절 확인')
+        for symbol in symbols:
+            if info[symbol]['position'] != 'wait':
+                try:
+                    # 30분 데이터 수집
+                    df = getOHLCV(symbol, '30m')
+
+                    # 이익실현 / 손절 체크
+                    if info[symbol]['position'] == 'long':
+                        if df['high'][-2] > info[symbol]['price'] * bull_profit or df['low'][-2] < info[symbol]['price'] * bull_loss:
+                            cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                            info[symbol]['position'] = 'wait'
+                            current_hold -= 1
+                            logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
+
+                    elif info[symbol]['position'] == 'short':
+                        if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
+                            cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                            info[symbol]['position'] = 'wait'
+                            current_hold -= 1
+                            logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
+
+                except Exception as e:
+                    bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+                    logging.error(e)
+                time.sleep(0.1)
 
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:
