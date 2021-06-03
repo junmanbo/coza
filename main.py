@@ -73,9 +73,9 @@ for symbol in symbols:
 
 total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.03 # 롱 포지션 수익률
-bull_loss = 0.96 # 롱 포지션 손실률
+bull_loss = 0.95 # 롱 포지션 손실률
 bear_profit = 0.97 # 숏 포지션 수익률
-bear_loss = 1.04 # 숏 포지션 손실률
+bear_loss = 1.05 # 숏 포지션 손실률
 leverage = 5 # 현재 레버리지 값 x5
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
