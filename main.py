@@ -71,7 +71,7 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 5:
+    if (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance
@@ -86,11 +86,13 @@ while True:
                 stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
                 df = getOHLCV(symbol, '1h')
                 stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
+                df = getOHLCV(symbol, '15m')
+                stoch_osc_15m = indi.calStochastic(df, 9, 3, 3)[0]
                 logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0:
+                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0 and stoch_osc_15m > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -109,7 +111,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0:
+                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0 and stoch_osc_15m < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
@@ -135,13 +137,14 @@ while True:
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
 
-    elif now.minute % 30 == 0 and 0 <= now.second <= 5:
+    elif now.minute % 30 == 0 and 0 <= now.second <= 1:
         logging.info('30분 정기 체크 - 이익실현, 손절 확인')
         for symbol in symbols:
             if info[symbol]['position'] != 'wait':
                 try:
                     # 30분 데이터 수집
                     df = getOHLCV(symbol, '30m')
+                    logging.info(f'{symbol} {df}')
 
                     # 이익실현 / 손절 체크
                     if info[symbol]['position'] == 'long':
