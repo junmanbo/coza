@@ -144,7 +144,6 @@ while True:
                 try:
                     # 30분 데이터 수집
                     df = getOHLCV(symbol, '30m')
-                    logging.info(f'{symbol} {df}')
 
                     # 이익실현 / 손절 체크
                     if info[symbol]['position'] == 'long':
