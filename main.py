@@ -82,17 +82,14 @@ while True:
                 # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
+                macd_slope = indi.calMACD(df, 14, 30, 10)
                 df = getOHLCV(symbol, '4h')
-                stoch_osc_4h = indi.calStochastic(df, 9, 3, 3)[0]
-                df = getOHLCV(symbol, '1h')
-                stoch_osc_1h = indi.calStochastic(df, 9, 3, 3)[0]
-                df = getOHLCV(symbol, '15m')
-                stoch_osc_15m = indi.calStochastic(df, 9, 3, 3)[0]
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_1h} {stoch_osc_4h}')
+                stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 9, 3, 3)
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_4h} {stoch_slope_4h} {macd_slope}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_1h > 0 and stoch_osc_4h > 0 and stoch_osc_15m > 0:
+                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_4h > 0 and stoch_slope_4h > 0 and macd_slope > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -111,7 +108,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_1h < 0 and stoch_osc_4h < 0 and stoch_osc_15m < 0:
+                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0 and macd_slope < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
@@ -131,7 +128,7 @@ while True:
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
                 logging.error(e)
-            time.sleep(0.1)
+            time.sleep(0.5)
 
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:
