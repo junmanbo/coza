@@ -20,14 +20,14 @@ print('Loading markets from', binance.id)
 binance.load_markets()
 print('Loaded markets from', binance.id)
 
-ex = ['FIL/USDT']
-for symbol in ex:
-    symbols.remove(symbol)
+#  ex = ['FIL/USDT']
+#  for symbol in ex:
+#      symbols.remove(symbol)
 
 binance.verbose = True
 for symbol in symbols:
     market = binance.market(symbol)
-    leverage = 5
+    leverage = 7
 
     response = binance.fapiPrivate_post_leverage({
         'symbol': market['id'],

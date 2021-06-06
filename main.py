@@ -58,11 +58,12 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 5 # 투자할 코인 총 갯수
+total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.02 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
 bear_profit = 0.98 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
+leverage = 7
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
@@ -74,8 +75,8 @@ while True:
     if now.minute == 1 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance
-        logging.info('4시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
+        amount = total_balance * leverage / total_hold
+        logging.info('1시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
