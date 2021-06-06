@@ -89,7 +89,7 @@ while True:
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 5 and stoch_slope > 3 and stoch_osc2 > 5 and stoch_slope2 > 3 and stoch_osc_4h > 0 and stoch_slope_4h > 0:
+                        stoch_osc > 0 and stoch_slope > 0 and stoch_osc2 > 0 and stoch_slope2 > 0 and stoch_osc_4h > 0 and stoch_slope_4h > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -108,7 +108,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -5 and stoch_slope < -3 and stoch_osc2 < -5 and stoch_slope2 < -3 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
+                        stoch_osc < 0 and stoch_slope < 0 and stoch_osc2 < 0 and stoch_slope2 < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
