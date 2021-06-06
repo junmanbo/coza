@@ -82,21 +82,21 @@ while True:
                 # 1일, 4시간, 1시간, 30분 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
-                macd_slope = indi.calMACD(df, 14, 30, 10)
+                stoch_osc2, stoch_slope2 = indi.calStochastic(df, 9, 3, 3)
                 df = getOHLCV(symbol, '4h')
                 stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 9, 3, 3)
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc_4h} {stoch_slope_4h} {macd_slope}')
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc2} {stoch_slope2} {stoch_osc_4h} {stoch_slope_4h}')
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 15 and stoch_slope > 0 and stoch_osc_4h > 0 and stoch_slope_4h > 0 and macd_slope > 0:
+                        stoch_osc > 5 and stoch_slope > 3 and stoch_osc2 > 5 and stoch_slope2 > 3 and stoch_osc_4h > 0 and stoch_slope_4h > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
-                    take_profit_params = {'stopPrice': current_price * bull_profit, 'reduceOnly': True} # 이익실현 예약 주문
-                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', quantity, None, take_profit_params)
-                    stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
-                    stop_order2 = binance.create_order(symbol, 'stop_market', 'sell', quantity, None, stop_loss_params)
+                    take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
+                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
+                    stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
+                    stop_order2 = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
 
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
@@ -108,14 +108,14 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < -15 and stoch_slope < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0 and macd_slope < 0:
+                        stoch_osc < -5 and stoch_slope < -3 and stoch_osc2 < -5 and stoch_slope2 < -3 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
-                    take_profit_params = {'stopPrice': current_price * bear_profit, 'reduceOnly': True} # 이익실현 예약 주문
-                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', quantity, None, take_profit_params)
-                    stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
-                    stop_order2 = binance.create_order(symbol, 'stop_market', 'buy', quantity, None, stop_loss_params)
+                    take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
+                    stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
+                    stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
+                    stop_order2 = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
 
                     # 매수가, 포지션 상태, 코인 매수 양 저장
                     info[symbol]['price'] = current_price
