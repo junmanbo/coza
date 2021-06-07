@@ -49,7 +49,7 @@ def getOHLCV(symbol, period):
     return df
 
 strategy = 'Short-term'
-tickers = binance.load_markets().keys() # 목록 전체 조회
+#  tickers = binance.load_markets().keys() # 목록 전체 조회
 symbols = [
         'BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOGE/USDT',
         'XRP/USDT', 'DOT/USDT', 'UNI/USDT', 'ICP/USDT', 'BCH/USDT',
@@ -71,7 +71,7 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 5 # 투자할 코인 총 갯수
+total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.02 # 롱 포지션 수익률
 bull_loss = 0.97 # 롱 포지션 손실률
 bear_profit = 0.98 # 숏 포지션 수익률
