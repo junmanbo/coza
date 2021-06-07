@@ -70,10 +70,10 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 3 # 투자할 코인 총 갯수
-bull_profit = 1.02 # 롱 포지션 수익률
-bull_loss = 0.97 # 롱 포지션 손실률
-bear_profit = 0.98 # 숏 포지션 수익률
-bear_loss = 1.03 # 숏 포지션 손실률
+bull_profit = 1.03 # 롱 포지션 수익률
+bull_loss = 0.95 # 롱 포지션 손실률
+bear_profit = 0.97 # 숏 포지션 수익률
+bear_loss = 1.05 # 숏 포지션 손실률
 leverage = 10
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
@@ -83,10 +83,10 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.minute == 1 and 0 <= now.second <= 5 and current_hold < total_hold:
+    if (now.hour + 3) % 6 == 0 and now.minute == 1 and 0 <= now.second <= 5 and current_hold < total_hold:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance * leverage / total_hold / 2
+        amount = total_balance * leverage / total_hold / 3
         logging.info('1시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
@@ -106,6 +106,7 @@ while True:
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
                     order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.985) # 시장가 매수 주문
+                    order2 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.97) # 시장가 매수 주문
 
                     take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
@@ -127,6 +128,7 @@ while True:
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
                     order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.015) # 시장가 매도 주문
+                    order2 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.03) # 시장가 매도 주문
 
                     take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
