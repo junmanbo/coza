@@ -72,7 +72,7 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.minute == 1 and 0 <= now.second <= 5:
+    if now.minute == 1 and 0 <= now.second <= 5 and current_hold < total_hold:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance * leverage / total_hold / 2
@@ -86,14 +86,11 @@ while True:
                 stoch_osc2, stoch_slope2 = indi.calStochastic(df, 9, 3, 3)
                 df = getOHLCV(symbol, '4h')
                 stoch_osc_4h, stoch_slope_4h = indi.calStochastic(df, 9, 3, 3)
-                df = getOHLCV(symbol, '1h')
-                stoch_osc_1h, stoch_slope_1h = indi.calStochastic(df, 9, 3, 3)
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc2} {stoch_slope2} {stoch_osc_4h} {stoch_slope_4h} {stoch_osc_1h} {stoch_slope_1h}')
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc2} {stoch_slope2} {stoch_osc_4h} {stoch_slope_4h}')
 
                 # 조건 만족시 Long Position
-                if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 0 and stoch_slope > 0 and stoch_osc2 > 0 and stoch_slope2 > 0 and \
-                        stoch_osc_4h > 0 and stoch_slope_4h > 0 and stoch_osc_1h > 0 and stoch_slope_1h > 0:
+                if info[symbol]['position'] == 'wait' and stoch_osc > 0 and stoch_slope > 0 and \
+                        stoch_osc2 > 0 and stoch_slope2 > 0 and stoch_osc_4h > 0 and stoch_slope_4h > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -113,9 +110,8 @@ while True:
                     bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < 0 and stoch_slope < 0 and stoch_osc2 < 0 and stoch_slope2 < 0 and \
-                        stoch_osc_4h < 0 and stoch_slope_4h < 0 and stoch_osc_1h < 0 and stoch_slope_1h < 0:
+                elif info[symbol]['position'] == 'wait' and stoch_osc < 0 and stoch_slope < 0 and \
+                        stoch_osc2 < 0 and stoch_slope2 < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
@@ -148,9 +144,6 @@ while True:
         for symbol in symbols:
             if info[symbol]['position'] != 'wait':
                 try:
-                    current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
-                    df = getOHLCV(symbol, '1d')
-                    stoch_osc, stoch_slope = indi.calStochastic(df, 9, 3, 3)
                     # 30분 데이터 수집
                     df = getOHLCV(symbol, '30m')
 
@@ -161,7 +154,7 @@ while True:
                             info[symbol]['position'] = 'wait'
                             current_hold -= 1
                             logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
-                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nFailure")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position")
 
                     elif info[symbol]['position'] == 'short':
                         if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
@@ -169,7 +162,7 @@ while True:
                             info[symbol]['position'] = 'wait'
                             current_hold -= 1
                             logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
-                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position\nFailure")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position")
 
                 except Exception as e:
                     bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
