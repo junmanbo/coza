@@ -119,7 +119,7 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
-                    order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # 시장가 매도 주문
+                    order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.015) # 시장가 매도 주문
 
                     take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
