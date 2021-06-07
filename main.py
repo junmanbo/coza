@@ -66,7 +66,7 @@ bear_loss = 1.04 # 숏 포지션 손실률
 leverage = 7
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
-bot.sendMessage(chat_id=chat_id, text=f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개\n기대 수익률: {(bull_profit-1)*100:.2f}%")
+bot.sendMessage(chat_id=chat_id, text=f"{strategy}\nHolding: {current_hold}\nExpecting Profit: {(bull_profit-1)*100:.2f}%")
 
 while True:
     now = datetime.datetime.now()
@@ -109,7 +109,7 @@ while True:
                     info[symbol]['quantity'] = quantity
                     current_hold += 1
                     logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
+                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
@@ -130,7 +130,7 @@ while True:
                     info[symbol]['quantity'] = quantity
                     current_hold += 1
                     logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개")
+                    bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
@@ -156,6 +156,7 @@ while True:
                             info[symbol]['position'] = 'wait'
                             current_hold -= 1
                             logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position")
 
                     elif info[symbol]['position'] == 'short':
                         if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
@@ -163,6 +164,7 @@ while True:
                             info[symbol]['position'] = 'wait'
                             current_hold -= 1
                             logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position")
 
                 except Exception as e:
                     bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
