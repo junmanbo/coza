@@ -154,14 +154,14 @@ while True:
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
                         logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nFailure")
 
                     elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
                         logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position\nFailure")
 
                     elif info[symbol]['position'] == 'long' and stoch_osc < 0 and stoch_slope < 0:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
