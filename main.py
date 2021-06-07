@@ -59,9 +59,9 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 3 # 투자할 코인 총 갯수
-#  bull_profit = 1.02 # 롱 포지션 수익률
+bull_profit = 1.02 # 롱 포지션 수익률
 bull_loss = 0.96 # 롱 포지션 손실률
-#  bear_profit = 0.98 # 숏 포지션 수익률
+bear_profit = 0.98 # 숏 포지션 수익률
 bear_loss = 1.04 # 숏 포지션 손실률
 leverage = 7
 
@@ -98,6 +98,9 @@ while True:
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
                     order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.98) # 시장가 매수 주문
+
+                    take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
+                    stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
 
@@ -117,6 +120,9 @@ while True:
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
                     order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # 시장가 매도 주문
+
+                    take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
+                    stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
 
@@ -149,41 +155,21 @@ while True:
                     df = getOHLCV(symbol, '30m')
 
                     # 이익실현 / 손절 체크
-                    if info[symbol]['position'] == 'long' and df['low'][-2] < info[symbol]['price'] * bull_loss:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nFailure")
+                    if info[symbol]['position'] == 'long':
+                        if df['high'][-2] > info[symbol]['price'] * bull_profit or df['low'][-2] < info[symbol]['price'] * bull_loss:
+                            cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                            info[symbol]['position'] = 'wait'
+                            current_hold -= 1
+                            logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nFailure")
 
-                    elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position\nFailure")
-
-                    elif info[symbol]['position'] == 'long' and stoch_osc < 0 and stoch_slope < 0:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        time.sleep(5)
-                        take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
-                        stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
-                        profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nProfit: {profit:.2f}")
-
-                    elif info[symbol]['position'] == 'short' and stoch_osc > 0 and stoch_slope > 0:
-                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                        time.sleep(5)
-                        take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
-                        stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
-                        profit = (info[symbol]['price'] - current_price) / current_price * 100
-                        info[symbol]['position'] = 'wait'
-                        current_hold -= 1
-                        logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
-                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position\nProfit: {profit:.2f}")
+                    elif info[symbol]['position'] == 'short':
+                        if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
+                            cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                            info[symbol]['position'] = 'wait'
+                            current_hold -= 1
+                            logging.info(f"{symbol} (숏) 포지션 종료\n취소주문: {cancel_order}")
+                            bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Short) Close Position\nFailure")
 
                 except Exception as e:
                     bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
