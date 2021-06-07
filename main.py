@@ -50,8 +50,7 @@ def getOHLCV(symbol, period):
 
 strategy = 'Short-term'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
-symbols = [
-        'BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOGE/USDT',
+symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOGE/USDT',
         'XRP/USDT', 'DOT/USDT', 'UNI/USDT', 'ICP/USDT', 'BCH/USDT',
         'LINK/USDT', 'LTC/USDT', 'SOL/USDT', 'MATIC/USDT', 'THETA/USDT',
         'XLM/USDT', 'VET/USDT', 'ETC/USDT', 'FIL/USDT', 'EOS/USDT',
@@ -62,8 +61,7 @@ symbols = [
         'WAVES/USDT', 'YFI/USDT', 'CHZ/USDT', 'HOT/USDT', 'SUSHI/USDT',
         'ZIL/USDT', 'SNX/USDT', 'MANA/USDT', 'NEAR/USDT', 'ENJ/USDT',
         'HNT/USDT', 'BAT/USDT', 'QTUM/USDT', 'ZEN/USDT', 'DGB/USDT',
-        'GRT/USDT', 'ONE/USDT', 'ONT/USDT', 'BAKE/USDT' 'SC/USDT'
-        ]
+        'GRT/USDT', 'ONE/USDT', 'ONT/USDT', 'BAKE/USDT' 'SC/USDT']
 
 # 보유하고 있는 코인 갯수
 current_hold = 0
