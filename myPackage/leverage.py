@@ -27,7 +27,7 @@ print('Loaded markets from', binance.id)
 binance.verbose = True
 for symbol in symbols:
     market = binance.market(symbol)
-    leverage = 7
+    leverage = 10
 
     response = binance.fapiPrivate_post_leverage({
         'symbol': market['id'],

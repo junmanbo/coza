@@ -60,9 +60,9 @@ for symbol in symbols:
 
 total_hold = 3 # 투자할 코인 총 갯수
 bull_profit = 1.02 # 롱 포지션 수익률
-bull_loss = 0.96 # 롱 포지션 손실률
+bull_loss = 0.97 # 롱 포지션 손실률
 bear_profit = 0.98 # 숏 포지션 수익률
-bear_loss = 1.04 # 숏 포지션 손실률
+bear_loss = 1.03 # 숏 포지션 손실률
 leverage = 7
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
@@ -97,7 +97,7 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
-                    order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.98) # 시장가 매수 주문
+                    order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.985) # 시장가 매수 주문
 
                     take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
