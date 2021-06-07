@@ -165,6 +165,7 @@ while True:
 
                     elif info[symbol]['position'] == 'long' and stoch_osc < 0 and stoch_slope < 0:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                        time.sleep(5)
                         take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
                         stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
                         profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100
@@ -175,6 +176,7 @@ while True:
 
                     elif info[symbol]['position'] == 'short' and stoch_osc > 0 and stoch_slope > 0:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                        time.sleep(5)
                         take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
                         stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                         profit = (info[symbol]['price'] - current_price) / current_price * 100
