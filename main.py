@@ -75,7 +75,7 @@ while True:
     if now.minute == 1 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액 (3번 분할 매수)
         total_balance = binance.fetch_balance()['USDT']['total']
-        amount = total_balance * leverage / total_hold
+        amount = total_balance * leverage / total_hold / 2
         logging.info('1시간 정기 체크 - 매수, 매도 조건 확인 및 이익실현, 손절 확인')
         for symbol in symbols:
             try:
@@ -97,6 +97,7 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
+                    order1 = binance.create_limit_buy_order(symbol, quantity, current_price * 0.98) # 시장가 매수 주문
                     take_profit_params = {'stopPrice': current_price * bull_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order1 = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
@@ -117,6 +118,7 @@ while True:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
+                    order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # 시장가 매도 주문
                     take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
                     stop_order1 = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
