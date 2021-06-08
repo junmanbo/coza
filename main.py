@@ -91,7 +91,7 @@ while True:
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
-                # 1일, 4시간, 1시간, 30분 데이터 수집
+                # 1일, 4시간 데이터 수집
                 df = getOHLCV(symbol, '1d')
                 stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
                 df = getOHLCV(symbol, '4h')
@@ -145,21 +145,22 @@ while True:
             if info[symbol]['position'] != 'wait':
                 try:
                     current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
-                    # 1일, 4시간, 1시간, 30분 데이터 수집
+                    # 1일, 1시간 데이터 수집
                     df = getOHLCV(symbol, '1d')
                     stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
-                    # 30분 데이터 수집
                     df = getOHLCV(symbol, '1h')
+                    low = df['low'][-2]
+                    high = df['high'][-2]
 
                     # 이익실현 / 손절 체크
-                    if info[symbol]['position'] == 'long' and df['low'][-2] < info[symbol]['price'] * bull_loss:
+                    if info[symbol]['position'] == 'long' and low < info[symbol]['price'] * bull_loss:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
                         logging.info(f"{symbol} (롱) 포지션 종료\n취소주문: {cancel_order}")
                         bot.sendMessage(chat_id = chat_id, text=f"{symbol} (Long) Close Position\nFailure")
 
-                    elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
+                    elif info[symbol]['position'] == 'short' and high > info[symbol]['price'] * bear_loss:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
