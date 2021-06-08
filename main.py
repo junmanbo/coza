@@ -69,7 +69,7 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 20 # 투자할 코인 총 갯수
+total_hold = 10 # 투자할 코인 총 갯수
 #  bull_profit = 1.03 # 롱 포지션 수익률
 bull_loss = 0.95 # 롱 포지션 손실률
 #  bear_profit = 0.97 # 숏 포지션 수익률
