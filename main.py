@@ -83,11 +83,11 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if (now.hour + 3) % 6 == 0 and now.minute == 1 and 0 <= now.second <= 5 and current_hold < total_hold:
+    if (now.hour + 3) % 4 == 0 and now.minute == 1 and 0 <= now.second <= 5 and current_hold < total_hold:
         # 1코인 1번당 투자 금액
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance * leverage / total_hold
-        logging.info('6시간 정기 체크 - 매수, 매도 조건 확인')
+        logging.info('4시간 정기 체크 - 매수, 매도 조건 확인')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
@@ -115,7 +115,7 @@ while True:
                     bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and stoch_osc < -3 and stoch_slope < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
+                elif info[symbol]['position'] == 'wait' and stoch_osc < 0 and stoch_slope < 0 and stoch_osc_4h < 0 and stoch_slope_4h < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
