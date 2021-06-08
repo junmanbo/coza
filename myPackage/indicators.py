@@ -30,12 +30,9 @@ def calStochastic(df, n, m, t):
     slow_k = fast_k.ewm(span=m).mean()
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
-    slow_osc_slope = slow_osc - slow_osc.shift(1)
     df['slow_osc'] = slow_osc
-    df['slow_osc_slope'] = slow_osc_slope
     stoch_osc = float(df['slow_osc'][-1])
-    stoch_slope = float(df['slow_osc_slope'][-1])
-    return stoch_osc, stoch_slope
+    return stoch_osc
 
 # MACD 계산
 def calMACD(df, n_Fast, n_Slow, n_Signal):
@@ -52,10 +49,9 @@ def calMACD(df, n_Fast, n_Slow, n_Signal):
     MACD = EMAFast - EMASlow
     MACDSignal = MACD.ewm( span = n_Signal, min_periods = n_Signal - 1 ).mean()
     MACDOSC = MACD - MACDSignal
-    df['macd_slope'] = MACDOSC - MACDOSC.shift(1)
     df['macd_osc'] = MACDOSC
-    return df['macd_slope'][-1]
-    #  return df['macd_osc'][-1]
+    macd_osc = float(df['macd_osc'][-1])
+    return macd_osc
 
 # RSI 계산
 def calRSI(df, n):

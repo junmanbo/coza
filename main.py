@@ -92,13 +92,14 @@ while True:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
                 df = getOHLCV(symbol, '1d')
-                stoch_osc, stoch_slope = indi.calStochastic(df, 12, 5, 5)
-                stoch_osc2, stoch_slope2 = indi.calStochastic(df, 9, 3, 3)
-                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_slope} {stoch_osc2} {stoch_slope2}')
+                stoch_osc = indi.calStochastic(df, 12, 5, 5)
+                stoch_osc2 = indi.calStochastic(df, 9, 3, 3)
+                macd_osc = indi.calMACD(df, 14, 30, 10)
+                logging.info(f'코인: {symbol}\n지표: {stoch_osc} {stoch_osc2} {macd_osc}')
 
                 # 조건 만족시 Long Position
-                if info[symbol]['position'] == 'wait' and stoch_osc > 0 and stoch_slope > 0 and \
-                        stoch_osc2 > 0 and stoch_slope2 > 0 and current_hold < total_hold:
+                if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
+                        stoch_osc > 0 and stoch_osc2 > 0 and macd_osc > 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_buy_order(symbol, quantity) # 시장가 매수 주문
@@ -116,8 +117,8 @@ while True:
                     bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and stoch_osc < 0 and stoch_slope < 0 and \
-                        stoch_osc2 < 0 and stoch_slope2 < 0 and current_hold < total_hold:
+                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
+                        stoch_osc < 0 and stoch_osc2 < 0 and macd_osc < 0:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
