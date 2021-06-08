@@ -117,7 +117,7 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and stoch_osc < 0 and stoch_slope < 0 and \
-                        stoch_osc2 < 0 and stoch_slope2 < 0 current_hold < total_hold:
+                        stoch_osc2 < 0 and stoch_slope2 < 0 and current_hold < total_hold:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_market_sell_order(symbol, quantity) # 시장가 매도 주문
