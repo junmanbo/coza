@@ -11,7 +11,8 @@ def calEMA(df, n):
     """
 
     df['ema'] = df['close'].ewm(span=n).mean()
-    return df['ema'][-1]
+    EMA = float(df['ema'][-1])
+    return EMA
 
 # Stochastic 계산
 def calStochastic(df, n, m, t):
@@ -32,7 +33,9 @@ def calStochastic(df, n, m, t):
     slow_osc_slope = slow_osc - slow_osc.shift(1)
     df['slow_osc'] = slow_osc
     df['slow_osc_slope'] = slow_osc_slope
-    return df['slow_osc'][-1], df['slow_osc_slope'][-1]
+    stoch_osc = float(df['slow_osc'][-1])
+    stoch_slope = float(df['slow_osc_slope'][-1])
+    return stoch_osc, stoch_slope
 
 # MACD 계산
 def calMACD(df, n_Fast, n_Slow, n_Signal):
