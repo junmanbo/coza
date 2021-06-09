@@ -31,8 +31,9 @@ def calStochastic(df, n, m, t):
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
     df['slow_osc'] = slow_osc
-    stoch_osc = float(df['slow_osc'][-1])
-    return stoch_osc
+    stoch_osc_yes = float(df['slow_osc'][-2])
+    stoch_osc_to = float(df['slow_osc'][-1])
+    return stoch_osc_yes, stoch_osc_to
 
 # MACD 계산
 def calMACD(df, n_Fast, n_Slow, n_Signal):
