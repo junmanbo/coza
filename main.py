@@ -98,7 +98,7 @@ while True:
 
                 # 조건 만족시 Long Position
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_yes < 5 and stoch_osc_to > 5 and stoch_osc_yes2 < 5 and stoch_osc_to2 > 5:
+                        stoch_osc_yes < -1 and stoch_osc_to > -1 and stoch_osc_yes2 < -1 and stoch_osc_to2 > -1:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
@@ -117,14 +117,12 @@ while True:
 
                 # 조건 만족시 Short Position
                 elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc_yes > -5 and stoch_osc_to < -5 and stoch_osc_yes2 > -5 and stoch_osc_to2 < -5:
+                        stoch_osc_yes > 1 and stoch_osc_to < 1 and stoch_osc_yes2 > 1 and stoch_osc_to2 < 1:
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
                     order1 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.02) # 지정가 매도 주문 (-2% 분할매도)
                     order2 = binance.create_limit_sell_order(symbol, quantity, current_price * 1.04) # 지정가 매도 주문 (-4% 분할매도)
-                    #  take_profit_params = {'stopPrice': current_price * bear_profit, 'closePosition': True} # 이익실현 예약 주문
-                    #  stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                     stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
 
@@ -145,16 +143,16 @@ while True:
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
 
-    if now.minute == 59 and 0 <= now.second <= 5:
+    if now.hour % 2 == 0 and now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액
-        logging.info('hourly checking')
+        logging.info('2hourly checking')
         for symbol in symbols:
             try:
                 if info[symbol]['position'] != 'wait':
                     current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
                     df = getOHLCV(symbol, '1d')
-                    stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
-                    logging.info(f'코인: {symbol}\n지표: {stoch_osc}')
+                    stoch_osc_yes, stoch_osc_to = indi.calStochastic(df, 9, 3, 3)
+                    logging.info(f'코인: {symbol}\n지표: {stoch_osc_yes} {stoch_osc_to}')
 
                     # 익절 손절 체크
                     if info[symbol]['position'] == 'long' and df['low'][-1] < info[symbol]['price'] * bull_loss:
@@ -172,7 +170,7 @@ while True:
                         bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) Failure")
 
                     # 반환점에서 청산
-                    elif info[symbol]['position'] == 'long' and stoch_osc < 5:
+                    elif info[symbol]['position'] == 'long' and stoch_osc_yes > 3 and stoch_osc_to < 3:
                         take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
                         stop_order = binance.create_order(symbol, 'take_profit_market', 'sell', None, None, take_profit_params)
                         time.sleep(5)
@@ -182,7 +180,7 @@ while True:
                         logging.info(f"{symbol} (롱) 반환점 도달 청산")
                         bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 반환점 도달 청산")
 
-                    elif info[symbol]['position'] == 'short' and stoch_osc > -5:
+                    elif info[symbol]['position'] == 'short' and stoch_osc_yes < -3 and stoch_osc_to > -3:
                         take_profit_params = {'stopPrice': current_price, 'closePosition': True} # 이익실현 예약 주문
                         stop_order = binance.create_order(symbol, 'take_profit_market', 'buy', None, None, take_profit_params)
                         time.sleep(5)
