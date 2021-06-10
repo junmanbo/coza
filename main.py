@@ -70,7 +70,6 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 5 # 투자할 코인 총 갯수
-total_hold = 3 # 투자할 코인 총 갯수
 #  bull_profit = 1.05 # 롱 포지션 수익률
 bull_loss = 0.94 # 롱 포지션 손실률
 #  bear_profit = 0.95 # 숏 포지션 수익률
