@@ -134,6 +134,7 @@ while True:
                 current_price = bid_ask[symbol]['ask']
                 order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
                 profit = (current_price - start_price) / start_price * 100 - fee
+                info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
@@ -144,6 +145,7 @@ while True:
                 current_price = bid_ask[symbol]['bid']
                 order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
                 profit = (start_price - current_price) / current_price * 100 - fee
+                info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (숏) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
