@@ -100,7 +100,7 @@ while True:
 
                 # 이익실현 / 손절체크
                 if info[symbol]['position'] == 'long':
-                    if df['high'][-2] > info[symbol]['price'] * bull_profit or df['low'][-2] < info[symbol]['price'] * bull_loss:
+                    if df.high.values[-2] > info[symbol]['price'] * bull_profit or df.low.values[-2] < info[symbol]['price'] * bull_loss:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
@@ -108,7 +108,7 @@ while True:
                         bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 성공 or 실패?")
 
                 elif info[symbol]['position'] == 'short':
-                    if df['low'][-2] < info[symbol]['price'] * bear_profit or df['high'][-2] > info[symbol]['price'] * bear_loss:
+                    if df.low.values[-2] < info[symbol]['price'] * bear_profit or df.high.values[-2] > info[symbol]['price'] * bear_loss:
                         cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                         info[symbol]['position'] = 'wait'
                         current_hold -= 1
@@ -184,3 +184,34 @@ while True:
         # 파일에 수집한 정보 및 거래 정보 파일에 저장
         with open('./Data/binance_short.txt', 'w') as f:
             f.write(json.dumps(info))
+
+    elif now.minute == 59 and 0 <= now.second <= 5:
+        for symbol in symbols:
+            try:
+                df = getOHLCV(symbol, '1d')
+                # 이익실현 / 손절체크
+                if info[symbol]['position'] == 'long':
+                    if df.high.values[-1] > info[symbol]['price'] * bull_profit or df.low.values[-1] < info[symbol]['price'] * bull_loss:
+                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        logging.info(f"{symbol} (롱) 취소주문: {cancel_order}")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 성공 or 실패?")
+
+                elif info[symbol]['position'] == 'short':
+                    if df.low.values[-1] < info[symbol]['price'] * bear_profit or df.high.values[-1] > info[symbol]['price'] * bear_loss:
+                        cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        logging.info(f"{symbol} (숏) 취소주문: {cancel_order}")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 성공 or 실패?")
+
+            except Exception as e:
+                bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
+                logging.error(e)
+            time.sleep(0.5)
+
+        # 파일에 수집한 정보 및 거래 정보 파일에 저장
+        with open('./Data/binance_short.txt', 'w') as f:
+            f.write(json.dumps(info))
+

@@ -1,23 +1,40 @@
 #!/usr/bin/env python
 
+import json
 import ccxt
 import pprint
+import time
 
-# 거래소 설정
-with open('./Api/binance.txt') as f:
-    lines = f.readlines()
-    api_key = lines[0].strip()
-    secret = lines[1].strip()
-
-# 기본 옵션: 선물
-binance = ccxt.binance({
-    'apiKey': api_key,
-    'secret': secret,
-    'enableRateLimit': True,
-    'options': {
-        'defaultType': 'future',
-    }
-})
+while True:
+    hold = False
+    with open('./Data/binance_short.txt', 'r') as f:
+        data = f.read()
+        check = json.loads(data)
+    for ticker in check.keys():
+        #  ticker['position']
+        #  print(check[ticker]['position'])
+        if check[ticker]['position'] != 'wait':
+            hold = True
+            print(f'current_hold: {hold} Continue')
+    if hold == False:
+        print(f'current_hold: {hold} Stop')
+        break
+    time.sleep(1)
+#  # 거래소 설정
+#  with open('./Api/binance.txt') as f:
+#      lines = f.readlines()
+#      api_key = lines[0].strip()
+#      secret = lines[1].strip()
+#
+#  # 기본 옵션: 선물
+#  binance = ccxt.binance({
+#      'apiKey': api_key,
+#      'secret': secret,
+#      'enableRateLimit': True,
+#      'options': {
+#          'defaultType': 'future',
+#      }
+#  })
 
 #  symbol = 'BTC/USDT'
 #  bid_ask = binance.fetch_bids_asks(symbols=symbol)

@@ -59,8 +59,8 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
         'YFI/USDT', 'SUSHI/USDT', 'SNX/USDT', 'HNT/USDT', 'QTUM/USDT',
         'ZEN/USDT']
 
-bull_loss = 0.996 # 롱 포지션 손실률
-bear_loss = 1.004 # 숏 포지션 손실률
+bull_loss = 0.9967 # 롱 포지션 손실률
+bear_loss = 1.0033 # 숏 포지션 손실률
 amount = 5000
 start_price = 1
 fee = 0.2 / 100
@@ -72,6 +72,21 @@ while True:
     now = datetime.datetime.now()
     time.sleep(0.1)
     symbol = symbols[now.hour]
+
+    if now.hour == 9 and now.minute == 0:
+        logging.info('단타 전략이 끝날 때 까지 기다리는 중')
+        while True:
+            hold = False
+            with open('./Data/binance_short.txt', 'r') as f:
+                data = f.read()
+                check = json.loads(data)
+            for ticker in check.keys():
+                if check[ticker]['position'] != 'wait':
+                    hold = True
+            if hold == False:
+                logging.info(f'단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
+                break
+            time.sleep(60)
 
     if 20 <= now.second <= 21 or 58 <= now.second <= 59:
         try:
@@ -112,7 +127,7 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
             # 반환점일 경우 포지션 종료
-            elif info[symbol]['position'] == 'long' and stoch_osc_before > 0 and stoch_osc_now < 0:
+            elif info[symbol]['position'] == 'long' and stoch_osc_before > -5 and stoch_osc_now < -5:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(2)
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
@@ -122,7 +137,7 @@ while True:
                 logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
-            elif info[symbol]['position'] == 'short' and stoch_osc_before < 0 and stoch_osc_now > 0:
+            elif info[symbol]['position'] == 'short' and stoch_osc_before < 5 and stoch_osc_now > 5:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(2)
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
