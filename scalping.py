@@ -61,7 +61,7 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
 
 bull_loss = 0.995 # 롱 포지션 손실률
 bear_loss = 1.005 # 숏 포지션 손실률
-amount = 100
+amount = 1000
 start_price = 0
 fee = 0.2 / 100
 
