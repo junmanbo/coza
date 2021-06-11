@@ -1,4 +1,5 @@
 import ccxt
+import time
 
 with open("./Api/binance.txt") as f:
     lines = f.readlines()
@@ -26,11 +27,14 @@ print('Loaded markets from', binance.id)
 
 binance.verbose = True
 for symbol in symbols:
-    market = binance.market(symbol)
-    leverage = 10
+    try:
+        market = binance.market(symbol)
+        leverage = 15
 
-    response = binance.fapiPrivate_post_leverage({
-        'symbol': market['id'],
-        'leverage': leverage,
-    })
-    print(response)
+        response = binance.fapiPrivate_post_leverage({
+            'symbol': market['id'],
+            'leverage': leverage,
+        })
+        print(response)
+    except Exception as e:
+        print(e)
