@@ -24,23 +24,29 @@ markets = exchange.load_markets()
 
 symbols = exchange.load_markets().keys() # 목록 전체 조회
 # CROSSED 모드로 변경
+#  for symbol in symbols:
+#      try:
+#          print('Changing your', symbol, 'position margin mode to CROSSED:')
+#          market = exchange.market(symbol)
+#          response = exchange.fapiPrivate_post_margintype({
+#          'symbol': market['id'],
+#          'marginType': 'CROSSED',
+#          })
+#          print(response)
+#      except Exception as e:
+#          print(e)
+#      time.sleep(0.5)
+
+# ISOLATED 모드로 변경
 for symbol in symbols:
     try:
-        print('Changing your', symbol, 'position margin mode to CROSSED:')
+        print('Changing your', symbol, 'position margin mode to ISOLATED:')
         market = exchange.market(symbol)
         response = exchange.fapiPrivate_post_margintype({
         'symbol': market['id'],
-        'marginType': 'CROSSED',
+        'marginType': 'ISOLATED',
         })
         print(response)
     except Exception as e:
         print(e)
     time.sleep(0.5)
-
-# ISOLATED 모드로 변경
-# print('Changing your', symbol, 'position margin mode to ISOLATED:')
-# response = exchange.fapiPrivate_post_margintype({
-#     'symbol': market['id'],
-#     'marginType': 'ISOLATED',
-# })
-# print(response)
