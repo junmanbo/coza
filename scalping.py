@@ -63,12 +63,6 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOGE/USDT',
         'HNT/USDT', 'BAT/USDT', 'QTUM/USDT', 'ZEN/USDT', 'DGB/USDT',
         'GRT/USDT', 'ONE/USDT', 'ONT/USDT', 'BAKE/USDT', 'SC/USDT']
 
-# 보유하고 있는 코인 갯수
-current_hold = 0
-for symbol in symbols:
-    if info[symbol]['position'] != 'wait':
-        current_hold += 1
-
 bull_loss = 0.9967 # 롱 포지션 손실률
 bear_loss = 1.0033 # 숏 포지션 손실률
 amount = 100
@@ -137,8 +131,8 @@ while True:
                 info[symbol]['price'] = current_price
                 info[symbol]['position'] = 'long'
                 info[symbol]['quantity'] = quantity
-                logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
+                logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}")
+                bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
             elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and macd_osc < 0 and mfi_slope < 0:
@@ -153,8 +147,8 @@ while True:
                 info[symbol]['price'] = current_price
                 info[symbol]['position'] = 'short'
                 info[symbol]['quantity'] = quantity
-                logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
-                bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
+                logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}")
+                bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}")
 
             if now.minute == 59:
                 info[symbol]['position'] = 'wait'
