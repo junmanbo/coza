@@ -73,15 +73,15 @@ while True:
     time.sleep(0.1)
     symbol = symbols[now.hour]
 
-    if 28 <= now.second <= 29 or 58 <= now.second <= 59:
+    if 20 <= now.second <= 21 or 58 <= now.second <= 59:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
-            mfi_slope = indi.cal_mfi(df, 10)
+            mfi = indi.cal_mfi(df, 15)
 
-            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nMFI Slope: {mfi_slope}')
+            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nMFI: {mfi}')
 
             if now.minute == 59 and now.second > 50:
                 if info[symbol]['position'] == 'long':
@@ -129,7 +129,7 @@ while True:
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and mfi_slope > 0 and now.second > 50:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and mfi < 25:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['ask']
@@ -147,7 +147,7 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and mfi_slope < 0 and now.second > 50:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and mfi > 75:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['bid']
@@ -164,7 +164,7 @@ while True:
                 logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}")
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}")
 
-            time.sleep(3)
+            time.sleep(2)
 
         except Exception as e:
             bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
