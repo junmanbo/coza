@@ -119,8 +119,10 @@ while True:
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and macd_osc > 0 and mfi_slope > 0:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and mfi_slope > 0:
                 # 투자를 위한 세팅
+                bid_ask = binance.fetch_bids_asks(symbols=symbol)
+                current_price = bid_ask[symbol]['ask']
                 quantity = amount / current_price
                 order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
                 stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
@@ -135,8 +137,10 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and macd_osc < 0 and mfi_slope < 0:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and mfi_slope < 0:
                 # 투자를 위한 세팅
+                bid_ask = binance.fetch_bids_asks(symbols=symbol)
+                current_price = bid_ask[symbol]['bid']
                 quantity = amount / current_price
                 order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
                 stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
