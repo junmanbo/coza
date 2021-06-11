@@ -71,7 +71,7 @@ for symbol in symbols:
 
 bull_loss = 0.9967 # 롱 포지션 손실률
 bear_loss = 1.0033 # 숏 포지션 손실률
-amount = 10
+amount = 100
 
 logging.info(f"{strategy} Start")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy} Start!")
@@ -94,15 +94,13 @@ while True:
 
             # 이익실현 / 손절체크
             if info[symbol]['position'] == 'long' and df['low'][-2] < info[symbol]['price'] * bull_loss:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (롱) 취소주문: {cancel_order}")
+                logging.info(f"{symbol} (롱) 한 건 마무리")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 실패?")
 
             elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (숏) 취소주문: {cancel_order}")
+                logging.info(f"{symbol} (숏) 한 건 마무리")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 실패?")
 
             # + 수익일 경우 본절로스 갱신
@@ -112,6 +110,7 @@ while True:
                 info[symbol]['price'] = current_price
                 stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
                 stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                logging.info(f"{symbol} (숏) 취소주문: {cancel_order}")
 
             elif info[symbol]['position'] == 'short' and current_price < info[symbol]['price']:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
@@ -119,6 +118,7 @@ while True:
                 info[symbol]['price'] = current_price
                 stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
                 stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                logging.info(f"{symbol} (숏) 취소주문: {cancel_order}")
 
             # 조건 만족시 Long Position
             elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and macd_osc > 0 and mfi_slope > 0:
