@@ -88,7 +88,7 @@ while True:
                 break
             time.sleep(60)
 
-    if 20 <= now.second <= 21 or 58 <= now.second <= 59:
+    elif 20 <= now.second <= 21 or 58 <= now.second <= 59:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
