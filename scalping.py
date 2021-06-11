@@ -127,7 +127,7 @@ while True:
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
             # 반환점일 경우 포지션 종료
-            elif info[symbol]['position'] == 'long' and stoch_osc_before > -5 and stoch_osc_now < -5:
+            elif info[symbol]['position'] == 'long' and stoch_osc_before > 10 and stoch_osc_now < 10:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(2)
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
@@ -138,7 +138,7 @@ while True:
                 logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
-            elif info[symbol]['position'] == 'short' and stoch_osc_before < 5 and stoch_osc_now > 5:
+            elif info[symbol]['position'] == 'short' and stoch_osc_before < -10 and stoch_osc_now > -10:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(2)
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
