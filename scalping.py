@@ -87,8 +87,8 @@ while True:
             if now.minute == 59 and now.second > 30:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(3)
-                stop_loss_params = {'stopPrice': current_price, 'reduceOnly': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', info[symbol]['quantity'], None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
                 info[symbol]['position'] = 'wait'
 
             # 이익실현 / 손절체크
@@ -109,16 +109,16 @@ while True:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(3)
                 info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', info[symbol]['quantity'], None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
                 logging.info(f"{symbol} (롱) + 진행중! 본절로스 갱신")
 
             elif info[symbol]['position'] == 'short' and current_price < info[symbol]['price']:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(3)
                 info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', info[symbol]['quantity'], None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
@@ -128,8 +128,8 @@ while True:
                 current_price = bid_ask[symbol]['ask']
                 quantity = amount / current_price
                 order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', quantity, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
@@ -146,8 +146,8 @@ while True:
                 current_price = bid_ask[symbol]['bid']
                 quantity = amount / current_price
                 order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', quantity, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
@@ -157,7 +157,7 @@ while True:
                 logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}")
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}")
 
-            time.sleep(2)
+            time.sleep(3)
 
         except Exception as e:
             bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
