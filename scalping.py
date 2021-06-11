@@ -114,13 +114,13 @@ while True:
                     info[symbol]['position'] = 'wait'
 
             # 이익실현 / 손절체크
-            elif info[symbol]['position'] == 'long' and df['low'][-1] < info[symbol]['price'] * bull_loss:
+            elif info[symbol]['position'] == 'long' and df.low.values[-1] < info[symbol]['price'] * bull_loss:
                 profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
                 info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
-            elif info[symbol]['position'] == 'short' and df['high'][-1] > info[symbol]['price'] * bear_loss:
+            elif info[symbol]['position'] == 'short' and df.high.values[-1] > info[symbol]['price'] * bear_loss:
                 profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
                 info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
