@@ -61,7 +61,7 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
 
 bull_loss = 0.996 # 롱 포지션 손실률
 bear_loss = 1.004 # 숏 포지션 손실률
-amount = 10000
+amount = 5000
 start_price = 1
 fee = 0.2 / 100
 
@@ -86,17 +86,17 @@ while True:
 
             logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 3m: {stoch_osc_3m} MFI Slope: {mfi_slope}')
 
-            if now.minute == 59 and now.second > 30:
+            if now.minute == 59 and now.second > 50:
                 if info[symbol]['position'] == 'long':
                     cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                    time.sleep(2)
+                    time.sleep(5)
                     stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
                     info[symbol]['position'] = 'wait'
 
                 elif info[symbol]['position'] == 'short':
                     cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                    time.sleep(2)
+                    time.sleep(5)
                     stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
                     info[symbol]['position'] = 'wait'
@@ -132,7 +132,8 @@ while True:
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and stoch_osc_3m > 0 and mfi_slope > 0:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and \
+                    stoch_osc_3m > 0 and mfi_slope > 0 and now.second > 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['ask']
@@ -150,7 +151,8 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and stoch_osc_3m < 0 and mfi_slope < 0:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and \
+                    stoch_osc_3m < 0 and mfi_slope < 0 and now.second > 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['bid']
