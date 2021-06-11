@@ -31,8 +31,7 @@ def calStochastic(df, n, m, t):
     slow_d = slow_k.ewm(span=t).mean()
     slow_osc = slow_k - slow_d
     df['slow_osc'] = slow_osc
-    stoch_osc = float(df['slow_osc'][-1])
-    return stoch_osc
+    return df.slow_osc.values[-2], df.slow_osc.values[-1]
 
 # MACD 계산
 def calMACD(df, n_Fast, n_Slow, n_Signal):
@@ -50,8 +49,7 @@ def calMACD(df, n_Fast, n_Slow, n_Signal):
     MACDSignal = MACD.ewm( span = n_Signal, min_periods = n_Signal - 1 ).mean()
     MACDOSC = MACD - MACDSignal
     df['macd_osc'] = MACDOSC
-    macd_osc = float(df['macd_osc'][-1])
-    return macd_osc
+    return df.macd_osc.values[-1]
 
 # RSI 계산
 def calRSI(df, n):
@@ -67,41 +65,26 @@ def calRSI(df, n):
     df['RSI'] = df['AU'] / (df['AD']+df['AU']) * 100
     return df['RSI'][-1]
 
-# # MFI 계산
-def calMFI(df, period):
-    typical_price = (df['close'] + df['high'] + df['low']) / 3 # 대표 주가 계산
-    money_flow = typical_price * df['volume'] # 자금 흐름 계산
-    # 양의 자금 흐름과 음의 자금 흐름 계산
-    positive_flow = []
-    negative_flow = []
-    for i in range(1, len(typical_price)):
-        # 현재 대표 주가가 어제 대표 주가보다 높을 때
-        if typical_price[i] > typical_price[i - 1]:
-            positive_flow.append(money_flow[i - 1])
-            negative_flow.append(0)
-        # 현재 대표 주가가 어제 대표 주가보다 낮을 때
-        elif typical_price[i] < typical_price[i - 1]:
-            negative_flow.append(money_flow[i - 1])
-            positive_flow.append(0)
-        # 대표 주가의 변동이 없을 때
+# MFI (Money Flow Index)
+def cal_mfi(df, n):
+    """
+    Money Flow Index
+    n = 기간
+    """
+    df['TP'] = (df['high'] + df['low'] + df['close']) / 3
+    df['PMF'] = 0
+    df['NMF'] = 0
+    for i in range(len(df.close)-1):
+        if df.TP.values[i] < df.TP.values[i+1]:
+            df.PMF.values[i+1] = df.TP.values[i+1] * df.volume.values[i+1]
+            df.NMF.values[i+1] = 0
         else:
-            positive_flow.append(0)
-            negative_flow.append(0)
-    # 지정된 기간 내 양의 자금 흐름과 음의 자금 흐름 계산
-    positive_mf = []
-    negative_mf = []
-
-    # 기간내 모든 양의 자금흐름
-    for i in range(period - 1, len(positive_flow)):
-        positive_mf.append(sum(positive_flow[i + 1 - period : i + 1]))
-
-    # 기간내 모든 음의 자금흐름
-    for i in range(period - 1, len(negative_flow)):
-        negative_mf.append(sum(negative_flow[i + 1 - period : i + 1]))
-    # 자금 흐름 지수 (MFI) 계산
-    mfi = 100 * (np.array(positive_mf) / (np.array(positive_mf) + np.array(negative_mf)))
-    mfi_slope = mfi[-1] - mfi[-2]
-    return mfi_slope
+            df.NMF.values[i+1] = df.TP.values[i+1] * df.volume.values[i+1]
+            df.PMF.values[i+1] = 0
+    df['MFR'] = df.PMF.rolling(window=n).sum() / df.NMF.rolling(window=n).sum()
+    df['MFI'] = 100 - 100 / (1+df['MFR'])
+    df['MFI_Slope'] = df.MFI.values[-1] - df.MIF.values[-2]
+    return df.MFI_Slope.values[-1]
 
 def saveHistory(strategy, symbol, position, amount, rate_profit):
     """
