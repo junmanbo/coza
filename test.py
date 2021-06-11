@@ -41,3 +41,4 @@ binance = ccxt.binance({
 #              print('none')
 #          else:
 #              print('yes')
+#  binance.cancel_order()

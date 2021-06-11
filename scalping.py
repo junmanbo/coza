@@ -157,7 +157,7 @@ while True:
                 logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}")
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}")
 
-            time.sleep(1)
+            time.sleep(2)
 
         except Exception as e:
             bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
