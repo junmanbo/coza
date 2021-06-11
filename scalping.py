@@ -50,21 +50,17 @@ def getOHLCV(symbol, period):
 
 strategy = 'Scalping'
 #  tickers = binance.load_markets().keys() # 목록 전체 조회
-symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOGE/USDT',
-        'XRP/USDT', 'DOT/USDT', 'UNI/USDT', 'ICP/USDT', 'BCH/USDT',
-        'LINK/USDT', 'LTC/USDT', 'SOL/USDT', 'MATIC/USDT', 'THETA/USDT',
-        'XLM/USDT', 'VET/USDT', 'ETC/USDT', 'FIL/USDT', 'EOS/USDT',
-        'TRX/USDT', 'XMR/USDT', 'AAVE/USDT', 'NEO/USDT', 'MKR/USDT',
-        'KSM/USDT', 'IOTA/USDT', 'ALGO/USDT', 'ATOM/USDT', 'AVAX/USDT',
-        'LUNA/USDT', 'BTT/USDT', 'RUNE/USDT', 'XTZ/USDT', 'COMP/USDT',
-        'HBAR/USDT', 'DASH/USDT', 'ZEC/USDT', 'EGLD/USDT', 'XEM/USDT',
-        'WAVES/USDT', 'YFI/USDT', 'CHZ/USDT', 'HOT/USDT', 'SUSHI/USDT',
-        'ZIL/USDT', 'SNX/USDT', 'MANA/USDT', 'NEAR/USDT', 'ENJ/USDT',
-        'HNT/USDT', 'BAT/USDT', 'QTUM/USDT', 'ZEN/USDT', 'DGB/USDT',
-        'GRT/USDT', 'ONE/USDT', 'ONT/USDT', 'BAKE/USDT', 'SC/USDT']
+symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
+        'UNI/USDT', 'ICP/USDT', 'BCH/USDT', 'LINK/USDT', 'LTC/USDT',
+        'SOL/USDT', 'THETA/USDT', 'ETC/USDT', 'FIL/USDT', 'EOS/USDT',
+        'XMR/USDT', 'AAVE/USDT', 'NEO/USDT', 'MKR/USDT', 'KSM/USDT',
+        'ATOM/USDT', 'AVAX/USDT', 'LUNA/USDT', 'RUNE/USDT', 'XTZ/USDT',
+        'COMP/USDT', 'DASH/USDT', 'ZEC/USDT', 'EGLD/USDT', 'WAVES/USDT',
+        'YFI/USDT', 'SUSHI/USDT', 'SNX/USDT', 'HNT/USDT', 'QTUM/USDT',
+        'ZEN/USDT']
 
-bull_loss = 0.9967 # 롱 포지션 손실률
-bear_loss = 1.0033 # 숏 포지션 손실률
+bull_loss = 0.995 # 롱 포지션 손실률
+bear_loss = 1.005 # 숏 포지션 손실률
 amount = 100
 start_price = 0
 fee = 0.2 / 100
@@ -77,7 +73,7 @@ while True:
     time.sleep(0.1)
     symbol = symbols[now.hour]
 
-    if 0 <= now.second <= 1:
+    if 28 <= now.second <= 29 or 58 <= now.second <= 59:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
@@ -88,14 +84,21 @@ while True:
 
             logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nMACD OSC: {macd_osc} MFI Slope: {mfi_slope}')
 
+            if now.minute == 59 and now.second > 30:
+                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                time.sleep(3)
+                stop_loss_params = {'stopPrice': current_price, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', info[symbol]['quantity'], None, stop_loss_params)
+                info[symbol]['position'] = 'wait'
+
             # 이익실현 / 손절체크
-            if info[symbol]['position'] == 'long' and df['low'][-2] < info[symbol]['price'] * bull_loss:
+            elif info[symbol]['position'] == 'long' and df['low'][-1] < info[symbol]['price'] * bull_loss:
                 profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
                 info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
-            elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
+            elif info[symbol]['position'] == 'short' and df['high'][-1] > info[symbol]['price'] * bear_loss:
                 profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
                 info[symbol]['position'] = 'wait'
                 logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
@@ -106,16 +109,16 @@ while True:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(3)
                 info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', info[symbol]['quantity'], None, stop_loss_params)
                 logging.info(f"{symbol} (롱) + 진행중! 본절로스 갱신")
 
             elif info[symbol]['position'] == 'short' and current_price < info[symbol]['price']:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                 time.sleep(3)
                 info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'buy', info[symbol]['quantity'], None, stop_loss_params)
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
@@ -125,8 +128,8 @@ while True:
                 current_price = bid_ask[symbol]['ask']
                 quantity = amount / current_price
                 order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'sell', quantity, None, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
@@ -143,8 +146,8 @@ while True:
                 current_price = bid_ask[symbol]['bid']
                 quantity = amount / current_price
                 order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop_market', 'buy', quantity, None, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
@@ -153,9 +156,6 @@ while True:
                 info[symbol]['quantity'] = quantity
                 logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}")
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}")
-
-            if now.minute == 59:
-                info[symbol]['position'] = 'wait'
 
             time.sleep(1)
 
