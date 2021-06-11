@@ -83,7 +83,7 @@ def cal_mfi(df, n):
             df.PMF.values[i+1] = 0
     df['MFR'] = df.PMF.rolling(window=n).sum() / df.NMF.rolling(window=n).sum()
     df['MFI'] = 100 - 100 / (1+df['MFR'])
-    df['MFI_Slope'] = df.MFI.values[-1] - df.MIF.values[-2]
+    df['MFI_Slope'] = df.MFI.values[-1] - df.MFI.values[-2]
     return df.MFI_Slope.values[-1]
 
 def saveHistory(strategy, symbol, position, amount, rate_profit):
