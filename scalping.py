@@ -73,6 +73,7 @@ bull_loss = 0.9967 # 롱 포지션 손실률
 bear_loss = 1.0033 # 숏 포지션 손실률
 amount = 100
 start_price = 0
+fee = 0.2 / 100
 
 logging.info(f"{strategy} Start")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy} Start!")
@@ -95,16 +96,16 @@ while True:
 
             # 이익실현 / 손절체크
             if info[symbol]['position'] == 'long' and df['low'][-2] < info[symbol]['price'] * bull_loss:
-                profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100
+                profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
                 info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit}")
+                logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
+                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
 
             elif info[symbol]['position'] == 'short' and df['high'][-2] > info[symbol]['price'] * bear_loss:
-                profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100
+                profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
                 info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit}")
+                logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
+                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
             # + 수익일 경우 본절로스 갱신
             elif info[symbol]['position'] == 'long' and current_price > info[symbol]['price']:
