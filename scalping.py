@@ -93,7 +93,7 @@ while True:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
-            df = getOHLCV(symbol, '30m')
+            df = getOHLCV(symbol, '5m')
             stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
