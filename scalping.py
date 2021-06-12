@@ -92,11 +92,13 @@ while True:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
+            df = getOHLCV(symbol, '30m')
+            stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 15)
 
-            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nMFI: {mfi}')
+            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 5m: {stoch_osc} MFI: {mfi}')
 
             if now.minute == 59 and now.second > 50:
                 if info[symbol]['position'] == 'long':
@@ -144,7 +146,7 @@ while True:
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and mfi < 25:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and stoch_osc > 0 and mfi < 25 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['ask']
@@ -162,7 +164,7 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and mfi > 75:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and stoch_osc < 0 and mfi > 75 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['bid']
