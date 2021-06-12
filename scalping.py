@@ -61,7 +61,7 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
 
 bull_loss = 0.9967 # 롱 포지션 손실률
 bear_loss = 1.0033 # 숏 포지션 손실률
-amount = 2000
+amount = 500
 start_price = 1
 fee = 0.2 / 100
 
@@ -85,6 +85,7 @@ while True:
                     hold = True
             if hold == False:
                 logging.info(f'단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
+                bot.sendMessage(chat_id = chat_id, text=f"단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개")
                 break
             time.sleep(60)
 
@@ -107,6 +108,7 @@ while True:
                     stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
                     info[symbol]['position'] = 'wait'
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 1시간 경과 - 코인 변경 시간으로 마무리 정리")
 
                 elif info[symbol]['position'] == 'short':
                     cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
@@ -114,6 +116,7 @@ while True:
                     stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
                     info[symbol]['position'] = 'wait'
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} 1시간 경과 - 코인 변경 시간으로 마무리 정리")
 
             # 이익실현 / 손절체크
             elif info[symbol]['position'] == 'long' and df.low.values[-1] < info[symbol]['price'] * bull_loss:
