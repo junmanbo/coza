@@ -92,11 +92,13 @@ while True:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
+            df = getOHLCV(symbol, '30m')
+            stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 15)
 
-            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nMFI: {mfi}')
+            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 5m: {stoch_osc} MFI: {mfi}')
 
             if now.minute == 59 and now.second > 50:
                 if info[symbol]['position'] == 'long':
@@ -126,29 +128,6 @@ while True:
                 logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
                 bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
-            # 반환점일 경우 포지션 종료
-            elif info[symbol]['position'] == 'long' and stoch_osc_before > 10 and stoch_osc_now < 10:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                time.sleep(2)
-                bid_ask = binance.fetch_bids_asks(symbols=symbol)
-                current_price = bid_ask[symbol]['ask']
-                order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
-                profit = (current_price - start_price) / start_price * 100 - fee
-                info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
-
-            elif info[symbol]['position'] == 'short' and stoch_osc_before < -10 and stoch_osc_now > -10:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                time.sleep(2)
-                bid_ask = binance.fetch_bids_asks(symbols=symbol)
-                current_price = bid_ask[symbol]['bid']
-                order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
-                profit = (start_price - current_price) / current_price * 100 - fee
-                info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (숏) 포지션 종료 수익률: {profit:.2f}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
-
             # + 수익일 경우 본절로스 갱신
             elif info[symbol]['position'] == 'long' and current_price > info[symbol]['price']:
                 cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
@@ -167,7 +146,7 @@ while True:
                 logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and mfi < 25:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and stoch_osc > 0 and mfi < 25 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['ask']
@@ -185,7 +164,7 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and mfi > 75:
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and stoch_osc < 0 and mfi > 75 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['bid']
