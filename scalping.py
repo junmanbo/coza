@@ -119,7 +119,7 @@ while True:
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 15)
 
-            logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 5m: {stoch_osc} MFI: {mfi}')
+            #  logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 5m: {stoch_osc} MFI: {mfi}')
 
             if now.minute == 59 and now.second > 50:
                 if info[symbol]['position'] == 'long':
