@@ -59,10 +59,13 @@ symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT',
         'YFI/USDT', 'SUSHI/USDT', 'SNX/USDT', 'HNT/USDT', 'QTUM/USDT',
         'ZEN/USDT']
 
+bull_profit = 1.007
 bull_loss = 0.9967 # 롱 포지션 손실률
+bear_profit = 0.993
 bear_loss = 1.0033 # 숏 포지션 손실률
 amount = 500
 start_price = 1
+stop_order = {}
 fee = 0.2 / 100
 
 logging.info(f"{strategy} Start")
@@ -109,7 +112,7 @@ while True:
                 break
             time.sleep(60)
 
-    elif 20 <= now.second <= 21 or 58 <= now.second <= 59:
+    elif 28 <= now.second <= 29 or 58 <= now.second <= 59:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
@@ -119,54 +122,71 @@ while True:
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 15)
 
-            #  logging.info(f'코인: {symbol}\nStochastic Before: {stoch_osc_before} Stochastic Now: {stoch_osc_now}\nStochastic 5m: {stoch_osc} MFI: {mfi}')
-
-            if now.minute == 59 and now.second > 50:
-                if info[symbol]['position'] == 'long':
+            if info[symbol]['position'] == 'long':
+                # 1시간 단위로 코인 변경(이전 코인 청산)
+                if now.minute == 59 and now.second > 50:
                     cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                     time.sleep(5)
-                    stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
-                    stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                    stop_loss_params = {'stopPrice': current_price, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order = binance.create_order(symbol, 'stop', 'sell', info[symbol]['quantity'], current_price, stop_loss_params)
                     info[symbol]['position'] = 'wait'
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 1시간 경과 - 코인 변경 시간으로 마무리 정리")
 
-                elif info[symbol]['position'] == 'short':
+                # 이익실현 / 손절체크
+                if df.low.values[-1] < info[symbol]['price'] * bull_loss:
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
+                    info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
+                elif df.high.values[-1] > start_price * bull_profit:
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    profit = (bull_profit - 1) * 100 - fee
+                    info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
+
+                # + 수익일 경우 본절로스 갱신
+                elif current_price > info[symbol]['price']:
+                    cancel_order = binance.cancel_order(stop_order['id'], symbol) # 남은 주문 취소
+                    time.sleep(2)
+                    info[symbol]['price'] = current_price
+                    stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order = binance.create_order(symbol, 'stop', 'sell', info[symbol]['quantity'], current_price * bull_loss, stop_loss_params)
+                    logging.info(f"{symbol} (롱) + 진행중! 본절로스 갱신")
+
+            elif info[symbol]['position'] == 'short':
+                # 1시간 단위로 코인 변경(이전 코인 청산)
+                if now.minute == 59 and now.second > 50:
                     cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
                     time.sleep(5)
-                    stop_loss_params = {'stopPrice': current_price, 'closePosition': True} # 손절 예약 주문
-                    stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                    stop_loss_params = {'stopPrice': current_price, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order = binance.create_order(symbol, 'stop', 'buy', info[symbol]['quantity'], current_price, stop_loss_params)
                     info[symbol]['position'] = 'wait'
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 1시간 경과 - 코인 변경 시간으로 마무리 정리")
 
-            # 이익실현 / 손절체크
-            elif info[symbol]['position'] == 'long' and df.low.values[-1] < info[symbol]['price'] * bull_loss:
-                profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
-                info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
+                # 이익실현 / 손절체크
+                elif df.high.values[-1] > info[symbol]['price'] * bear_loss:
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
+                    info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
+                elif df.low.values[-1] < start_price * bear_profit:
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    profit = (1 - bear_profit) * 100 - fee
+                    info[symbol]['position'] = 'wait'
+                    logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
 
-            elif info[symbol]['position'] == 'short' and df.high.values[-1] > info[symbol]['price'] * bear_loss:
-                profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
-                info[symbol]['position'] = 'wait'
-                logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
-                bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
-
-            # + 수익일 경우 본절로스 갱신
-            elif info[symbol]['position'] == 'long' and current_price > info[symbol]['price']:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                time.sleep(2)
-                info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
-                logging.info(f"{symbol} (롱) + 진행중! 본절로스 갱신")
-
-            elif info[symbol]['position'] == 'short' and current_price < info[symbol]['price']:
-                cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
-                time.sleep(2)
-                info[symbol]['price'] = current_price
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
-                logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
+                # + 수익일 경우 본절로스 갱신
+                elif current_price < info[symbol]['price']:
+                    cancel_order = binance.cancel_order(stop_order['id'], symbol) # 남은 주문 취소
+                    time.sleep(2)
+                    info[symbol]['price'] = current_price
+                    stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
+                    stop_order = binance.create_order(symbol, 'stop', 'buy', info[symbol]['quantity'], current_price * bear_loss, stop_loss_params)
+                    logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
             elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and stoch_osc > 0 and mfi < 25 and now.minute < 50:
@@ -175,8 +195,9 @@ while True:
                 current_price = bid_ask[symbol]['ask']
                 quantity = amount / current_price
                 order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
-                stop_loss_params = {'stopPrice': current_price * bull_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'sell', None, None, stop_loss_params)
+                take_order = binance.create_limit_sell_order(symbol, quantity, current_price * bull_profit) # 이익실현 매도 주문
+                stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop', 'sell', quantity, current_price * bull_loss, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
@@ -193,8 +214,9 @@ while True:
                 current_price = bid_ask[symbol]['bid']
                 quantity = amount / current_price
                 order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
-                stop_loss_params = {'stopPrice': current_price * bear_loss, 'closePosition': True} # 손절 예약 주문
-                stop_order = binance.create_order(symbol, 'stop_market', 'buy', None, None, stop_loss_params)
+                take_order = binance.create_limit_buy_order(symbol, quantity, current_price * bear_profit)
+                stop_loss_params = {'stopPrice': current_price * bear_loss, 'reduceOnly': True} # 손절 예약 주문
+                stop_order = binance.create_order(symbol, 'stop', 'buy', quantity, current_price * bull_loss, stop_loss_params)
 
                 # 매수가, 포지션 상태, 코인 매수 양 저장
                 start_price = current_price
