@@ -37,10 +37,14 @@ binance = ccxt.binance({
     }
 })
 
-symbol = 'XRP/USDT'
+symbol = 'BCH/USDT'
 bid_ask = binance.fetch_bids_asks(symbols=symbol)
 current_price = bid_ask[symbol]['ask']
 print(current_price)
+
+#  position = binance.fetch_positions(symbol)
+#  print(position)
+binance.fetch_isolated_positions(symbol)
 
 #  amount = 10
 #  symbol = 'LINK/USDT'
