@@ -122,6 +122,8 @@ while True:
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 15)
 
+            logging.info(f'Stochastic: {stoch_osc} {stoch_osc_before} {stoch_osc_now} MFI: {mfi}')
+
             if info[symbol]['position'] == 'long':
                 # 1시간 단위로 코인 변경(이전 코인 청산)
                 if now.minute == 59 and now.second > 50:
