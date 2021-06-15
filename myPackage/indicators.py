@@ -11,8 +11,9 @@ def calEMA(df, n):
     """
 
     df['ema'] = df['close'].ewm(span=n).mean()
-    EMA = float(df['ema'][-1])
-    return EMA
+    EMA_yes = float(df.ema.values[-2])
+    EMA_to = float(df.ema.values[-1])
+    return EMA_yes, EMA_to
 
 # Stochastic 계산
 def calStochastic(df, n, m, t):
