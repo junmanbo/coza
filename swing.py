@@ -82,7 +82,7 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if (now.hour + 3) % 4 == 0 and now.minute == 59 and 0 <= now.second <= 5:
+    if now.hour % 4 == 0 and now.minute == 59 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance * leverage / total_hold
