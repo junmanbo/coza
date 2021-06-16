@@ -71,7 +71,7 @@ for symbol in symbols:
 
 total_hold = 5 # 투자할 코인 총 갯수
 bull_profit = 1.024 # 롱 포지션 수익률
-bull_loss = 0.97 # 롱 포지션 손실률
+bull_loss = 0.955 # 롱 포지션 손실률
 bear_profit = 2 - bull_profit # 숏 포지션 수익률
 bear_loss = 2 - bull_loss # 숏 포지션 손실률
 leverage = 4
@@ -95,12 +95,15 @@ while True:
                 df = getOHLCV(symbol, '1d')
                 stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
                 macd_osc = indi.calMACD(df, 14, 30, 10)
+                vol_ema_short = indi.cal_vol_ema(df, 7)
+                vol_ema_long = indi.cal_vol_ema(df, 14)
 
-                logging.info(f'코인: {symbol}\nStochastic: {stoch_osc} MACD OSC: {macd_osc}')
+                logging.info(f'코인: {symbol}\nStochastic: {stoch_osc} MACD OSC: {macd_osc} Volume: {vol_ema_short} {vol_ema_long}')
 
                 # 조건 만족시 Long Position
-                if info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc > 0 and macd_osc > 0:
+                if info[symbol]['position'] == 'wait' and current_hold < total_hold and stoch_osc > 0 and macd_osc > 0:
+                    if vol_ema_short > vol_ema_long:
+                        bull_profit = 1.05
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
@@ -117,8 +120,9 @@ while True:
                     bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
                 # 조건 만족시 Short Position
-                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and \
-                        stoch_osc < 0 and macd_osc < 0:
+                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and stoch_osc < 0 and macd_osc < 0:
+                    if vol_ema_short > vol_ema_long:
+                        bear_profit = 0.95
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문

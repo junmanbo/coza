@@ -15,6 +15,16 @@ def calEMA(df, n):
     EMA_to = float(df.ema.values[-1])
     return EMA_yes, EMA_to
 
+def cal_vol_ema(df, n):
+    """
+    거래량 지수 이동평균 계산
+    n: n일의 지수 이동평균
+    """
+
+    df['vol_ema'] = df['close'].ewm(span=n).mean()
+    vol_ema = float(df.vol_ema.values[-1])
+    return vol_ema
+
 # Stochastic 계산
 def calStochastic(df, n, m, t):
     """
