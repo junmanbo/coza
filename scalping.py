@@ -124,7 +124,7 @@ while True:
             vol_short = indi.cal_vol_ema(df, 5)
             vol_long = indi.cal_vol_ema(df, 10)
 
-            logging.info(f'Stochastic: {stoch_osc} {stoch_osc_before} {stoch_osc_now} MFI: {mfi} Volume: {vol_short} {vol_long}')
+            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc} {stoch_osc_before} {stoch_osc_now} MFI: {mfi} Volume: {vol_short} {vol_long}')
 
             if info[symbol]['position'] == 'long':
                 # 1시간 단위로 코인 변경(이전 코인 청산)
