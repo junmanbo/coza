@@ -69,7 +69,7 @@ for symbol in symbols:
     if info[symbol]['position'] != 'wait':
         current_hold += 1
 
-total_hold = 5 # 투자할 코인 총 갯수
+total_hold = 7 # 투자할 코인 총 갯수
 bull_profit = 1.024 # 롱 포지션 수익률
 bull_loss = 0.955 # 롱 포지션 손실률
 bear_profit = 2 - bull_profit # 숏 포지션 수익률
@@ -100,14 +100,34 @@ while True:
 
                 logging.info(f'코인: {symbol}\nStochastic: {stoch_osc} MACD OSC: {macd_osc} Volume: {vol_ema_short} {vol_ema_long}')
 
+                # 남은 코인 포지션 정리
+                if info[symbol]['position'] == 'long':
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    time.sleep(2)
+                    take_order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    profit = (current_price - info[symbol]['price']) / info[symbol]['price'] * 100
+                    logging.info(f"{symbol} (롱) 포지션 정리 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 정리\n수익률: {profit:.2f}")
+                elif info[symbol]['position'] == 'short':
+                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    time.sleep(2)
+                    take_order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매수 주문
+                    info[symbol]['position'] = 'wait'
+                    current_hold -= 1
+                    profit = (info[symbol]['price'] - current_price) / current_price * 100
+                    logging.info(f"{symbol} (숏) 포지션 정리 수익률: {profit:.2f}")
+                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 정리\n수익률: {profit:.2f}")
+
                 # 조건 만족시 Long Position
-                if info[symbol]['position'] == 'wait' and current_hold < total_hold and stoch_osc > 0 and macd_osc > 0:
+                elif info[symbol]['position'] == 'wait' and current_hold < total_hold and stoch_osc > 0 and macd_osc > 0:
                     if vol_ema_short > vol_ema_long:
                         bull_profit = 1.05
                     # 투자를 위한 세팅
                     quantity = amount / current_price
                     order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
-                    take_order = binance.create_limit_sell_order(symbol, quantity, current_price * bull_profit) # 지정가 매수 주문
+                    take_order = binance.create_limit_sell_order(symbol, quantity, current_price * bull_profit) # 지정가 매도 주문
                     stop_loss_params = {'stopPrice': current_price * bull_loss, 'reduceOnly': True} # 손절 예약 주문
                     stop_order = binance.create_order(symbol, 'stop', 'sell', quantity, current_price * bull_loss, stop_loss_params)
 
