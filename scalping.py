@@ -93,7 +93,7 @@ while True:
     time.sleep(0.1)
     symbol = symbols[now.hour]
 
-    if (now.hour + 3) % 4 == 0 and now.minute == 0:
+    if now.hour == 9 and now.minute == 0:
         time.sleep(300)
         logging.info('단타 전략이 끝날 때 까지 기다리는 중')
         bot.sendMessage(chat_id = chat_id, text=f"전략: {strategy} 단타전략 끝날 때까지 기다리는 중")
@@ -116,15 +116,13 @@ while True:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
-            df = getOHLCV(symbol, '30m')
-            stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
-            mfi = indi.cal_mfi(df, 15)
+            mfi = indi.cal_mfi(df, 10)
             vol_short = indi.cal_vol_ema(df, 5)
             vol_long = indi.cal_vol_ema(df, 10)
 
-            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc} {stoch_osc_before} {stoch_osc_now} MFI: {mfi} Volume: {vol_short} {vol_long}')
+            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc_before} {stoch_osc_now} MFI: {mfi} Volume: {vol_short} {vol_long}')
 
             if info[symbol]['position'] == 'long':
                 # 1시간 단위로 코인 변경(이전 코인 청산)
@@ -193,7 +191,7 @@ while True:
                     logging.info(f"{symbol} (숏) + 진행중! 본절로스 갱신")
 
             # 조건 만족시 Long Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and stoch_osc > 0 and \
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and \
                     vol_short > vol_long and mfi < 25 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
@@ -213,7 +211,7 @@ while True:
                 bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}")
 
             # 조건 만족시 Short Position
-            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and stoch_osc < 0 and \
+            elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and \
                     vol_short > vol_long and mfi > 75 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
