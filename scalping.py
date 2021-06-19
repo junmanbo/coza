@@ -66,6 +66,7 @@ bear_loss = 1.0033 # 숏 포지션 손실률
 amount = 500
 start_price = 1
 stop_order = {}
+take_order = {}
 fee = 0.2 / 100
 
 logging.info(f"{strategy} Start")
@@ -135,14 +136,14 @@ while True:
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} 1시간 경과 - 코인 변경 시간으로 마무리 정리")
 
                 # 이익실현 / 손절체크
-                if df.low.values[-1] < info[symbol]['price'] * bull_loss:
-                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                elif df.low.values[-1] < info[symbol]['price'] * bull_loss:
+                    cancel_order = binance.cancel_order(take_order['id'], symbol) # 남은 주문 취소
                     profit = (info[symbol]['price'] * bull_loss - start_price) / start_price * 100 - fee
                     info[symbol]['position'] = 'wait'
                     logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 포지션 종료\n수익률: {profit:.2f}")
                 elif df.high.values[-1] > start_price * bull_profit:
-                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    cancel_order = binance.cancel_order(stop_order['id'], symbol) # 남은 주문 취소
                     profit = (bull_profit - 1) * 100 - fee
                     info[symbol]['position'] = 'wait'
                     logging.info(f"{symbol} (롱) 포지션 종료 수익률: {profit:.2f}")
@@ -169,13 +170,13 @@ while True:
 
                 # 이익실현 / 손절체크
                 elif df.high.values[-1] > info[symbol]['price'] * bear_loss:
-                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    cancel_order = binance.cancel_order(take_order['id'], symbol) # 남은 주문 취소
                     profit = (start_price - info[symbol]['price'] * bear_loss) / (info[symbol]['price'] * bear_loss) * 100 - fee
                     info[symbol]['position'] = 'wait'
                     logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
                     bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 포지션 종료\n수익률: {profit:.2f}")
                 elif df.low.values[-1] < start_price * bear_profit:
-                    cancel_order = binance.cancel_all_orders(symbol) # 남은 주문 취소
+                    cancel_order = binance.cancel_order(stop_order['id'], symbol) # 남은 주문 취소
                     profit = (1 - bear_profit) * 100 - fee
                     info[symbol]['position'] = 'wait'
                     logging.info(f"{symbol} (숏) 포지션 종료. 수익률: {profit:.2f}")
