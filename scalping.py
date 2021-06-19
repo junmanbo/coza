@@ -117,13 +117,16 @@ while True:
         try:
             current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
 
+            df = getOHLCV(symbol, '30m')
+            stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
+
             df = getOHLCV(symbol, '1m')
             stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
             mfi = indi.cal_mfi(df, 10)
             vol_short = indi.cal_vol_ema(df, 5)
             vol_long = indi.cal_vol_ema(df, 10)
 
-            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc_before} {stoch_osc_now} MFI: {mfi} Volume: {vol_short} {vol_long}')
+            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc_before:.2f} {stoch_osc_now:.2f} {stoch_osc:.2f} MFI: {mfi:.2f} Volume: {vol_short:.2f} {vol_long:.2f}')
 
             if info[symbol]['position'] == 'long':
                 # 1시간 단위로 코인 변경(이전 코인 청산)
@@ -193,7 +196,7 @@ while True:
 
             # 조건 만족시 Long Position
             elif info[symbol]['position'] == 'wait' and stoch_osc_before < 0 and stoch_osc_now > 0 and \
-                    vol_short > vol_long and mfi < 25 and now.minute < 50:
+                    stoch_osc > 0 and vol_short > vol_long and mfi < 25 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['ask']
@@ -213,7 +216,7 @@ while True:
 
             # 조건 만족시 Short Position
             elif info[symbol]['position'] == 'wait' and stoch_osc_before > 0 and stoch_osc_now < 0 and \
-                    vol_short > vol_long and mfi > 75 and now.minute < 50:
+                    stoch_osc < 0 and vol_short > vol_long and mfi > 75 and now.minute < 50:
                 # 투자를 위한 세팅
                 bid_ask = binance.fetch_bids_asks(symbols=symbol)
                 current_price = bid_ask[symbol]['bid']
