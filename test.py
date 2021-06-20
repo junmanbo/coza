@@ -4,6 +4,8 @@ import json
 import ccxt
 import pprint
 import time
+import pandas as pd
+from myPackage import indicators as indi
 
 #  while True:
 #      hold = False
@@ -21,30 +23,45 @@ import time
 #          break
 #      time.sleep(1)
 
-# 거래소 설정
-with open('./Api/binance.txt') as f:
-    lines = f.readlines()
-    api_key = lines[0].strip()
-    secret = lines[1].strip()
+#  # 거래소 설정
+#  with open('./Api/binance.txt') as f:
+#      lines = f.readlines()
+#      api_key = lines[0].strip()
+#      secret = lines[1].strip()
 
 # 기본 옵션: 선물
 binance = ccxt.binance({
-    'apiKey': api_key,
-    'secret': secret,
+    #  'apiKey': api_key,
+    #  'secret': secret,
     'enableRateLimit': True,
     'options': {
         'defaultType': 'future',
     }
 })
 
-symbol = 'BCH/USDT'
-bid_ask = binance.fetch_bids_asks(symbols=symbol)
-current_price = bid_ask[symbol]['ask']
-print(current_price)
+# OHLCV 데이터 가져오기
+def getOHLCV(symbol, period):
+    ohlcv = binance.fetch_ohlcv(symbol, period)
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    return df
+
+symbols = ['XMR/USDT', 'LUNA/USDT', 'ZEN/USDT', 'HBAR/USDT', 'ZEC/USDT']
+
+for symbol in symbols:
+    df = getOHLCV(symbol, '1d')
+    stoch_osc_yes, stoch_osc_to = indi.calStochastic(df, 12, 5, 5)
+    macd = indi.cal_macd(df, 7, 14, 5)
+    print(f'코인: {symbol}\nStochastic: {stoch_osc_yes} {stoch_osc_to} MACD: {macd}')
+
+#  bid_ask = binance.fetch_bids_asks(symbols=symbol)
+#  current_price = bid_ask[symbol]['ask']
+#  print(current_price)
 
 #  position = binance.fetch_positions(symbol)
 #  print(position)
-binance.fetch_isolated_positions(symbol)
+#  binance.fetch_isolated_positions(symbol)
 
 #  amount = 10
 #  symbol = 'LINK/USDT'
