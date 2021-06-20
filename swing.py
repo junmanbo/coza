@@ -70,7 +70,7 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 5 # 투자할 코인 총 갯수
-leverage = 4
+leverage = 3.5
 fee = 0.2 / 100
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
@@ -80,11 +80,11 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.hour % 2 == 0 and now.minute == 59 and 0 <= now.second <= 5:
+    if now.hour == 9 and now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance * leverage / total_hold
-        logging.info('2hourly checking')
+        logging.info('Daily checking')
         for symbol in symbols:
             try:
                 current_price = binance.fetch_ticker(symbol)['close'] # 현재가 조회
