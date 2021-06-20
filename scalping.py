@@ -72,19 +72,19 @@ fee = 0.2 / 100
 logging.info(f"{strategy} Start")
 bot.sendMessage(chat_id=chat_id, text=f"{strategy} Start!")
 
-logging.info('단타 전략이 끝날 때 까지 기다리는 중')
-bot.sendMessage(chat_id = chat_id, text=f"전략: {strategy} 단타 전략 끝날 때 까지 기다리는 중")
+logging.info('스윙 전략이 끝날 때 까지 기다리는 중')
+bot.sendMessage(chat_id = chat_id, text=f"전략: {strategy} 스윙 전략 끝날 때 까지 기다리는 중")
 while True:
     hold = False
-    with open('./Data/binance_short.txt', 'r') as f:
+    with open('./Data/binance_swing.txt', 'r') as f:
         data = f.read()
         check = json.loads(data)
     for ticker in check.keys():
         if check[ticker]['position'] != 'wait':
             hold = True
     if hold == False:
-        logging.info(f'단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
-        bot.sendMessage(chat_id = chat_id, text=f"단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개")
+        logging.info(f'스윙 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
+        bot.sendMessage(chat_id = chat_id, text=f"스윙 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개")
         time.sleep(60)
         break
     time.sleep(60)
@@ -96,19 +96,19 @@ while True:
 
     if now.hour == 9 and now.minute == 0:
         time.sleep(300)
-        logging.info('단타 전략이 끝날 때 까지 기다리는 중')
-        bot.sendMessage(chat_id = chat_id, text=f"전략: {strategy} 단타전략 끝날 때까지 기다리는 중")
+        logging.info('스윙 전략이 끝날 때 까지 기다리는 중')
+        bot.sendMessage(chat_id = chat_id, text=f"전략: {strategy} 스윙전략 끝날 때까지 기다리는 중")
         while True:
             hold = False
-            with open('./Data/binance_short.txt', 'r') as f:
+            with open('./Data/binance_swing.txt', 'r') as f:
                 data = f.read()
                 check = json.loads(data)
             for ticker in check.keys():
                 if check[ticker]['position'] != 'wait':
                     hold = True
             if hold == False:
-                logging.info(f'단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
-                bot.sendMessage(chat_id = chat_id, text=f"단타 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개")
+                logging.info(f'스윙 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개')
+                bot.sendMessage(chat_id = chat_id, text=f"스윙 포지션 전부 종료: {hold} Stop\n스캘핑 전략 재개")
                 time.sleep(60)
                 break
             time.sleep(60)
