@@ -45,7 +45,7 @@ def calStochastic(df, n, m, t):
     return df.slow_osc.values[-2], df.slow_osc.values[-1]
 
 # MACD 계산
-def calMACD(df, n_Fast, n_Slow, n_Signal):
+def cal_macd(df, n_Fast, n_Slow, n_Signal):
     """
     df = dataframe
     n_Fast = 단기추세
@@ -59,8 +59,9 @@ def calMACD(df, n_Fast, n_Slow, n_Signal):
     MACD = EMAFast - EMASlow
     MACDSignal = MACD.ewm( span = n_Signal, min_periods = n_Signal - 1 ).mean()
     MACDOSC = MACD - MACDSignal
+    df['macd'] = MACD
     df['macd_osc'] = MACDOSC
-    return df.macd_osc.values[-1]
+    return df.macd.values[-1]
 
 # RSI 계산
 def calRSI(df, n):
