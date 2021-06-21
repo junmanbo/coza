@@ -80,7 +80,7 @@ while True:
     now = datetime.datetime.now()
     time.sleep(1)
 
-    if now.hour == 9 and now.minute == 0 and 0 <= now.second <= 5:
+    if (now.hour + 3) % 4 == 0 and now.minute == 0 and 0 <= now.second <= 5:
         # 1코인 1번당 투자 금액
         total_balance = binance.fetch_balance()['USDT']['total']
         amount = total_balance * leverage / total_hold
@@ -95,7 +95,7 @@ while True:
 
                 logging.info(f'코인: {symbol}\nStochastic: {stoch_osc_yes} {stoch_osc_to} MACD: {macd}')
 
-                if info[symbol]['position'] == 'wait' and current_hold < total_hold:
+                if info[symbol]['position'] == 'wait' and current_hold < total_hold and now.hour == 9:
                     if stoch_osc_yes < 0 and stoch_osc_to > 0 and macd > 0:
                         quantity = amount / current_price
                         order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
