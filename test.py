@@ -2,10 +2,7 @@
 
 import ccxt
 import pandas as pd
-from myPackage import indicators as indi
-
 import matplotlib.pyplot as plt
-import datetime
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as mdates
 import time
