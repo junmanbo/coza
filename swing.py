@@ -92,11 +92,12 @@ while True:
                 df = getOHLCV(symbol, '1d')
                 stoch_osc_yes, stoch_osc_to = indi.calStochastic(df, 12, 5, 5)
                 macd = indi.cal_macd(df, 7, 14, 5)
+                mfi = indi.cal_mfi(df, 10)
 
-                logging.info(f'코인: {symbol}\nStochastic: {stoch_osc_yes} {stoch_osc_to} MACD: {macd}')
+                logging.info(f'코인: {symbol}\nStochastic: {stoch_osc_yes} {stoch_osc_to} MACD: {macd} MFI: {mfi}')
 
                 if info[symbol]['position'] == 'wait' and current_hold < total_hold:
-                    if stoch_osc_yes < 0 and stoch_osc_to > 0 and macd > 0:
+                    if stoch_osc_yes < -1 and stoch_osc_to > 1 and macd > 0:
                         quantity = amount / current_price
                         order = binance.create_limit_buy_order(symbol, quantity, current_price) # 지정가 매수 주문
 
@@ -109,7 +110,7 @@ while True:
                         logging.info(f"{symbol} (롱)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
                         bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Long)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
-                    elif stoch_osc_yes > 0 and stoch_osc_to < 0 and macd < 0:
+                    elif stoch_osc_yes > 1 and stoch_osc_to < -1 and macd < 0:
                         quantity = amount / current_price
                         order = binance.create_limit_sell_order(symbol, quantity, current_price) # 지정가 매도 주문
 
@@ -122,7 +123,7 @@ while True:
                         logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
                         bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
-                elif info[symbol]['position'] == 'long' and stoch_osc_yes > 0 and stoch_osc_to < 0:
+                elif info[symbol]['position'] == 'long' and stoch_osc_yes > 0 and stoch_osc_to < 0 and mfi > 70:
                     order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
                     info[symbol]['position'] = 'wait'
                     current_hold -= 1
