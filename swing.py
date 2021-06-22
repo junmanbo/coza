@@ -123,21 +123,37 @@ while True:
                         logging.info(f"{symbol} (숏)\n투자금액: ${amount:.2f}\n현재보유: {current_hold}개\n주문: {order}")
                         bot.sendMessage(chat_id=chat_id, text=f"{strategy} {symbol} (Short)\nAmount: ${amount:.2f}\nHolding: {current_hold}")
 
-                elif info[symbol]['position'] == 'long' and stoch_osc_yes > 0 and stoch_osc_to < 0 and mfi > 70:
-                    order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
-                    info[symbol]['position'] = 'wait'
-                    current_hold -= 1
-                    profit = (current_price - info[symbol]['start_price']) / info[symbol]['start_price'] * 100
-                    logging.info(f"{symbol} (롱) 반환점 도달! 수익률: {profit:.2f}%")
-                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) 반환점 도달! 수익률: {profit:.2f}%")
+                elif info[symbol]['position'] == 'long':
+                    if stoch_osc_yes > 0 and stoch_osc_to < 0 and mfi > 70:
+                        order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        profit = (current_price - info[symbol]['start_price']) / info[symbol]['start_price'] * 100
+                        logging.info(f"{symbol} (롱) Stochastic 반환점 도달! 수익률: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) Stochastic 반환점 도달! 수익률: {profit:.2f}%")
+                    elif macd < 0:
+                        order = binance.create_limit_sell_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매도 주문
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        profit = (current_price - info[symbol]['start_price']) / info[symbol]['start_price'] * 100
+                        logging.info(f"{symbol} (롱) MACD 반환점 도달! 수익률: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (롱) MACD 반환점 도달! 수익률: {profit:.2f}%")
 
-                elif info[symbol]['position'] == 'short' and stoch_osc_yes < 0 and stoch_osc_to > 0:
-                    order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매수 주문
-                    info[symbol]['position'] = 'wait'
-                    current_hold -= 1
-                    profit = (info[symbol]['start_price'] - current_price) / current_price * 100
-                    logging.info(f"{symbol} (숏) 반환점 도달! 수익률: {profit:.2f}%")
-                    bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) 반환점 도달! 수익률: {profit:.2f}%")
+                elif info[symbol]['position'] == 'short':
+                    if stoch_osc_yes < 0 and stoch_osc_to > 0 and mfi < 30:
+                        order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매수 주문
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        profit = (info[symbol]['start_price'] - current_price) / current_price * 100
+                        logging.info(f"{symbol} (숏) Stochastic 반환점 도달! 수익률: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) Stochastic 반환점 도달! 수익률: {profit:.2f}%")
+                    elif macd > 0:
+                        order = binance.create_limit_buy_order(symbol, info[symbol]['quantity'], current_price) # 지정가 매수 주문
+                        info[symbol]['position'] = 'wait'
+                        current_hold -= 1
+                        profit = (info[symbol]['start_price'] - current_price) / current_price * 100
+                        logging.info(f"{symbol} (숏) MACD 반환점 도달! 수익률: {profit:.2f}%")
+                        bot.sendMessage(chat_id = chat_id, text=f"{symbol} (숏) MACD 반환점 도달! 수익률: {profit:.2f}%")
 
             except Exception as e:
                 bot.sendMessage(chat_id = chat_id, text=f"에러발생 {e}")
