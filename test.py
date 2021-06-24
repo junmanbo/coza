@@ -47,7 +47,7 @@ def getOHLCV(symbol, period):
     df.set_index('datetime', inplace=True)
     return df
 
-tickers = ['LUNA/USDT', 'ZEN/USDT']
+tickers = ['LUNA/USDT', 'ZEN/USDT', 'BTC/USDT', 'ETH/USDT', 'ETC/USDT', 'BNB/USDT', 'XRP/USDT', 'LTC/USDT', 'LINK/USDT', 'DOT/USDT', 'QTUM/USDT']
 
 #  for symbol in symbols:
 #      df = getOHLCV(symbol, '1d')
