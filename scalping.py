@@ -121,12 +121,12 @@ while True:
             stoch_osc = indi.calStochastic(df, 9, 3, 3)[1]
 
             df = getOHLCV(symbol, '1m')
-            stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 9, 3, 3)
+            stoch_osc_before, stoch_osc_now = indi.calStochastic(df, 12, 5, 5)
             mfi = indi.cal_mfi(df, 10)
             vol_short = indi.cal_vol_ema(df, 5)
             vol_long = indi.cal_vol_ema(df, 10)
 
-            logging.info(f'Coin: {symbol} Stochastic: {stoch_osc_before:.2f} {stoch_osc_now:.2f} {stoch_osc:.2f} MFI: {mfi:.2f} Volume: {vol_short:.2f} {vol_long:.2f}')
+            #logging.info(f'Coin: {symbol} Stochastic: {stoch_osc_before:.2f} {stoch_osc_now:.2f} {stoch_osc:.2f} MFI: {mfi:.2f} Volume: {vol_short:.2f} {vol_long:.2f}')
 
             if info[symbol]['position'] == 'long':
                 # 1시간 단위로 코인 변경(이전 코인 청산)
