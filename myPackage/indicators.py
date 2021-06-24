@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import datetime
-import openpyxl
 
 # 지수 이동평균 계산
 def calEMA(df, n):

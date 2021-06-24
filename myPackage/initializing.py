@@ -1,3 +1,4 @@
+#!/home/xnote/venvs/trading/bin/python
 import ccxt
 import json
 
