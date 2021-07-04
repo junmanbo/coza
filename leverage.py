@@ -29,7 +29,7 @@ binance.verbose = True
 for symbol in symbols:
     try:
         market = binance.market(symbol)
-        leverage = 3
+        leverage = 1
 
         response = binance.fapiPrivate_post_leverage({
             'symbol': market['id'],
