@@ -70,7 +70,7 @@ for symbol in symbols:
         current_hold += 1
 
 total_hold = 3 # 투자할 코인 총 갯수
-leverage = 2
+leverage = 0.9
 fee = 0.2 / 100
 
 logging.info(f"{strategy}\n현재보유: {current_hold}개\n투자할 코인: {total_hold-current_hold}개")
